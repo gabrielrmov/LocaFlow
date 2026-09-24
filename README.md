@@ -1,20 +1,27 @@
 # LocaFlow
 
-Protótipo de sistema de gestão de locação de equipamentos (SaaS single-page),
-construído como um único arquivo HTML autocontido (`locaflow.html`).
+Sistema de gestão de locação de equipamentos (SaaS), com landing page, login exclusivo via Google e dashboard multi-empresa.
 
-## Como usar
+## Estrutura
 
-Abra `locaflow.html` diretamente no navegador — não requer servidor,
-build ou instalação de dependências.
+- `index.html` — landing page (planos, "Assinar")
+- `login.html` — login com Google (Firebase Auth)
+- `dashboard.html` — o sistema (protegido por login + assinatura ativa)
+- `firebase-config.js` — configuração do Firebase (Auth + Firestore) — já preenchido com os dados do projeto `locaflow-fc924`
+- `firestore.rules` — regras de segurança do banco de dados
+- `functions/` — Cloud Functions do checkout e webhook do Asaas
+- `locaflow.html` — redireciona para `dashboard.html` (compatibilidade com o nome antigo)
 
-## Sobre este repositório
+## Como colocar no ar
 
-Este repositório foi criado localmente para lhe dar um ponto de partida com
-histórico Git real. Ele não está hospedado em nenhum serviço remoto (GitHub,
-GitLab etc.) — para publicá-lo, adicione um remoto e faça o push:
+Veja o passo a passo completo em [`SETUP.md`](./SETUP.md): plano Blaze, chaves do Asaas, deploy das Cloud Functions e do site.
+
+## Rodando localmente
+
+Abra `index.html` num servidor local simples (o login com Google não funciona em `file://`):
 
 ```bash
-git remote add origin <url-do-seu-repositorio-remoto>
-git push -u origin main
+python3 -m http.server 8080
 ```
+
+Depois acesse `http://localhost:8080`.

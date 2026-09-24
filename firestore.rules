@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Cada usuário só lê/edita o próprio documento de conta/assinatura.
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Dados da empresa (equipamentos, contratos, clientes...) ficam
+    // isolados por uid do dono da conta Google.
+    match /companies/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+
+      match /{collection}/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+    }
+
+    // Só as Cloud Functions (Admin SDK, que ignora estas regras) leem e
+    // escrevem aqui — createAsaasCheckout cria o registro e confirmSubscription
+    // o consome depois que o webhook do Asaas confirma o pagamento.
+    match /pendingCheckouts/{token} {
+      allow read, write: if false;
+    }
+  }
+}
