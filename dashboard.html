@@ -27,28 +27,32 @@
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#000000; --surface:#141414; --surface-2:#1C1C1C; --surface-hover:#232323;
-    --border:#2C2C2C; --border-strong:#3D3D3D;
-    --ink:#F2F2F2; --ink-2:#B4B4B4; --ink-muted:#7A7A7A;
-    --accent:#3D82E0; --accent-ink:#0A0A0A; --accent-hover:#5C97E8; --accent-soft:#12233B; --accent-soft-ink:#9CC5F2;
-    --good:#3DDC7A; --good-bg:#122318; --good-dot:#3DDC7A;
-    --warning:#F5B84A; --warning-bg:#2B2109; --warning-dot:#F5B84A;
-    --critical:#FF6B6B; --critical-bg:#2E1414; --critical-dot:#FF6B6B;
-    --neutral-ink:#ABABAB; --neutral-bg:#212121;
+    --bg:#0A0A0D; --surface:#16171C; --surface-2:#1E2027; --surface-hover:#25272F;
+    --border:#282A33; --border-strong:#3A3D49;
+    --ink:#F2F2F2; --ink-2:#B4B4B4; --ink-muted:#7E829A;
+    --accent:#4A8CE8; --accent-ink:#08101F; --accent-hover:#6BA0EC; --accent-soft:#152A47; --accent-soft-ink:#9CC5F2;
+    --good:#3DDC7A; --good-bg:#132A1D; --good-dot:#3DDC7A;
+    --warning:#F5B84A; --warning-bg:#2E2410; --warning-dot:#F5B84A;
+    --critical:#FF6B6B; --critical-bg:#331818; --critical-dot:#FF6B6B;
+    --neutral-ink:#ABABAB; --neutral-bg:#22242C;
     --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70; --series-4:#c98500; --series-5:#d55181;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.5),0 1px 1px rgba(0,0,0,.35);
+    --shadow-md:0 14px 34px rgba(0,0,0,.55);
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#000000; --surface:#141414; --surface-2:#1C1C1C; --surface-hover:#232323;
-  --border:#2C2C2C; --border-strong:#3D3D3D;
-  --ink:#F2F2F2; --ink-2:#B4B4B4; --ink-muted:#7A7A7A;
-  --accent:#3D82E0; --accent-ink:#0A0A0A; --accent-hover:#5C97E8; --accent-soft:#12233B; --accent-soft-ink:#9CC5F2;
-  --good:#3DDC7A; --good-bg:#122318; --good-dot:#3DDC7A;
-  --warning:#F5B84A; --warning-bg:#2B2109; --warning-dot:#F5B84A;
-  --critical:#FF6B6B; --critical-bg:#2E1414; --critical-dot:#FF6B6B;
-  --neutral-ink:#ABABAB; --neutral-bg:#212121;
+  --bg:#0A0A0D; --surface:#16171C; --surface-2:#1E2027; --surface-hover:#25272F;
+  --border:#282A33; --border-strong:#3A3D49;
+  --ink:#F2F2F2; --ink-2:#B4B4B4; --ink-muted:#7E829A;
+  --accent:#4A8CE8; --accent-ink:#08101F; --accent-hover:#6BA0EC; --accent-soft:#152A47; --accent-soft-ink:#9CC5F2;
+  --good:#3DDC7A; --good-bg:#132A1D; --good-dot:#3DDC7A;
+  --warning:#F5B84A; --warning-bg:#2E2410; --warning-dot:#F5B84A;
+  --critical:#FF6B6B; --critical-bg:#331818; --critical-dot:#FF6B6B;
+  --neutral-ink:#ABABAB; --neutral-bg:#22242C;
   --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70; --series-4:#c98500; --series-5:#d55181;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.5),0 1px 1px rgba(0,0,0,.35);
+  --shadow-md:0 14px 34px rgba(0,0,0,.55);
   color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:border-box}
@@ -66,7 +70,7 @@ button{font-family:inherit}
 .hint{color:var(--ink-muted); font-size:12.5px}
 
 /* ---------- layout ---------- */
-#app{display:flex; min-height:100%; background:var(--bg)}
+#app{display:flex; min-height:100%; background:radial-gradient(1200px 560px at 20% -10%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 60%) var(--bg);}
 .sidebar{
   width:240px; flex:0 0 240px; background:var(--surface); border-right:1px solid var(--border);
   display:flex; flex-direction:column; padding:18px 14px; gap:18px;
@@ -109,7 +113,7 @@ button{font-family:inherit}
 .menu-toggle{display:none; border:1px solid var(--border); background:var(--surface); border-radius:var(--radius-sm); width:34px; height:34px; align-items:center; justify-content:center; cursor:pointer; color:var(--ink)}
 .topbar h1{font-size:19px}
 .topbar-actions{margin-left:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap}
-.view{padding:22px 26px 60px; max-width:1360px}
+.view{padding:22px 28px 60px; max-width:1440px}
 
 /* ---------- buttons & inputs ---------- */
 .btn{
@@ -128,7 +132,8 @@ button{font-family:inherit}
 .btn-danger:hover{background:var(--critical-bg)}
 .btn-sm{padding:6px 10px; font-size:12.5px; border-radius:7px}
 .btn:disabled{opacity:.5; cursor:not-allowed}
-.icon-btn{width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; border-radius:8px; border:1px solid var(--border-strong); background:var(--surface); color:var(--ink-2); cursor:pointer}
+.icon-btn{position:relative; width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; border-radius:8px; border:1px solid var(--border-strong); background:var(--surface); color:var(--ink-2); cursor:pointer}
+.alert-badge{position:absolute; top:-5px; right:-5px; min-width:16px; height:16px; padding:0 4px; border-radius:99px; background:var(--critical-dot); color:#fff; font-size:10px; font-weight:800; line-height:16px; text-align:center; border:2px solid var(--surface)}
 .icon-btn:hover{background:var(--surface-hover); color:var(--ink)}
 .icon-btn.active{background:var(--accent); color:#fff; border-color:var(--accent)}
 
@@ -151,18 +156,47 @@ button{font-family:inherit}
 .checklist label.disabled{opacity:.45}
 
 /* ---------- cards / kpis ---------- */
-.card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md)}
+.card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); box-shadow:var(--shadow-sm)}
 .card-pad{padding:18px}
 .section-title{font-size:15px; margin-bottom:2px}
-.kpi-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:1px; margin-bottom:22px; border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; background:var(--border)}
-.kpi{background:var(--surface); padding:15px 16px}
-.kpi-top{margin-bottom:9px}
+.section-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px}
+.section-head p.hint{margin-top:2px}
+.kpi-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:1px; margin-bottom:22px; border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; background:var(--border); box-shadow:var(--shadow-sm)}
+.kpi{background:var(--surface); padding:16px 17px; transition:background .12s ease}
+.kpi:hover{background:var(--surface-hover)}
+.kpi-top{margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; gap:8px}
 .kpi-label{font-size:11.5px; color:var(--ink-muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em}
+.kpi-icon{width:26px; height:26px; border-radius:7px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto}
+.kpi-icon svg{width:14px; height:14px}
+.kpi-icon.accent{background:var(--accent-soft); color:var(--accent-soft-ink)}
+.kpi-icon.warning{background:var(--warning-bg); color:var(--warning)}
+.kpi-icon.critical{background:var(--critical-bg); color:var(--critical)}
+.kpi-icon.neutral{background:var(--neutral-bg); color:var(--neutral-ink)}
 .kpi-value{font-family:var(--font-display); font-size:25px; font-weight:700}
-.kpi-sub{font-size:11.5px; color:var(--ink-muted); margin-top:4px}
+.kpi-sub{font-size:11.5px; color:var(--ink-muted); margin-top:5px}
 .grid-2{display:grid; grid-template-columns:1.3fr 1fr; gap:16px}
 .grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
 .stack{display:flex; flex-direction:column; gap:16px}
+
+/* ---------- quick actions & onboarding ---------- */
+.quick-actions{display:grid; grid-template-columns:1fr; gap:8px}
+.quick-action{display:flex; align-items:center; gap:10px; padding:12px; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--surface); cursor:pointer; text-align:left; font-family:inherit; transition:background .12s ease, border-color .12s ease, transform .12s ease}
+.quick-action:hover{background:var(--surface-hover); border-color:var(--border-strong); transform:translateY(-1px)}
+.quick-action .qa-icon{width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:var(--accent-soft); color:var(--accent-soft-ink); flex:0 0 auto}
+.quick-action .qa-icon svg{width:16px; height:16px}
+.quick-action .qa-label{font-size:12.5px; font-weight:600; color:var(--ink)}
+
+.onboard-hero{background:linear-gradient(160deg, color-mix(in srgb, var(--accent) 10%, var(--surface)), var(--surface)); border:1px solid var(--border); border-radius:var(--radius-lg); padding:28px; margin-bottom:18px; box-shadow:var(--shadow-sm)}
+.onboard-hero h2{font-size:21px; margin-bottom:6px}
+.onboard-hero p{color:var(--ink-2); font-size:13.5px; max-width:560px}
+.onboard-steps{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+.onboard-step{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:18px; display:flex; flex-direction:column; gap:10px; box-shadow:var(--shadow-sm)}
+.onboard-step.done{border-color:var(--good-dot); background:color-mix(in srgb, var(--good-bg) 55%, var(--surface))}
+.onboard-step-top{display:flex; align-items:center; justify-content:space-between}
+.onboard-num{width:26px; height:26px; border-radius:99px; background:var(--accent-soft); color:var(--accent-soft-ink); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex:0 0 auto}
+.onboard-step.done .onboard-num{background:var(--good-bg); color:var(--good)}
+.onboard-step h4{font-size:14px}
+.onboard-step p{color:var(--ink-muted); font-size:12.5px; flex:1}
 
 /* ---------- table ---------- */
 .table-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--surface)}
@@ -247,6 +281,7 @@ td.num{text-align:right}
 /* ---------- responsive ---------- */
 @media (max-width: 980px){
   .grid-2,.grid-3{grid-template-columns:1fr}
+  .onboard-steps{grid-template-columns:1fr}
 }
 @media (max-width: 860px){
   .sidebar{transform:translateX(-100%)}
@@ -340,6 +375,7 @@ td.num{text-align:right}
       <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menu"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
       <h1 id="page-title">Dashboard</h1>
       <button class="icon-btn" id="global-search-btn" title="Buscar em tudo (Ctrl+K)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></button>
+      <button class="icon-btn" id="alerts-btn" title="Alertas"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="alert-badge" id="alerts-badge" style="display:none">0</span></button>
       <div class="topbar-actions" id="topbar-actions"></div>
     </header>
     <main class="view" id="view"></main>
@@ -599,6 +635,70 @@ function globalSearchModal(){
   }});
 }
 
+/* ---------------- alertas ---------------- */
+/* Reúne pendências que exigem atenção: contratos atrasados/vencendo, pagamentos e despesas
+   atrasados e manutenções atrasadas. Usado no sino do topo e no card do Dashboard. */
+function computeAlerts(){
+  if(!allLoaded()) return [];
+  const out = [];
+  const today = todayISO();
+  STATE.contracts.forEach(c=>{
+    const st = contractComputedStatus(c);
+    if(st==="atrasado"){
+      out.push({sev:"critical", text:`Contrato ${escapeHtml(c.code||"")} atrasado`, sub:`${escapeHtml(clientName(c.clientId))} · devolução prevista ${fmtDate(c.endDate)}`, open:()=>contractFormModal(c.id)});
+    } else if(st==="vencendo_hoje"){
+      out.push({sev:"warning", text:`Contrato ${escapeHtml(c.code||"")} vence hoje`, sub:escapeHtml(clientName(c.clientId)), open:()=>contractFormModal(c.id)});
+    } else if(st==="ativo"){
+      const d = daysBetween(today, c.endDate);
+      if(d>0 && d<=2) out.push({sev:"warning", text:`Contrato ${escapeHtml(c.code||"")} vence em ${d} dia(s)`, sub:escapeHtml(clientName(c.clientId)), open:()=>contractFormModal(c.id)});
+    }
+  });
+  STATE.payments.forEach(p=>{
+    if(paymentComputedStatus(p)==="atrasado"){
+      out.push({sev:"critical", text:`Pagamento atrasado — ${escapeHtml(clientName(p.clientId))}`, sub:`${fmtMoney(p.amount)} · venceu em ${fmtDate(p.dueDate)}`, open:()=>{ location.hash="#/financeiro"; }});
+    }
+  });
+  STATE.expenses.forEach(e=>{
+    if(expenseComputedStatus(e)==="atrasado"){
+      out.push({sev:"critical", text:`Despesa atrasada — ${escapeHtml(e.description||"")}`, sub:`${fmtMoney(e.amount)}`, open:()=>{ location.hash="#/contaspr"; }});
+    }
+  });
+  STATE.maintenance.forEach(m=>{
+    if(maintenanceComputedStatus(m)==="atrasada"){
+      out.push({sev:"warning", text:`Manutenção atrasada — ${escapeHtml(equipmentName(m.equipmentId))}`, sub:`prevista para ${fmtDate(m.scheduledDate)}`, open:()=>{ location.hash="#/manutencao"; }});
+    }
+  });
+  out.sort((a,b)=> (a.sev==="critical"?0:1) - (b.sev==="critical"?0:1));
+  return out;
+}
+function updateAlertsBadge(){
+  const badge = $("#alerts-badge");
+  if(!badge) return;
+  if(!allLoaded()){ badge.style.display="none"; return; }
+  const n = computeAlerts().length;
+  if(n>0){ badge.style.display="block"; badge.textContent = n>9?"9+":String(n); }
+  else badge.style.display="none";
+}
+function alertsModal(){
+  if(!allLoaded()) return;
+  const alerts = computeAlerts();
+  openModal("Alertas", `
+    <p class="hint" style="margin-bottom:10px">Contratos, pagamentos, despesas e manutenções que precisam de atenção agora.</p>
+    ${alerts.length? `<div id="alerts-list">${alerts.map((a,i)=>`
+      <div class="gs-item" data-i="${i}" style="display:flex;gap:10px;align-items:flex-start;padding:9px 8px;border-radius:8px;cursor:pointer">
+        <span class="dot" style="margin-top:6px;width:8px;height:8px;border-radius:99px;background:var(--${a.sev==='critical'?'critical':'warning'}-dot);flex:none"></span>
+        <div style="min-width:0"><div class="cell-title" style="font-size:13px">${a.text}</div><div class="cell-sub">${a.sub||""}</div></div>
+      </div>`).join("")}</div>` : emptyState("Tudo em dia","Nenhum contrato, pagamento ou manutenção pendente no momento.")}
+  `, `<button class="btn btn-secondary" data-action="close-modal">Fechar</button>`,
+  { large:true, onMount(){
+      $all("#alerts-list .gs-item").forEach(el=>{
+        el.addEventListener("mouseenter", ()=> el.style.background="var(--surface-2)");
+        el.addEventListener("mouseleave", ()=> el.style.background="");
+        el.addEventListener("click", ()=>{ const a = alerts[Number(el.dataset.i)]; closeModal(); a.open(); });
+      });
+  }});
+}
+
 /* ---------------- theme ---------------- */
 function applyTheme(mode){
   if(mode==="system") document.documentElement.removeAttribute("data-theme");
@@ -718,6 +818,7 @@ function updateNavCounts(){
   $("#nav-count-contratos").textContent = ctAtivos;
   $("#nav-count-manutencao").textContent = mtPend;
   const orcEl = $("#nav-count-orcamentos"); if(orcEl) orcEl.textContent = orc;
+  updateAlertsBadge();
 }
 function setTopbarActions(html){ $("#topbar-actions").innerHTML = html; }
 function closeSidebarMobile(){ $("#sidebar").classList.remove("open"); $("#backdrop").classList.remove("open"); }
@@ -732,6 +833,32 @@ function renderDashboard(){
   setTopbarActions(`<button class="btn btn-primary" data-action="new-contract"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Novo contrato</button>`);
   const view = $("#view");
   if(!allLoaded()){ view.innerHTML = loadingView(); return; }
+
+  if(!STATE.clients.length && !STATE.equipment.length && !STATE.contracts.length){
+    const hasEq = STATE.equipment.length>0, hasCl = STATE.clients.length>0, hasCt = STATE.contracts.length>0;
+    const step = (n, done, title, text, action, label) => `
+      <div class="onboard-step ${done?'done':''}">
+        <div class="onboard-step-top">
+          <div class="onboard-num">${done?'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg>':n}</div>
+          ${done?'<span class="badge st-good"><span class="dot"></span>Concluído</span>':''}
+        </div>
+        <h4>${title}</h4>
+        <p>${text}</p>
+        <button class="btn btn-secondary btn-sm" data-action="${action}" style="align-self:flex-start">${label}</button>
+      </div>`;
+    view.innerHTML = `
+      <div class="onboard-hero">
+        <h2>Bem-vindo ao LocaFlow</h2>
+        <p>Sua conta ainda está vazia. Siga os passos abaixo para configurar o essencial e começar a controlar locações, contratos e manutenções em um só lugar.</p>
+      </div>
+      <div class="onboard-steps">
+        ${step(1, hasEq, "Cadastre seus equipamentos", "Adicione as máquinas e serviços que você loca, com tarifas por diária, semana ou mês.", "new-equipment", "Cadastrar equipamento")}
+        ${step(2, hasCl, "Cadastre seus clientes", "Adicione pessoas físicas ou jurídicas para quem você faz locações.", "new-client", "Cadastrar cliente")}
+        ${step(3, hasCt, "Crie seu primeiro contrato", "Monte um contrato de locação vinculando cliente, equipamento e período.", "new-contract", "Novo contrato")}
+      </div>
+    `;
+    return;
+  }
 
   const today = todayISO();
   const inProgress = STATE.contracts.filter(c=>["ativo","vencendo_hoje","atrasado"].includes(contractComputedStatus(c)));
@@ -769,17 +896,29 @@ function renderDashboard(){
     }).join("");
   }
 
+  const dashAlerts = computeAlerts();
+
   $("#view").innerHTML = `
+    ${dashAlerts.length? `<div class="card card-pad" style="margin-bottom:16px;border-color:var(--${dashAlerts.some(a=>a.sev==='critical')?'critical':'warning'})">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <h3 class="section-title" style="margin:0">Alertas</h3>
+        <button class="btn btn-ghost btn-sm" id="dash-see-alerts">Ver todos (${dashAlerts.length})</button>
+      </div>
+      ${dashAlerts.slice(0,3).map(a=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border)">
+        <span class="dot" style="margin-top:6px;width:8px;height:8px;border-radius:99px;background:var(--${a.sev==='critical'?'critical':'warning'}-dot);flex:none"></span>
+        <div style="min-width:0"><div class="cell-title" style="font-size:13px">${a.text}</div><div class="cell-sub">${a.sub||""}</div></div>
+      </div>`).join("")}
+    </div>` : ""}
     <div class="kpi-grid">
-      <div class="kpi"><div class="kpi-top"><span class="kpi-label">Contratos ativos</span></div><div class="kpi-value tabular">${inProgress.length}</div><div class="kpi-sub">${scheduled.length} agendados</div></div>
-      <div class="kpi"><div class="kpi-top"><span class="kpi-label">Vencendo hoje</span></div><div class="kpi-value tabular" style="color:${dueToday.length?'var(--warning)':'var(--ink)'}">${dueToday.length}</div><div class="kpi-sub">devoluções previstas</div></div>
-      <div class="kpi"><div class="kpi-top"><span class="kpi-label">Contratos atrasados</span></div><div class="kpi-value tabular" style="color:${overdue.length?'var(--critical)':'var(--ink)'}">${overdue.length}</div><div class="kpi-sub">sem devolução</div></div>
-      <div class="kpi"><div class="kpi-top"><span class="kpi-label">Manutenções pendentes</span></div><div class="kpi-value tabular">${pendingMaint.length}</div><div class="kpi-sub">${STATE.maintenance.filter(m=>maintenanceComputedStatus(m)==="atrasada").length} atrasadas</div></div>
-      <div class="kpi"><div class="kpi-top"><span class="kpi-label">Faturas em aberto</span></div><div class="kpi-value tabular" style="color:${openInvoicesSum?'var(--warning)':'var(--ink)'}">${fmtMoney(openInvoicesSum)}</div><div class="kpi-sub">${openInvoices.length} faturas</div></div>
-      <div class="kpi"><div class="kpi-top"><span class="kpi-label">Inadimplência</span></div><div class="kpi-value tabular" style="color:${inadimplencia>0?'var(--critical)':'var(--ink)'}">${inadimplencia.toFixed(1)}%</div><div class="kpi-sub">do faturado total</div></div>
+      <div class="kpi"><div class="kpi-top"><span class="kpi-label">Contratos ativos</span><span class="kpi-icon accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/></svg></span></div><div class="kpi-value tabular">${inProgress.length}</div><div class="kpi-sub">${scheduled.length} agendados</div></div>
+      <div class="kpi"><div class="kpi-top"><span class="kpi-label">Vencendo hoje</span><span class="kpi-icon ${dueToday.length?'warning':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg></span></div><div class="kpi-value tabular" style="color:${dueToday.length?'var(--warning)':'var(--ink)'}">${dueToday.length}</div><div class="kpi-sub">devoluções previstas</div></div>
+      <div class="kpi"><div class="kpi-top"><span class="kpi-label">Contratos atrasados</span><span class="kpi-icon ${overdue.length?'critical':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></span></div><div class="kpi-value tabular" style="color:${overdue.length?'var(--critical)':'var(--ink)'}">${overdue.length}</div><div class="kpi-sub">sem devolução</div></div>
+      <div class="kpi"><div class="kpi-top"><span class="kpi-label">Manutenções pendentes</span><span class="kpi-icon ${pendingMaint.length?'warning':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4a4 4 0 0 0-4.9 3.9c0 .5.1 1 .3 1.4L3 12.7V16h3.3l3.4-3.4c.4.2.9.3 1.4.3A4 4 0 0 0 15 8.9L11 4Z"/><circle cx="17.5" cy="17.5" r="3.5"/></svg></span></div><div class="kpi-value tabular">${pendingMaint.length}</div><div class="kpi-sub">${STATE.maintenance.filter(m=>maintenanceComputedStatus(m)==="atrasada").length} atrasadas</div></div>
+      <div class="kpi"><div class="kpi-top"><span class="kpi-label">Faturas em aberto</span><span class="kpi-icon ${openInvoicesSum?'warning':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2.5" y="6" width="19" height="13" rx="2"/><path d="M2.5 10h19"/></svg></span></div><div class="kpi-value tabular" style="color:${openInvoicesSum?'var(--warning)':'var(--ink)'}">${fmtMoney(openInvoicesSum)}</div><div class="kpi-sub">${openInvoices.length} faturas</div></div>
+      <div class="kpi"><div class="kpi-top"><span class="kpi-label">Inadimplência</span><span class="kpi-icon ${inadimplencia>0?'critical':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></span></div><div class="kpi-value tabular" style="color:${inadimplencia>0?'var(--critical)':'var(--ink)'}">${inadimplencia.toFixed(1)}%</div><div class="kpi-sub">do faturado total</div></div>
     </div>
 
-    <div class="grid-2" style="margin-bottom:16px">
+    <div class="grid-3" style="margin-bottom:16px; grid-template-columns:1.1fr 1fr 1fr">
       <div class="card card-pad">
         <h3 class="section-title">Próximas devoluções</h3>
         <p class="hint" style="margin-bottom:6px">Atrasadas, vencendo hoje e nos próximos 3 dias</p>
@@ -802,6 +941,17 @@ function renderDashboard(){
           ${fleetOnly(STATE.equipment).some(isStockMode) ? `<p class="hint" style="margin-top:8px">Considera apenas equipamentos rastreados por unidade. Veja itens em estoque em Equipamentos.</p>` : ""}
         </div>
       </div>
+      <div class="card card-pad">
+        <h3 class="section-title" style="margin-bottom:12px">Ações rápidas</h3>
+        <div class="quick-actions">
+          <button class="quick-action" data-action="new-contract"><span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg></span><span class="qa-label">Novo contrato</span></button>
+          <button class="quick-action" data-action="new-client"><span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/></svg></span><span class="qa-label">Novo cliente</span></button>
+          <button class="quick-action" data-action="new-equipment"><span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span class="qa-label">Novo equipamento</span></button>
+          <button class="quick-action" data-action="new-maintenance"><span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.3 2.3L16 10"/></svg></span><span class="qa-label">Nova manutenção</span></button>
+          <button class="quick-action" data-action="go-relatorios"><span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M7 15l3.5-4.5 3 2.5L19 7"/></svg></span><span class="qa-label">Relatórios</span></button>
+          <button class="quick-action" data-action="go-agenda"><span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg></span><span class="qa-label">Agenda</span></button>
+        </div>
+      </div>
     </div>
 
     <div class="card">
@@ -812,6 +962,7 @@ function renderDashboard(){
       ${renderClientsOpenInvoicesTable()}
     </div>
   `;
+  if($("#dash-see-alerts")) $("#dash-see-alerts").addEventListener("click", alertsModal);
 }
 function renderClientsOpenInvoicesTable(){
   const byClient = {};
@@ -999,6 +1150,8 @@ function equipmentHistoryModal(id){
   const eq = byId(STATE.equipment,id);
   const contracts = STATE.contracts.filter(c=>(c.equipmentIds||[]).includes(id)).sort((a,b)=>b.startDate.localeCompare(a.startDate));
   const maint = STATE.maintenance.filter(m=>m.equipmentId===id).sort((a,b)=>b.scheduledDate.localeCompare(a.scheduledDate));
+  const maintCostTotal = maint.reduce((s,m)=>s+Number(m.cost||0),0);
+  const nextDue = eq && eq.maintenanceIntervalMonths ? suggestedPreventiveMaintenance().find(s=>s.equipment.id===id) : null;
   openModal(`Histórico · ${eq?.name||""}`, `
     <div>
       <h4 style="font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-muted);margin-bottom:8px">Contratos</h4>
@@ -1006,7 +1159,9 @@ function equipmentHistoryModal(id){
     </div>
     <div>
       <h4 style="font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-muted);margin:14px 0 8px">Manutenção</h4>
-      ${maint.length? maint.map(m=>{ const s=maintenanceStatusMeta(maintenanceComputedStatus(m)); return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px"><span>${escapeHtml(m.type==='preventiva'?'Preventiva':'Corretiva')} · ${fmtDate(m.scheduledDate)}</span><span class="badge ${s.cls}"><span class="dot"></span>${s.label}</span></div>`; }).join("") : `<p class="hint">Nenhuma manutenção registrada.</p>`}
+      ${nextDue? `<p class="hint" style="margin-bottom:6px">Próxima manutenção prevista: <b style="color:var(--ink)">${fmtDate(nextDue.due)}</b>${nextDue.overdue?' <span class="badge st-critical"><span class="dot"></span>Vencida</span>':''}</p>` : ""}
+      ${maint.length? maint.map(m=>{ const s=maintenanceStatusMeta(maintenanceComputedStatus(m)); return `<div style="display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px"><span>${escapeHtml(m.type==='preventiva'?'Preventiva':'Corretiva')} · ${fmtDate(m.scheduledDate)}${m.provider?` · ${escapeHtml(m.provider)}`:''}</span><span style="display:flex;align-items:center;gap:8px;flex:none">${m.cost?`<span class="tabular hint">${fmtMoney(m.cost)}</span>`:''}<span class="badge ${s.cls}"><span class="dot"></span>${s.label}</span></span></div>`; }).join("") : `<p class="hint">Nenhuma manutenção registrada.</p>`}
+      ${maintCostTotal>0? `<p class="hint" style="margin-top:8px">Custo total em manutenções: <b class="tabular" style="color:var(--ink)">${fmtMoney(maintCostTotal)}</b></p>` : ""}
     </div>
   `, `<button class="btn btn-secondary" data-action="close-modal">Fechar</button>`, {large:true});
 }
@@ -1477,7 +1632,7 @@ function renderMaintTable(){
   }).sort((a,b)=> (maintenanceComputedStatus(a)==='atrasada'?0:1) - (maintenanceComputedStatus(b)==='atrasada'?0:1) || a.scheduledDate.localeCompare(b.scheduledDate));
   const wrap = $("#mt-table-wrap");
   if(!list.length){ wrap.innerHTML = emptyState("Nenhuma manutenção encontrada","Ajuste os filtros ou registre uma nova manutenção."); return; }
-  wrap.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Equipamento</th><th>Tipo</th><th>Prevista</th><th>Concluída</th><th>Status</th><th></th></tr></thead><tbody>
+  wrap.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Equipamento</th><th>Tipo</th><th>Prevista</th><th>Concluída</th><th class="num">Custo</th><th>Status</th><th></th></tr></thead><tbody>
     ${list.map(m=>{
       const meta = maintenanceStatusMeta(maintenanceComputedStatus(m));
       const done = maintenanceComputedStatus(m)==="concluida";
@@ -1486,6 +1641,7 @@ function renderMaintTable(){
         <td><span class="tag">${m.type==="preventiva"?"Preventiva":"Corretiva"}</span></td>
         <td class="tabular">${fmtDate(m.scheduledDate)}</td>
         <td class="tabular">${fmtDate(m.completedDate)}</td>
+        <td class="num tabular">${m.cost?fmtMoney(m.cost):"—"}</td>
         <td><span class="badge ${meta.cls}"><span class="dot"></span>${meta.label}</span></td>
         <td><div class="row-actions">
           ${!done? `<button class="icon-btn" title="Concluir" data-action="complete-maintenance" data-id="${m.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></button>` : ""}
@@ -1505,12 +1661,16 @@ function maintenanceFormModal(id, prefill){
       <div class="field"><label>Tipo</label><select class="select" id="f-type"><option value="preventiva" ${(m?.type==="preventiva"||(!m&&prefill))?"selected":""}>Preventiva</option><option value="corretiva" ${m?.type==="corretiva"?"selected":""}>Corretiva</option></select></div>
       <div class="field"><label>Data prevista</label><input class="input" type="date" id="f-date" value="${m?.scheduledDate||preDate||todayISO()}"></div>
     </div>
+    <div class="field-row">
+      <div class="field"><label>Custo (R$)</label><input class="input" type="number" step="0.01" min="0" id="f-cost" value="${m?.cost??""}" placeholder="0,00"></div>
+      <div class="field"><label>Oficina/Fornecedor</label><input class="input" id="f-provider" value="${escapeHtml(m?.provider||"")}" placeholder="Opcional"></div>
+    </div>
     <div class="field"><label><input type="checkbox" id="f-now" ${(!m)?"":""}> Colocar equipamento em manutenção agora</label></div>
     <div class="field"><label>Observações</label><textarea class="textarea" id="f-notes">${escapeHtml(m?.notes||"")}</textarea></div>
   `, `<button class="btn btn-secondary" data-action="close-modal">Cancelar</button><button class="btn btn-primary" id="save-maintenance">${m?"Salvar":"Registrar"}</button>`,
   { onMount(){
       $("#save-maintenance").addEventListener("click", async ()=>{
-        const data = { equipmentId:$("#f-eq").value, type:$("#f-type").value, scheduledDate:$("#f-date").value, notes:$("#f-notes").value.trim() };
+        const data = { equipmentId:$("#f-eq").value, type:$("#f-type").value, scheduledDate:$("#f-date").value, cost: $("#f-cost").value!==""?Number($("#f-cost").value):null, provider: $("#f-provider").value.trim(), notes:$("#f-notes").value.trim() };
         await saveDoc("maintenance", m?.id, data);
         if($("#f-now").checked) await saveDoc("equipment", data.equipmentId, {status:"manutencao"});
         closeModal(); toast(m?"Manutenção atualizada.":"Manutenção registrada.","ok");
@@ -1904,6 +2064,10 @@ function renderRelatorios(){
   const receivables = STATE.payments.filter(p=>paymentComputedStatus(p)!=="pago").sort((a,b)=>a.dueDate.localeCompare(b.dueDate)).slice(0,5);
   const payables = STATE.expenses.filter(e=>expenseComputedStatus(e)!=="pago").sort((a,b)=>(a.date||"").localeCompare(b.date||"")).slice(0,5);
   const boletos = STATE.payments.filter(p=>p.method==="boleto").sort((a,b)=>b.dueDate.localeCompare(a.dueDate));
+  const maintCostByEq = {};
+  STATE.maintenance.forEach(m=>{ if(m.cost) maintCostByEq[m.equipmentId] = (maintCostByEq[m.equipmentId]||0) + Number(m.cost); });
+  const maintCostRows = Object.entries(maintCostByEq).sort((a,b)=>b[1]-a[1]);
+  const maintCostTotal = Object.values(maintCostByEq).reduce((s,v)=>s+v,0);
 
   view.innerHTML = `
     <div class="grid-2" style="margin-bottom:16px">
@@ -1965,6 +2129,13 @@ function renderRelatorios(){
       ${boletos.length? `<div class="table-wrap" style="border:none;border-radius:0"><table><thead><tr><th>Cliente</th><th>Descrição</th><th>Vencimento</th><th>Status</th><th class="num">Valor</th></tr></thead><tbody>
         ${boletos.map(p=>{ const meta = paymentStatusMeta(paymentComputedStatus(p)); return `<tr><td>${escapeHtml(clientName(p.clientId))}</td><td class="cell-sub">${escapeHtml(p.description||"")}</td><td class="tabular">${fmtDate(p.dueDate)}</td><td><span class="badge ${meta.cls}"><span class="dot"></span>${meta.label}</span></td><td class="num tabular">${fmtMoney(p.amount)}</td></tr>`; }).join("")}
       </tbody></table></div>` : emptyState("Nenhum boleto gerado","Faturas com forma de pagamento Boleto aparecem aqui.")}
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-pad"><h3 class="section-title">Custos de manutenção</h3><p class="hint">Total registrado por equipamento, com base no custo informado em cada manutenção.</p></div>
+      ${maintCostRows.length? `<div class="table-wrap" style="border:none;border-radius:0"><table><thead><tr><th>Equipamento</th><th class="num">Total gasto</th></tr></thead><tbody>
+        ${maintCostRows.map(([eid,v])=>`<tr><td class="cell-title">${escapeHtml(equipmentName(eid))}</td><td class="num tabular">${fmtMoney(v)}</td></tr>`).join("")}
+      </tbody></table></div>
+      <div class="card-pad" style="padding-top:10px"><p class="hint">Total geral: <b class="tabular" style="color:var(--ink)">${fmtMoney(maintCostTotal)}</b></p></div>` : emptyState("Nenhum custo de manutenção registrado","Informe o custo ao registrar uma manutenção para ver o total aqui.")}
     </div>
   `;
 }
@@ -2754,6 +2925,11 @@ function handleAction(action, id){
     case "delete-client": confirmDialog("Excluir este cliente? Contratos e faturas vinculados permanecem no histórico.", ()=>deleteDoc("clients",id).then(()=>toast("Cliente excluído.","ok"))); break;
     case "view-client": clientDetailModal(id); break;
     case "go-financeiro": navigate("financeiro"); break;
+    case "go-relatorios": navigate("relatorios"); break;
+    case "go-clientes": navigate("clientes"); break;
+    case "go-equipamentos": navigate("equipamentos"); break;
+    case "go-manutencao": navigate("manutencao"); break;
+    case "go-agenda": navigate("agenda"); break;
     case "cal-prev": CAL_MONTH.setMonth(CAL_MONTH.getMonth()-1); renderCalendar(); break;
     case "cal-next": CAL_MONTH.setMonth(CAL_MONTH.getMonth()+1); renderCalendar(); break;
     case "cal-today": CAL_MONTH = new Date(); renderCalendar(); break;
@@ -2790,6 +2966,7 @@ async function boot(user){
   $("#menu-toggle").addEventListener("click", ()=>{ $("#sidebar").classList.toggle("open"); $("#backdrop").classList.toggle("open"); });
   $("#backdrop").addEventListener("click", closeSidebarMobile);
   $("#global-search-btn").addEventListener("click", globalSearchModal);
+  $("#alerts-btn").addEventListener("click", alertsModal);
   document.addEventListener("keydown", (e)=>{
     if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==="k"){ e.preventDefault(); globalSearchModal(); }
   });
