@@ -7,7 +7,7 @@
 <meta name="description" content="Locarion é o sistema de gestão para locadoras de equipamentos de construção civil: contratos, agenda de retirada e devolução em obra, financeiro e clientes em um só lugar.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -17,16 +17,16 @@
   --bg:#F6F7FC; --surface:#FFFFFF; --surface-2:#EEF0F9;
   --border:#E3E5F1; --border-strong:#CDD1E6;
   --ink:#10142A; --ink-2:#545B74; --ink-muted:#8A90A8;
-  --accent:#2568C8; --accent-ink:#FFFFFF; --accent-hover:#1B54A8; --accent-soft:#E7EFFB; --accent-soft-ink:#1D4E8C;
-  --amber:#DA8A11; --amber-soft:#FBF0DC; --amber-ink:#8A5B08;
-  --purple:#6E4FE0; --purple-soft:#EEEAFC; --purple-ink:#5539C4;
+  --accent:#1E3A5F; --accent-ink:#FFFFFF; --accent-hover:#16304C; --accent-soft:#E8ECF2; --accent-soft-ink:#1E3A5F;
+  --amber:#F2994A; --amber-soft:#FDEEDD; --amber-ink:#9C5B12;
+  --cta:#F2994A; --cta-ink:#1E3A5F; --cta-hover:#E0872F;
   --good:#127A2E; --good-bg:#E3F6EA;
   --radius-sm:9px; --radius-md:14px; --radius-lg:20px;
   --shadow-sm:0 2px 10px rgba(16,20,42,.06);
   --shadow-md:0 14px 34px rgba(16,20,42,.11);
   --shadow-lg:0 30px 70px -18px rgba(9,12,28,.45);
   --font-display:'Sora',system-ui,-apple-system,sans-serif;
-  --font-body:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+  --font-body:'Inter',system-ui,-apple-system,sans-serif;
   color-scheme:light;
 }
 *,*::before,*::after{box-sizing:border-box}
@@ -37,8 +37,8 @@ p{margin:0}
 a{color:inherit; text-decoration:none}
 .wrap{max-width:1160px; margin:0 auto; padding:0 24px}
 .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:13px 23px; border-radius:var(--radius-sm); font-weight:600; font-size:15px; cursor:pointer; border:1px solid transparent; transition:transform .15s ease, background .15s ease, box-shadow .15s ease}
-.btn-primary{background:var(--accent); color:var(--accent-ink); box-shadow:0 10px 24px -8px rgba(37,104,200,.55)}
-.btn-primary:hover{background:var(--accent-hover); transform:translateY(-1px)}
+.btn-primary{background:var(--cta); color:var(--cta-ink); box-shadow:0 10px 24px -8px rgba(242,153,74,.45)}
+.btn-primary:hover{background:var(--cta-hover); transform:translateY(-1px)}
 .btn-ghost{background:transparent; color:var(--ink); border-color:var(--border-strong)}
 .btn-ghost:hover{background:var(--surface-2)}
 .btn-block{width:100%}
@@ -47,7 +47,7 @@ a{color:inherit; text-decoration:none}
 header.nav{position:sticky; top:0; z-index:30; background:rgba(246,247,252,.82); backdrop-filter:blur(10px); border-bottom:1px solid var(--border)}
 .nav-inner{display:flex; align-items:center; justify-content:space-between; padding:16px 24px}
 .brand{display:flex; align-items:center; gap:9px; font-family:var(--font-display); font-weight:700; font-size:18px}
-.brand-mark{width:28px; height:28px; border-radius:8px; background:linear-gradient(155deg,var(--accent),#173F82); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px -3px rgba(37,104,200,.6)}
+.brand-mark{width:28px; height:28px; border-radius:8px; background:var(--accent); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px -3px rgba(30,58,95,.5)}
 .nav-links{display:flex; align-items:center; gap:30px; font-size:14.5px; font-weight:500; color:var(--ink-2)}
 .nav-links a{position:relative}
 .nav-links a:hover{color:var(--ink)}
@@ -56,8 +56,8 @@ header.nav{position:sticky; top:0; z-index:30; background:rgba(246,247,252,.82);
 
 /* hero (dark) */
 .hero{position:relative; padding:96px 0 120px; overflow:hidden; background:
-    radial-gradient(880px 460px at 12% -8%, rgba(37,104,200,.40), transparent 62%),
-    radial-gradient(640px 420px at 100% 6%, rgba(218,138,17,.16), transparent 58%),
+    radial-gradient(880px 460px at 12% -8%, rgba(30,58,95,.55), transparent 62%),
+    radial-gradient(640px 420px at 100% 6%, rgba(242,153,74,.18), transparent 58%),
     linear-gradient(180deg,#0A0F20 0%, #0D142C 55%, #0F1730 100%);
 }
 .hero::before{content:""; position:absolute; inset:0;
@@ -71,7 +71,7 @@ header.nav{position:sticky; top:0; z-index:30; background:rgba(246,247,252,.82);
 }
 .hero-inner{position:relative; z-index:1; display:grid; grid-template-columns:1.05fr .95fr; gap:56px; align-items:center}
 @media (max-width:900px){ .hero-inner{grid-template-columns:1fr} }
-.eyebrow{display:inline-flex; align-items:center; gap:7px; background:rgba(218,138,17,.16); border:1px solid rgba(218,138,17,.35); color:#F3C069; font-size:13px; font-weight:600; padding:6px 13px; border-radius:99px; margin-bottom:20px}
+.eyebrow{display:inline-flex; align-items:center; gap:7px; background:rgba(242,153,74,.14); border:1px solid rgba(242,153,74,.35); color:#F7B978; font-size:13px; font-weight:600; padding:6px 13px; border-radius:99px; margin-bottom:20px}
 .hero h1{font-size:47px; letter-spacing:-.02em; line-height:1.12; color:#fff}
 @media (max-width:520px){ .hero h1{font-size:33px} }
 .hero p.lead{margin-top:20px; font-size:17.5px; color:#B7BEDA; max-width:520px}
@@ -119,7 +119,7 @@ section{padding:80px 0}
 .feature .ic{width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:16px}
 .ic-blue{background:var(--accent-soft); color:var(--accent-soft-ink)}
 .ic-amber{background:var(--amber-soft); color:var(--amber-ink)}
-.ic-purple{background:var(--purple-soft); color:var(--purple-ink)}
+
 .feature h3{font-size:17px; margin-bottom:8px}
 .feature p{color:var(--ink-2); font-size:14.5px}
 
@@ -162,7 +162,7 @@ section{padding:80px 0}
 /* final cta */
 .final-cta-wrap{padding:0 0 90px}
 .final-cta{position:relative; overflow:hidden; background:linear-gradient(155deg,#0F1730,#0A0F20); border-radius:var(--radius-lg); padding:60px 40px; text-align:center; color:#fff}
-.final-cta::before{content:""; position:absolute; inset:0; background:radial-gradient(520px 300px at 85% 0%, rgba(218,138,17,.20), transparent 60%), radial-gradient(520px 300px at 10% 100%, rgba(37,104,200,.30), transparent 60%); pointer-events:none}
+.final-cta::before{content:""; position:absolute; inset:0; background:radial-gradient(520px 300px at 85% 0%, rgba(242,153,74,.22), transparent 60%), radial-gradient(520px 300px at 10% 100%, rgba(30,58,95,.45), transparent 60%); pointer-events:none}
 .final-cta h2{color:#fff; font-size:31px; position:relative}
 .final-cta p{color:#AEB4D6; margin-top:12px; max-width:480px; margin-left:auto; margin-right:auto; position:relative}
 .final-cta .hero-actions{justify-content:center; margin-top:28px; position:relative}
@@ -187,7 +187,7 @@ footer .brand-mark{width:22px; height:22px}
 <header class="nav">
   <div class="wrap nav-inner">
     <div class="brand">
-      <div class="brand-mark"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="9" width="11" height="11" rx="2" fill="white" opacity=".55"/><rect x="9" y="4" width="11" height="11" rx="2" fill="white"/></svg></div>
+      <div class="brand-mark"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M8.4 6 L9 6 Q10.4 6 10.4 7.4 L10.4 13.6 L14.8 13.6 Q16.2 13.6 16.2 15 L16.2 15.6 Q16.2 17 14.8 17 L8.4 17 Q7 17 7 15.6 L7 7.4 Q7 6 8.4 6 Z" fill="white"/><circle cx="13.3" cy="5.4" r="1.5" fill="#F2994A"/></svg></div>
       Locarion
     </div>
     <nav class="nav-links">
@@ -239,7 +239,7 @@ footer .brand-mark{width:22px; height:22px}
     <div class="equip-row">
       <div class="equip-item"><div class="ic ic-blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4v8l5 3"/></svg></div>Betoneiras</div>
       <div class="equip-item"><div class="ic ic-amber"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V9M4 9l8-5 8 5M4 9h16M8 21V9M12 21V9M16 21V9M20 21V9"/></svg></div>Andaimes</div>
-      <div class="equip-item"><div class="ic ic-purple"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h7l-1 8 11-13h-7l1-7Z"/></svg></div>Geradores</div>
+      <div class="equip-item"><div class="ic ic-blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h7l-1 8 11-13h-7l1-7Z"/></svg></div>Geradores</div>
       <div class="equip-item"><div class="ic ic-blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="17" r="3"/><circle cx="17" cy="17" r="3"/><path d="M7 17h6l3-8h4M11 9H4"/></svg></div>Compactadores</div>
     </div>
   </div>
@@ -264,7 +264,7 @@ footer .brand-mark{width:22px; height:22px}
         <p>Gere contratos a partir de modelo próprio, controle assinaturas e converta orçamentos em contratos com um clique — prontos para construtoras e empreiteiras.</p>
       </div>
       <div class="feature">
-        <div class="ic ic-purple"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="6" width="19" height="13" rx="2"/><path d="M2.5 10h19"/></svg></div>
+        <div class="ic ic-blue"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="6" width="19" height="13" rx="2"/><path d="M2.5 10h19"/></svg></div>
         <h3>Financeiro completo</h3>
         <p>Faturas, contas a pagar e receber, despesas e relatórios — saiba exatamente quanto entra e sai em cada obra.</p>
       </div>
@@ -279,7 +279,7 @@ footer .brand-mark{width:22px; height:22px}
         <p>Histórico de locações, contatos e origem de cada construtora, empreiteira ou cliente centralizados.</p>
       </div>
       <div class="feature">
-        <div class="ic ic-purple"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.3 2.3L16 10"/></svg></div>
+        <div class="ic ic-blue"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.3 2.3L16 10"/></svg></div>
         <h3>Manutenção preventiva</h3>
         <p>Acompanhe manutenções agendadas e concluídas para reduzir imprevistos com equipamentos que trabalham pesado na obra.</p>
       </div>
@@ -384,7 +384,7 @@ footer .brand-mark{width:22px; height:22px}
 
 <footer>
   <div class="wrap">
-    <div class="brand"><div class="brand-mark"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="4" y="9" width="11" height="11" rx="2" fill="white" opacity=".55"/><rect x="9" y="4" width="11" height="11" rx="2" fill="white"/></svg></div>Locarion</div>
+    <div class="brand"><div class="brand-mark"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M8.4 6 L9 6 Q10.4 6 10.4 7.4 L10.4 13.6 L14.8 13.6 Q16.2 13.6 16.2 15 L16.2 15.6 Q16.2 17 14.8 17 L8.4 17 Q7 17 7 15.6 L7 7.4 Q7 6 8.4 6 Z" fill="white"/><circle cx="13.3" cy="5.4" r="1.5" fill="#F2994A"/></svg></div>Locarion</div>
     © <span id="year"></span> Locarion. Todos os direitos reservados.
   </div>
 </footer>
