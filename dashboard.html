@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LocaFlow</title>
+<title>Locarion</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -316,7 +316,7 @@ td.num{text-align:right}
   <aside class="sidebar" id="sidebar">
     <div class="brand">
       <div class="brand-mark"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="4" y="9" width="11" height="11" rx="2" fill="white" opacity=".55"/><rect x="9" y="4" width="11" height="11" rx="2" fill="white"/></svg></div>
-      <div class="brand-name">LocaFlow</div>
+      <div class="brand-name">Locarion</div>
     </div>
     <div class="nav-scroll">
       <div>
@@ -346,7 +346,7 @@ td.num{text-align:right}
       </div>
       <div id="nav-group-admin" hidden>
         <div class="nav-group-label">Administração</div>
-        <button class="nav-item" data-nav="admin"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 3 6v6c0 5 4 8.5 9 10 5-1.5 9-5 9-10V6l-9-4Z"/><path d="m9 12 2 2 4-4"/></svg>Clientes LocaFlow</button>
+        <button class="nav-item" data-nav="admin"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 3 6v6c0 5 4 8.5 9 10 5-1.5 9-5 9-10V6l-9-4Z"/><path d="m9 12 2 2 4-4"/></svg>Clientes Locarion</button>
       </div>
       <div>
         <div class="nav-group-label">Conta</div>
@@ -392,7 +392,7 @@ td.num{text-align:right}
 <script src="firebase-config.js"></script>
 <script>
 /* =========================================================================
-   LocaFlow — protótipo funcional
+   Locarion — protótipo funcional
    Dados vivem na capacidade "db" do artifact (compartilhados, persistentes).
    ========================================================================= */
 
@@ -442,7 +442,7 @@ _______________________________________
 _______________________________________
 {{cliente_nome}} (LOCATÁRIO)`;
 
-const STATE = { equipment:[], clients:[], contracts:[], maintenance:[], payments:[], expenses:[], company:{name:"LocaFlow", plan:"profissional", contractTemplate:DEFAULT_CONTRACT_TEMPLATE} };
+const STATE = { equipment:[], clients:[], contracts:[], maintenance:[], payments:[], expenses:[], company:{name:"Locarion", plan:"profissional", contractTemplate:DEFAULT_CONTRACT_TEMPLATE} };
 const LOADED = { equipment:false, clients:false, contracts:false, maintenance:false, payments:false, expenses:false, company:false };
 const FILTERS = {
   equipamentos:{ q:"", status:"todos", cat:"todos", kind:"equipamento" },
@@ -703,12 +703,12 @@ function alertsModal(){
 function applyTheme(mode){
   if(mode==="system") document.documentElement.removeAttribute("data-theme");
   else document.documentElement.setAttribute("data-theme", mode);
-  try{ localStorage.setItem("locaflow-theme", mode); }catch(e){}
+  try{ localStorage.setItem("locarion-theme", mode); }catch(e){}
   $all("#theme-toggle button").forEach(b=> b.classList.toggle("active", b.dataset.themeOpt===mode));
 }
 function initTheme(){
   let mode = "system";
-  try{ mode = localStorage.getItem("locaflow-theme") || "system"; }catch(e){}
+  try{ mode = localStorage.getItem("locarion-theme") || "system"; }catch(e){}
   applyTheme(mode);
 }
 
@@ -790,7 +790,7 @@ function chartLegend(items){
 }
 
 /* ---------------- router ---------------- */
-const NAV_TITLES = { dashboard:"Dashboard", historico:"Histórico", equipamentos:"Equipamentos", disponiveis:"Disponíveis", localizar:"Localizar equipamentos", contratos:"Contratos", orcamentos:"Orçamentos", agenda:"Agenda", manutencao:"Manutenção", financeiro:"Financeiro", receitas:"Receitas", contaspr:"Contas a pagar e receber", clientes:"Clientes", relatorios:"Relatórios", integracoes:"Integrações", juridico:"Jurídico", config:"Configurações", admin:"Clientes LocaFlow" };
+const NAV_TITLES = { dashboard:"Dashboard", historico:"Histórico", equipamentos:"Equipamentos", disponiveis:"Disponíveis", localizar:"Localizar equipamentos", contratos:"Contratos", orcamentos:"Orçamentos", agenda:"Agenda", manutencao:"Manutenção", financeiro:"Financeiro", receitas:"Receitas", contaspr:"Contas a pagar e receber", clientes:"Clientes", relatorios:"Relatórios", integracoes:"Integrações", juridico:"Jurídico", config:"Configurações", admin:"Clientes Locarion" };
 let IS_ADMIN = false;
 let ADMIN_USERS = [];
 let ADMIN_LOADED = false;
@@ -824,7 +824,7 @@ function setTopbarActions(html){ $("#topbar-actions").innerHTML = html; }
 function closeSidebarMobile(){ $("#sidebar").classList.remove("open"); $("#backdrop").classList.remove("open"); }
 
 function loadingView(){
-  return `<div class="empty"><div class="hint">Carregando dados do LocaFlow…</div></div>`;
+  return `<div class="empty"><div class="hint">Carregando dados do Locarion…</div></div>`;
 }
 function allLoaded(){ return Object.values(LOADED).every(Boolean); }
 
@@ -848,7 +848,7 @@ function renderDashboard(){
       </div>`;
     view.innerHTML = `
       <div class="onboard-hero">
-        <h2>Bem-vindo ao LocaFlow</h2>
+        <h2>Bem-vindo ao Locarion</h2>
         <p>Sua conta ainda está vazia. Siga os passos abaixo para configurar o essencial e começar a controlar locações, contratos e manutenções em um só lugar.</p>
       </div>
       <div class="onboard-steps">
@@ -1466,7 +1466,7 @@ function fillContractTemplate(template, c){
   const days = c && c.startDate && c.endDate ? Math.max(daysBetween(c.startDate,c.endDate),1) : null;
   const map = {
     "{{codigo}}": c?.code || "[código]",
-    "{{empresa_nome}}": STATE.company.name || "LocaFlow",
+    "{{empresa_nome}}": STATE.company.name || "Locarion",
     "{{empresa_cnpj}}": STATE.company.cnpj || "[CNPJ da locadora]",
     "{{empresa_telefone}}": STATE.company.phone || "[telefone da locadora]",
     "{{empresa_endereco}}": STATE.company.address || "[endereço da locadora]",
@@ -1504,7 +1504,7 @@ function contractDocModal(id){
       });
       $("#download-contract-doc").addEventListener("click", ()=>{
         try{
-          downloadBlob(`contrato-${c?.code||"locaflow"}.txt`, new Blob([text],{type:"text/plain;charset=utf-8"}));
+          downloadBlob(`contrato-${c?.code||"locarion"}.txt`, new Blob([text],{type:"text/plain;charset=utf-8"}));
           toast("Contrato baixado.","ok");
         }catch(err){ toast("Não foi possível baixar agora.","err"); }
       });
@@ -1877,7 +1877,7 @@ function exportFinanceCSV(){
   STATE.payments.forEach(p=> rows.push([clientName(p.clientId), p.description||"", p.dueDate, PAYMENT_METHODS[p.method]||p.method, paymentStatusMeta(paymentComputedStatus(p)).label, (p.amount||0).toFixed(2).replace(".",",")]));
   const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(";")).join("\r\n");
   try{
-    downloadBlob(`locaflow-financeiro-${todayISO()}.csv`, new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"}));
+    downloadBlob(`locarion-financeiro-${todayISO()}.csv`, new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"}));
     toast("CSV exportado.","ok");
   }catch(err){
     toast("Não foi possível exportar agora.","err");
@@ -2140,7 +2140,7 @@ function renderRelatorios(){
   `;
 }
 
-/* ======================= ADMINISTRAÇÃO (LocaFlow) ======================= */
+/* ======================= ADMINISTRAÇÃO (Locarion) ======================= */
 const ADMIN_PLAN_LABEL = { profissional:"Profissional", enterprise:"Enterprise" };
 const ADMIN_STATUS_META = {
   active:{label:"Ativa",cls:"st-good"},
@@ -2157,7 +2157,7 @@ function renderAdmin(){
   setTopbarActions("");
   const view = $("#view");
   if(!IS_ADMIN){
-    view.innerHTML = emptyState("Acesso restrito","Esta área é exclusiva da administração do LocaFlow.");
+    view.innerHTML = emptyState("Acesso restrito","Esta área é exclusiva da administração do Locarion.");
     return;
   }
   if(!ADMIN_LOADED){
@@ -2181,7 +2181,7 @@ function renderAdmin(){
     </tr>`;
   }).join("");
   view.innerHTML = `
-    <div class="card" style="margin-bottom:16px"><div class="card-pad"><h3 class="section-title">Clientes do LocaFlow</h3><p class="hint">Gerencie plano e status de assinatura de qualquer conta cadastrada no sistema.</p></div></div>
+    <div class="card" style="margin-bottom:16px"><div class="card-pad"><h3 class="section-title">Clientes do Locarion</h3><p class="hint">Gerencie plano e status de assinatura de qualquer conta cadastrada no sistema.</p></div></div>
     ${ADMIN_USERS.length ? `<div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Plano</th><th>Alterar status</th><th>Status atual</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>` : emptyState("Nenhum cliente cadastrado ainda","Assim que alguém assinar, a conta aparece aqui.")}
   `;
 }
@@ -2255,7 +2255,7 @@ function renderConfigGeralBody(){
       </div>
       <div class="card card-pad">
         <h3 class="section-title" style="margin-bottom:12px">Aparência</h3>
-        <p class="hint" style="margin-bottom:10px">Escolha como o LocaFlow aparece para você. Ajustável também na barra lateral.</p>
+        <p class="hint" style="margin-bottom:10px">Escolha como o Locarion aparece para você. Ajustável também na barra lateral.</p>
         <div class="theme-toggle" id="theme-toggle-2" style="max-width:280px">
           <button data-theme-opt="light">Claro</button><button data-theme-opt="dark">Escuro</button><button data-theme-opt="system">Sistema</button>
         </div>
@@ -2286,7 +2286,7 @@ function renderConfigGeralBody(){
     </div>
     <div class="card card-pad">
       <h3 class="section-title" style="margin-bottom:4px">Módulo Financeiro</h3>
-      <p class="hint" style="margin-bottom:12px">${co.financePassword? "Protegido por senha. Só quem souber a senha acessa a aba Financeiro nesta sessão." : "Sem proteção — qualquer pessoa com acesso ao LocaFlow pode ver o Financeiro."}</p>
+      <p class="hint" style="margin-bottom:12px">${co.financePassword? "Protegido por senha. Só quem souber a senha acessa a aba Financeiro nesta sessão." : "Sem proteção — qualquer pessoa com acesso ao Locarion pode ver o Financeiro."}</p>
       <div class="field-row" style="max-width:480px">
         <div class="field"><label>${co.financePassword?"Nova senha":"Definir senha"}</label><input class="input" type="password" id="cfg-fin-pass" placeholder="Deixe em branco para não alterar"></div>
         <div style="display:flex;align-items:flex-end;gap:8px;padding-bottom:2px">
@@ -2677,7 +2677,7 @@ function renderOrcamentoRapido(){
     const cl = $("#qr-client").value ? byId(STATE.clients, $("#qr-client").value) : null;
     let total = 0;
     const lines = items.map(it=>{ const eq=byId(STATE.equipment,it.equipmentId); const rate = eq && isEquipKind(eq) ? bestRateForDays(eq, it.days) : {total:Number(eq?.dailyRate||0)*it.days, label:"diária"}; const t = rate.total*it.qty; total += t; return `- ${eq?.name||"—"} · ${rate.label} · ${it.days} dia(s) x ${it.qty} un. = ${fmtMoney(t)}`; });
-    return `ORÇAMENTO RÁPIDO — ${STATE.company.name||"LocaFlow"}\nData: ${fmtDate(todayISO())}\nCliente: ${cl?cl.name:"não informado"}\n\nItens:\n${lines.join("\n")||"(nenhum item)"}\n\nTotal estimado: ${fmtMoney(total)}`;
+    return `ORÇAMENTO RÁPIDO — ${STATE.company.name||"Locarion"}\nData: ${fmtDate(todayISO())}\nCliente: ${cl?cl.name:"não informado"}\n\nItens:\n${lines.join("\n")||"(nenhum item)"}\n\nTotal estimado: ${fmtMoney(total)}`;
   }
   $("#qr-add").addEventListener("click", ()=>{
     const eqId = $("#qr-eq").value;
@@ -2800,20 +2800,20 @@ function renderIntegracoes(){
     {name:"WhatsApp Business", desc:"Envie lembretes de vencimento e confirmações de retirada/devolução direto no WhatsApp do cliente.", badge:"Em breve"},
     {name:"Boletos e Pix", desc:"Geração de boletos e cobranças Pix com baixa automática, via integração Asaas acima.", badge:co.asaasApiKey?"Conectado":"Requer Asaas"},
     {name:"Exportação contábil", desc:"Exporte lançamentos de receitas e despesas em formato compatível com seu sistema de contabilidade.", badge:"Disponível no Enterprise"},
-    {name:"Google Agenda", desc:"Sincronize retiradas e devoluções da Agenda do LocaFlow com sua agenda pessoal.", badge:"Em breve"},
-    {name:"API aberta", desc:"Conecte o LocaFlow a outros sistemas da sua operação via API REST.", badge:"Disponível no Enterprise"},
+    {name:"Google Agenda", desc:"Sincronize retiradas e devoluções da Agenda do Locarion com sua agenda pessoal.", badge:"Em breve"},
+    {name:"API aberta", desc:"Conecte o Locarion a outros sistemas da sua operação via API REST.", badge:"Disponível no Enterprise"},
   ];
   view.innerHTML = `
     <div class="card card-pad" style="margin-bottom:16px;max-width:620px">
       <h3 class="section-title" style="margin-bottom:4px">Integração Asaas</h3>
-      <p class="hint" style="margin-bottom:12px">Conecte sua conta Asaas para emitir boletos, cobranças Pix, cartão de crédito e notas fiscais diretamente pelo LocaFlow.</p>
+      <p class="hint" style="margin-bottom:12px">Conecte sua conta Asaas para emitir boletos, cobranças Pix, cartão de crédito e notas fiscais diretamente pelo Locarion.</p>
       <div class="field"><label>API Key do Asaas</label><input class="input" id="asaas-key" type="password" value="${escapeHtml(co.asaasApiKey||"")}" placeholder="Cole sua API Key aqui…"></div>
       <p class="hint" style="margin-bottom:10px">Encontre sua API Key em: Asaas → Minha Conta → Integrações → API Key</p>
       <label style="display:flex;align-items:center;gap:7px;font-weight:500;margin-bottom:12px;font-size:13px"><input type="checkbox" id="asaas-sandbox" ${co.asaasSandbox?"checked":""}> Sandbox (testes)</label>
       <button class="btn btn-primary btn-sm" id="asaas-connect">${co.asaasApiKey?"Atualizar conexão":"Conectar com Asaas"}</button>
       ${co.asaasApiKey? `<span class="badge st-good" style="margin-left:8px"><span class="dot"></span>Conectado</span>` : ""}
     </div>
-    <p class="hint" style="margin-bottom:16px;max-width:640px">Outras integrações conectam o LocaFlow a mais ferramentas da sua locadora. As marcadas como Enterprise fazem parte do plano Enterprise (multi-filial, integrações sob medida e suporte dedicado).</p>
+    <p class="hint" style="margin-bottom:16px;max-width:640px">Outras integrações conectam o Locarion a mais ferramentas da sua locadora. As marcadas como Enterprise fazem parte do plano Enterprise (multi-filial, integrações sob medida e suporte dedicado).</p>
     <div class="grid-3">
       ${integrations.map(i=>{ const cls = i.badge==='Em breve'?'st-neutral':i.badge==='Conectado'?'st-good':i.badge==='Requer Asaas'?'st-warning':'st-accent'; return `<div class="card card-pad">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px">

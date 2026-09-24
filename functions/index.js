@@ -1,5 +1,5 @@
 /* =========================================================================
-   LocaFlow — Cloud Functions (checkout e webhook do Asaas)
+   Locarion — Cloud Functions (checkout e webhook do Asaas)
    -------------------------------------------------------------------------
    Segredos usados (nunca ficam no código, só no Secret Manager do Firebase):
      ASAAS_API_KEY        -> chave de API do Asaas (header "access_token")
@@ -32,8 +32,8 @@ const ASAAS_BASE_URL = "https://api.asaas.com/v3";
 const SITE_URL = process.env.SITE_URL || "https://locaflow-fc924.web.app";
 
 const PLANS = {
-  profissional: { name: "LocaFlow — Profissional", value: 97.0 },
-  enterprise: { name: "LocaFlow — Enterprise", value: 197.0 },
+  profissional: { name: "Locarion — Profissional", value: 97.0 },
+  enterprise: { name: "Locarion — Enterprise", value: 197.0 },
 };
 
 function nextDueDate() {
@@ -81,7 +81,7 @@ exports.createAsaasCheckout = onCall(
       items: [
         {
           name: planInfo.name,
-          description: "Assinatura mensal do LocaFlow",
+          description: "Assinatura mensal do Locarion",
           quantity: 1,
           value: planInfo.value,
         },
@@ -197,7 +197,7 @@ async function assertIsAdmin(request) {
   }
   const snap = await db.collection("users").doc(request.auth.uid).get();
   if (!snap.exists || snap.data().isAdmin !== true) {
-    throw new HttpsError("permission-denied", "Só a administração do LocaFlow pode fazer isso.");
+    throw new HttpsError("permission-denied", "Só a administração do Locarion pode fazer isso.");
   }
 }
 
@@ -205,7 +205,7 @@ const VALID_PLANS = ["profissional", "enterprise"];
 const VALID_STATUSES = ["active", "inactive", "canceled"];
 
 /* -------------------------------------------------------------------------
-   adminListUsers — lista todas as contas (clientes) cadastradas no LocaFlow,
+   adminListUsers — lista todas as contas (clientes) cadastradas no Locarion,
    com plano e status de assinatura, pra tela de administração.
    ------------------------------------------------------------------------- */
 exports.adminListUsers = onCall(

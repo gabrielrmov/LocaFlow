@@ -1,5 +1,5 @@
 /* =========================================================================
-   LocaFlow — configuração do Firebase (Auth + Firestore)
+   Locarion — configuração do Firebase (Auth + Firestore)
    -------------------------------------------------------------------------
    1) Crie um projeto gratuito em https://console.firebase.google.com
    2) Em "Authentication" > "Sign-in method", ative o provedor Google.

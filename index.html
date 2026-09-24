@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LocaFlow — Gestão completa para locadoras de equipamentos</title>
-<meta name="description" content="LocaFlow é o sistema de gestão para empresas de locação de equipamentos: contratos, agenda, financeiro e clientes em um só lugar.">
+<title>Locarion — Gestão de locação de equipamentos para construção civil</title>
+<meta name="description" content="Locarion é o sistema de gestão para locadoras de equipamentos de construção civil: contratos, agenda de retirada e devolução em obra, financeiro e clientes em um só lugar.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -50,7 +50,7 @@ header.nav{position:sticky; top:0; z-index:20; background:rgba(245,246,251,.85);
 @media (max-width:720px){ .nav-links{display:none} }
 
 /* hero */
-.hero{padding:88px 0 64px}
+.hero{padding:88px 0 48px}
 .hero-inner{display:grid; grid-template-columns:1.05fr .95fr; gap:56px; align-items:center}
 @media (max-width:900px){ .hero-inner{grid-template-columns:1fr} }
 .eyebrow{display:inline-flex; align-items:center; gap:6px; background:var(--accent-soft); color:var(--accent-soft-ink); font-size:13px; font-weight:600; padding:6px 12px; border-radius:99px; margin-bottom:18px}
@@ -65,7 +65,9 @@ header.nav{position:sticky; top:0; z-index:20; background:rgba(245,246,251,.85);
 .tag-ok{background:var(--good-bg); color:var(--good); font-size:11.5px; font-weight:700; padding:3px 8px; border-radius:99px}
 
 /* logos / trust */
-.trust{padding:8px 0 56px; color:var(--ink-muted); font-size:13px; text-align:center}
+.trust{padding:0 0 56px; color:var(--ink-muted); font-size:13.5px; text-align:center}
+.trust .wrap{border-top:1px solid var(--border); padding-top:24px}
+.trust b{color:var(--ink-2); font-weight:600}
 
 /* sections */
 section{padding:72px 0}
@@ -140,7 +142,7 @@ footer{border-top:1px solid var(--border); padding:32px 0; text-align:center; co
   <div class="wrap nav-inner">
     <div class="brand">
       <div class="brand-mark"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="9" width="11" height="11" rx="2" fill="white" opacity=".55"/><rect x="9" y="4" width="11" height="11" rx="2" fill="white"/></svg></div>
-      LocaFlow
+      Locarion
     </div>
     <nav class="nav-links">
       <a href="#recursos">Recursos</a>
@@ -158,9 +160,9 @@ footer{border-top:1px solid var(--border); padding:32px 0; text-align:center; co
 <section class="hero">
   <div class="wrap hero-inner">
     <div>
-      <span class="eyebrow">Feito para locadoras de equipamentos</span>
-      <h1>Chega de planilha para controlar sua locadora</h1>
-      <p class="lead">O LocaFlow reúne equipamentos, contratos, agenda de retiradas/devoluções, financeiro e clientes em um só sistema — simples de usar no dia a dia da sua empresa.</p>
+      <span class="eyebrow">Feito para locação de equipamentos na construção civil</span>
+      <h1>Chega de planilha para controlar sua locadora de equipamentos de obra</h1>
+      <p class="lead">O Locarion reúne equipamentos, contratos, agenda de retiradas e devoluções em obra, financeiro e clientes em um só sistema — pensado para locadoras que atendem construtoras, empreiteiras e profissionais da construção civil.</p>
       <div class="hero-actions">
         <a href="#precos" class="btn btn-primary">Assinar agora</a>
         <a href="login.html" class="btn btn-ghost">Já tenho conta</a>
@@ -168,50 +170,54 @@ footer{border-top:1px solid var(--border); padding:32px 0; text-align:center; co
       <p class="hero-note">Cancele quando quiser. Sem cartão para começar a testar.</p>
     </div>
     <div class="hero-visual">
-      <div class="row"><span>Betoneira 400L — Cliente Silva</span><b class="tag-ok">Em uso</b></div>
-      <div class="row"><span>Andaime tubular 6m — Obra Central</span><b class="tag-ok">Em uso</b></div>
+      <div class="row"><span>Betoneira 400L — Construtora Silva</span><b class="tag-ok">Em obra</b></div>
+      <div class="row"><span>Andaime tubular 6m — Obra Edifício Central</span><b class="tag-ok">Em obra</b></div>
       <div class="row"><span>Gerador 5kVA</span><span style="color:var(--ink-muted)">Disponível</span></div>
       <div class="row" style="margin-bottom:0"><span>Contrato #0231 vence em 2 dias</span><span style="color:var(--accent); font-weight:600">Agenda</span></div>
     </div>
   </div>
 </section>
 
+<section class="trust">
+  <div class="wrap">Feito para locadoras de andaimes, betoneiras, geradores, compactadores e demais equipamentos de <b>construção civil</b></div>
+</section>
+
 <section id="recursos">
   <div class="wrap">
     <div class="section-head">
-      <h2>Tudo que a sua locadora precisa, em um lugar só</h2>
-      <p>Sem planilha, sem papel espalhado, sem perder o controle do que está alugado.</p>
+      <h2>Tudo que a sua locadora de equipamentos de obra precisa, em um lugar só</h2>
+      <p>Sem planilha, sem papel espalhado, sem perder o controle do que está alugado em cada canteiro de obra.</p>
     </div>
     <div class="grid-features">
       <div class="feature">
         <div class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
         <h3>Controle de equipamentos</h3>
-        <p>Cadastre seu inventário, acompanhe status (em uso, disponível, manutenção) e histórico de cada item.</p>
+        <p>Cadastre seu inventário de equipamentos de obra, acompanhe status (em uso, disponível, manutenção) e histórico de cada item.</p>
       </div>
       <div class="feature">
         <div class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/></svg></div>
         <h3>Contratos e orçamentos</h3>
-        <p>Gere contratos a partir de modelo próprio, controle assinaturas e converta orçamentos em contratos com um clique.</p>
+        <p>Gere contratos a partir de modelo próprio, controle assinaturas e converta orçamentos em contratos com um clique — prontos para construtoras e empreiteiras.</p>
       </div>
       <div class="feature">
         <div class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="6" width="19" height="13" rx="2"/><path d="M2.5 10h19"/></svg></div>
         <h3>Financeiro completo</h3>
-        <p>Faturas, contas a pagar e receber, despesas e relatórios — saiba exatamente quanto entra e sai.</p>
+        <p>Faturas, contas a pagar e receber, despesas e relatórios — saiba exatamente quanto entra e sai em cada obra.</p>
       </div>
       <div class="feature">
         <div class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg></div>
         <h3>Agenda de retiradas e devoluções</h3>
-        <p>Veja de forma visual o que sai e o que volta a cada dia, sem depender da memória de ninguém.</p>
+        <p>Veja de forma visual o que sai e o que volta de cada canteiro de obra, sem depender da memória de ninguém.</p>
       </div>
       <div class="feature">
         <div class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/></svg></div>
         <h3>Base de clientes</h3>
-        <p>Histórico de locações, contatos e origem de cada cliente centralizados.</p>
+        <p>Histórico de locações, contatos e origem de cada construtora, empreiteira ou cliente centralizados.</p>
       </div>
       <div class="feature">
         <div class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.3 2.3L16 10"/></svg></div>
         <h3>Manutenção preventiva</h3>
-        <p>Acompanhe manutenções agendadas e concluídas para reduzir imprevistos com equipamentos.</p>
+        <p>Acompanhe manutenções agendadas e concluídas para reduzir imprevistos com equipamentos que trabalham pesado na obra.</p>
       </div>
     </div>
   </div>
@@ -226,7 +232,7 @@ footer{border-top:1px solid var(--border); padding:32px 0; text-align:center; co
     <div class="steps">
       <div class="step"><h3>Escolha seu plano</h3><p>Selecione o plano ideal para o tamanho da sua operação.</p></div>
       <div class="step"><h3>Entre com sua conta Google</h3><p>Login rápido e seguro — sem senha para lembrar.</p></div>
-      <div class="step"><h3>Comece a gerenciar</h3><p>Cadastre equipamentos e clientes e já emita seu primeiro contrato.</p></div>
+      <div class="step"><h3>Comece a gerenciar</h3><p>Cadastre equipamentos e clientes e já emita seu primeiro contrato para a obra.</p></div>
     </div>
   </div>
 </section>
@@ -240,7 +246,7 @@ footer{border-top:1px solid var(--border); padding:32px 0; text-align:center; co
     <div class="plans">
       <div class="plan">
         <span class="plan-name">Profissional</span>
-        <p class="plan-desc">Para locadoras em crescimento.</p>
+        <p class="plan-desc">Para locadoras de equipamentos de obra em crescimento.</p>
         <div class="plan-price"><span class="num">R$ 97</span><span class="per">/mês</span></div>
         <ul class="plan-list">
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Equipamentos e contratos ilimitados</li>
@@ -252,7 +258,7 @@ footer{border-top:1px solid var(--border); padding:32px 0; text-align:center; co
       </div>
       <div class="plan featured">
         <span class="plan-name">Enterprise</span>
-        <p class="plan-desc">Para operações maiores e múltiplas filiais.</p>
+        <p class="plan-desc">Para operações maiores, com múltiplas filiais e obras simultâneas.</p>
         <div class="plan-price"><span class="num">R$ 197</span><span class="per">/mês</span></div>
         <ul class="plan-list">
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Tudo do Profissional</li>
@@ -274,7 +280,11 @@ footer{border-top:1px solid var(--border); padding:32px 0; text-align:center; co
     <div class="faq">
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">Preciso instalar algum programa?<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
-        <div class="faq-a">Não. O LocaFlow roda direto no navegador, em qualquer computador ou celular.</div>
+        <div class="faq-a">Não. O Locarion roda direto no navegador, em qualquer computador ou celular.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Dá para acompanhar equipamentos em várias obras ao mesmo tempo?<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-a">Sim. Você vê de forma centralizada o que está alugado, em qual obra e quando deve voltar, mesmo atendendo várias construtoras e canteiros ao mesmo tempo.</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">Como funciona o login?<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
@@ -295,8 +305,8 @@ footer{border-top:1px solid var(--border); padding:32px 0; text-align:center; co
 <section>
   <div class="wrap">
     <div class="final-cta">
-      <h2>Pronto para organizar sua locadora?</h2>
-      <p>Assine agora e comece a usar o LocaFlow hoje mesmo.</p>
+      <h2>Pronto para organizar a locação de equipamentos da sua obra?</h2>
+      <p>Assine agora e comece a usar o Locarion hoje mesmo.</p>
       <div class="hero-actions">
         <a href="#precos" class="btn btn-primary">Ver planos</a>
         <a href="login.html" class="btn btn-ghost">Já sou cliente</a>
@@ -306,7 +316,7 @@ footer{border-top:1px solid var(--border); padding:32px 0; text-align:center; co
 </section>
 
 <footer>
-  <div class="wrap">© <span id="year"></span> LocaFlow. Todos os direitos reservados.</div>
+  <div class="wrap">© <span id="year"></span> Locarion. Todos os direitos reservados.</div>
 </footer>
 
 <div class="modal-overlay" id="checkout-modal">

@@ -1,6 +1,6 @@
 {
-  "name": "locaflow-functions",
-  "description": "Cloud Functions do LocaFlow — checkout e webhook do Asaas",
+  "name": "locarion-functions",
+  "description": "Cloud Functions do Locarion — checkout e webhook do Asaas",
   "engines": { "node": "20" },
   "main": "index.js",
   "type": "commonjs",

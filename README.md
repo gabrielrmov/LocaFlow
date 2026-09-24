@@ -1,4 +1,4 @@
-# LocaFlow
+# Locarion
 
 Sistema de gestão de locação de equipamentos (SaaS), com landing page, login exclusivo via Google e dashboard multi-empresa.
 
