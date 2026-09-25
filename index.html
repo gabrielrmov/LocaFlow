@@ -48,7 +48,10 @@ header.nav{position:sticky; top:0; z-index:30; background:rgba(10,14,26,.78); ba
 .brand{display:flex; align-items:center; gap:9px; font-family:var(--font-display); font-weight:700; font-size:18px; color:#fff}
 .brand-mark{width:28px; height:28px; border-radius:8px; background:var(--accent); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px -3px rgba(30,58,95,.7)}
 .nav-links{display:flex; align-items:center; gap:30px; font-size:14.5px; font-weight:500; color:var(--ink-2)}
+.nav-links a{position:relative; padding:4px 0; transition:color .2s ease}
+.nav-links a::after{content:""; position:absolute; left:0; right:100%; bottom:0; height:1.5px; background:var(--amber); transition:right .25s cubic-bezier(.16,1,.3,1)}
 .nav-links a:hover{color:#fff}
+.nav-links a:hover::after{right:0}
 .nav-cta{display:flex; align-items:center; gap:12px}
 .nav .btn-ghost{border-color:var(--border-strong); color:#fff}
 @media (max-width:720px){ .nav-links{display:none} }
@@ -168,6 +171,29 @@ footer .brand-mark{width:22px; height:22px}
 .modal-card h3{font-size:19px; margin-bottom:6px; color:#fff}
 .modal-card p{color:var(--ink-2); font-size:14px; margin-bottom:18px}
 .modal-actions{display:flex; gap:10px; margin-top:20px}
+
+/* scroll-reveal animations */
+@media (prefers-reduced-motion: no-preference){
+  [data-reveal]{opacity:0; transform:translateY(28px); transition:opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1); transition-delay:var(--d,0ms)}
+  [data-reveal].in-view{opacity:1; transform:translateY(0)}
+  .hero-inner .eyebrow{transition-delay:0ms}
+  .hero-inner h1{transition-delay:80ms}
+  .hero-inner .lead{transition-delay:160ms}
+  .hero-inner .hero-actions{transition-delay:230ms}
+  .hero-inner .hero-note{transition-delay:290ms}
+}
+@keyframes pulseGlow{
+  0%,100%{opacity:.55}
+  50%{opacity:1}
+}
+.eyebrow svg{animation:pulseGlow 2.8s ease-in-out infinite}
+
+/* card hover motion */
+.showcase-frame{transition:transform .35s cubic-bezier(.16,1,.3,1), border-color .35s ease, box-shadow .35s ease}
+.showcase:hover .showcase-frame{transform:translateY(-6px); border-color:rgba(242,153,74,.35); box-shadow:0 50px 100px -20px rgba(0,0,0,.7)}
+.feature, .plan, .faq-item{transition:transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s ease, border-color .3s ease}
+.step-num{transition:transform .3s ease, box-shadow .3s ease}
+.step:hover .step-num{transform:scale(1.1)}
 </style>
 </head>
 <body>
@@ -194,16 +220,16 @@ footer .brand-mark{width:22px; height:22px}
 <section class="hero">
   <div class="wrap">
     <div class="hero-inner">
-      <span class="eyebrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2 3 6v6c0 5 4 8.5 9 10 5-1.5 9-5 9-10V6l-9-4Z"/></svg> Feito para locação de equipamentos na construção civil</span>
-      <h1>Chega de planilha para controlar sua locadora de equipamentos de obra</h1>
-      <p class="lead">O Locarion reúne equipamentos, contratos, agenda de retiradas e devoluções em obra, financeiro e clientes em um só sistema — pensado para locadoras que atendem construtoras, empreiteiras e profissionais da construção civil.</p>
-      <div class="hero-actions">
+      <span class="eyebrow" data-reveal><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2 3 6v6c0 5 4 8.5 9 10 5-1.5 9-5 9-10V6l-9-4Z"/></svg> Feito para locação de equipamentos na construção civil</span>
+      <h1 data-reveal>Chega de planilha para controlar sua locadora de equipamentos de obra</h1>
+      <p class="lead" data-reveal>O Locarion reúne equipamentos, contratos, agenda de retiradas e devoluções em obra, financeiro e clientes em um só sistema — pensado para locadoras que atendem construtoras, empreiteiras e profissionais da construção civil.</p>
+      <div class="hero-actions" data-reveal>
         <a href="#precos" class="btn btn-primary">Assinar agora</a>
         <a href="login.html" class="btn btn-ghost">Já tenho conta</a>
       </div>
-      <p class="hero-note">Cancele quando quiser. Sem cartão para começar a testar.</p>
+      <p class="hero-note" data-reveal>Cancele quando quiser. Sem cartão para começar a testar.</p>
     </div>
-    <div class="showcase wrap" style="padding:0">
+    <div class="showcase wrap" style="padding:0" data-reveal>
       <div class="showcase-frame">
         <div class="showcase-bar"><span></span><span></span><span></span></div>
         <img src="assets/dashboard-preview.png" alt="Painel do Locarion mostrando visão geral de equipamentos, contratos e financeiro">
@@ -218,12 +244,12 @@ footer .brand-mark{width:22px; height:22px}
 
 <section class="story">
   <div class="wrap">
-    <div class="story-head">
+    <div class="story-head" data-reveal>
       <span class="eyebrow-sm">Equipamentos</span>
       <h2>Controle.</h2>
       <p>Saiba exatamente o que está em obra, o que está disponível e o que precisa de manutenção — sem depender de planilha ou da memória de ninguém.</p>
     </div>
-    <div class="showcase">
+    <div class="showcase" data-reveal>
       <div class="showcase-frame">
         <div class="showcase-bar"><span></span><span></span><span></span></div>
         <img src="assets/equipamentos-preview.png" alt="Tela de controle de equipamentos do Locarion">
@@ -234,12 +260,12 @@ footer .brand-mark{width:22px; height:22px}
 
 <section class="story" style="background:var(--surface); border-bottom:1px solid var(--border)">
   <div class="wrap">
-    <div class="story-head">
+    <div class="story-head" data-reveal>
       <span class="eyebrow-sm">Agenda</span>
       <h2>Nunca perca um prazo.</h2>
       <p>Retiradas e devoluções organizadas por data, com visão clara do que sai e do que volta de cada canteiro de obra.</p>
     </div>
-    <div class="showcase">
+    <div class="showcase" data-reveal>
       <div class="showcase-frame">
         <div class="showcase-bar"><span></span><span></span><span></span></div>
         <img src="assets/agenda-preview.png" alt="Agenda de retiradas e devoluções do Locarion">
@@ -250,38 +276,38 @@ footer .brand-mark{width:22px; height:22px}
 
 <section id="recursos">
   <div class="wrap">
-    <div class="section-head">
+    <div class="section-head" data-reveal>
       <span class="eyebrow-sm">Recursos</span>
       <h2>Tudo que a sua locadora de equipamentos de obra precisa, em um lugar só</h2>
       <p>Sem planilha, sem papel espalhado, sem perder o controle do que está alugado em cada canteiro de obra.</p>
     </div>
     <div class="grid-features">
-      <div class="feature">
+      <div class="feature" data-reveal style="--d:0ms">
         <div class="ic ic-blue"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
         <h3>Controle de equipamentos</h3>
         <p>Cadastre seu inventário de equipamentos de obra, acompanhe status (em uso, disponível, manutenção) e histórico de cada item.</p>
       </div>
-      <div class="feature">
+      <div class="feature" data-reveal style="--d:60ms">
         <div class="ic ic-amber"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/></svg></div>
         <h3>Contratos e orçamentos</h3>
         <p>Gere contratos a partir de modelo próprio, controle assinaturas e converta orçamentos em contratos com um clique — prontos para construtoras e empreiteiras.</p>
       </div>
-      <div class="feature">
+      <div class="feature" data-reveal style="--d:120ms">
         <div class="ic ic-blue"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="6" width="19" height="13" rx="2"/><path d="M2.5 10h19"/></svg></div>
         <h3>Financeiro completo</h3>
         <p>Faturas, contas a pagar e receber, despesas e relatórios — saiba exatamente quanto entra e sai em cada obra.</p>
       </div>
-      <div class="feature">
+      <div class="feature" data-reveal style="--d:0ms">
         <div class="ic ic-blue"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg></div>
         <h3>Agenda de retiradas e devoluções</h3>
         <p>Veja de forma visual o que sai e o que volta de cada canteiro de obra, sem depender da memória de ninguém.</p>
       </div>
-      <div class="feature">
+      <div class="feature" data-reveal style="--d:60ms">
         <div class="ic ic-amber"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/></svg></div>
         <h3>Base de clientes</h3>
         <p>Histórico de locações, contatos e origem de cada construtora, empreiteira ou cliente centralizados.</p>
       </div>
-      <div class="feature">
+      <div class="feature" data-reveal style="--d:120ms">
         <div class="ic ic-blue"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.3 2.3L16 10"/></svg></div>
         <h3>Manutenção preventiva</h3>
         <p>Acompanhe manutenções agendadas e concluídas para reduzir imprevistos com equipamentos que trabalham pesado na obra.</p>
@@ -292,28 +318,28 @@ footer .brand-mark{width:22px; height:22px}
 
 <section id="como-funciona" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border)">
   <div class="wrap">
-    <div class="section-head">
+    <div class="section-head" data-reveal>
       <span class="eyebrow-sm">Como funciona</span>
       <h2>Comece a usar em poucos minutos</h2>
       <p>Sem instalar nada, direto no navegador.</p>
     </div>
     <div class="steps">
-      <div class="step"><div class="step-num">1</div><h3>Escolha seu plano</h3><p>Selecione o plano ideal para o tamanho da sua operação.</p></div>
-      <div class="step"><div class="step-num">2</div><h3>Entre com sua conta Google</h3><p>Login rápido e seguro — sem senha para lembrar.</p></div>
-      <div class="step"><div class="step-num">3</div><h3>Comece a gerenciar</h3><p>Cadastre equipamentos e clientes e já emita seu primeiro contrato para a obra.</p></div>
+      <div class="step" data-reveal style="--d:0ms"><div class="step-num">1</div><h3>Escolha seu plano</h3><p>Selecione o plano ideal para o tamanho da sua operação.</p></div>
+      <div class="step" data-reveal style="--d:100ms"><div class="step-num">2</div><h3>Entre com sua conta Google</h3><p>Login rápido e seguro — sem senha para lembrar.</p></div>
+      <div class="step" data-reveal style="--d:200ms"><div class="step-num">3</div><h3>Comece a gerenciar</h3><p>Cadastre equipamentos e clientes e já emita seu primeiro contrato para a obra.</p></div>
     </div>
   </div>
 </section>
 
 <section id="precos">
   <div class="wrap">
-    <div class="section-head">
+    <div class="section-head" data-reveal>
       <span class="eyebrow-sm">Preços</span>
       <h2>Preços simples e diretos</h2>
       <p>Sem taxa de setup, sem contrato de fidelidade.</p>
     </div>
     <div class="plans">
-      <div class="plan">
+      <div class="plan" data-reveal style="--d:0ms">
         <span class="plan-name">Profissional</span>
         <p class="plan-desc">Para locadoras de equipamentos de obra em crescimento.</p>
         <div class="plan-price"><span class="num">R$ 97</span><span class="per">/mês</span></div>
@@ -325,7 +351,7 @@ footer .brand-mark{width:22px; height:22px}
         </ul>
         <button class="btn btn-primary btn-block" data-plan="profissional" data-price="R$ 97/mês" onclick="openCheckout(this)">Assinar Profissional</button>
       </div>
-      <div class="plan featured">
+      <div class="plan featured" data-reveal style="--d:100ms">
         <span class="plan-name">Enterprise</span>
         <p class="plan-desc">Para operações maiores, com múltiplas filiais e obras simultâneas.</p>
         <div class="plan-price"><span class="num">R$ 197</span><span class="per">/mês</span></div>
@@ -343,28 +369,28 @@ footer .brand-mark{width:22px; height:22px}
 
 <section id="faq" style="background:var(--surface); border-top:1px solid var(--border)">
   <div class="wrap">
-    <div class="section-head">
+    <div class="section-head" data-reveal>
       <span class="eyebrow-sm">FAQ</span>
       <h2>Perguntas frequentes</h2>
     </div>
     <div class="faq">
-      <div class="faq-item">
+      <div class="faq-item" data-reveal style="--d:0ms">
         <button class="faq-q" onclick="toggleFaq(this)">Preciso instalar algum programa?<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="faq-a">Não. O Locarion roda direto no navegador, em qualquer computador ou celular.</div>
       </div>
-      <div class="faq-item">
+      <div class="faq-item" data-reveal style="--d:40ms">
         <button class="faq-q" onclick="toggleFaq(this)">Dá para acompanhar equipamentos em várias obras ao mesmo tempo?<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="faq-a">Sim. Você vê de forma centralizada o que está alugado, em qual obra e quando deve voltar, mesmo atendendo várias construtoras e canteiros ao mesmo tempo.</div>
       </div>
-      <div class="faq-item">
+      <div class="faq-item" data-reveal style="--d:80ms">
         <button class="faq-q" onclick="toggleFaq(this)">Como funciona o login?<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="faq-a">O acesso é feito exclusivamente com sua conta Google — sem senha adicional para gerenciar.</div>
       </div>
-      <div class="faq-item">
+      <div class="faq-item" data-reveal style="--d:120ms">
         <button class="faq-q" onclick="toggleFaq(this)">Posso cancelar quando quiser?<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="faq-a">Sim, não há fidelidade. Você pode cancelar sua assinatura a qualquer momento.</div>
       </div>
-      <div class="faq-item">
+      <div class="faq-item" data-reveal style="--d:160ms">
         <button class="faq-q" onclick="toggleFaq(this)">Meus dados ficam seguros?<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="faq-a">Sim, cada empresa tem seus dados isolados e acessíveis apenas pela própria conta.</div>
       </div>
@@ -373,7 +399,7 @@ footer .brand-mark{width:22px; height:22px}
 </section>
 
 <section class="final-cta">
-  <div class="wrap">
+  <div class="wrap" data-reveal>
     <h2>Pronto para organizar a locação de equipamentos da sua obra?</h2>
     <p>Assine agora e comece a usar o Locarion hoje mesmo.</p>
     <div class="hero-actions">
@@ -404,6 +430,28 @@ footer .brand-mark{width:22px; height:22px}
 <script src="firebase-config.js"></script>
 <script>
 document.getElementById("year").textContent = new Date().getFullYear();
+
+/* =========================================================================
+   Scroll reveal — anima elementos [data-reveal] conforme entram na tela.
+   Respeita prefers-reduced-motion (mostra tudo de imediato, sem observer).
+   ========================================================================= */
+(function(){
+  const els = document.querySelectorAll("[data-reveal]");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(reduceMotion || !("IntersectionObserver" in window)){
+    els.forEach(el => el.classList.add("in-view"));
+    return;
+  }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        entry.target.classList.add("in-view");
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: "0px 0px -40px 0px" });
+  els.forEach(el => io.observe(el));
+})();
 
 function toggleFaq(btn){
   const item = btn.closest(".faq-item");
