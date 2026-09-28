@@ -298,8 +298,88 @@ td.num{text-align:right}
   .field-row{grid-template-columns:1fr}
 }
 @media (max-width: 520px){
-  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   table{min-width:520px}
+}
+
+/* ---------- mobile (otimizações) ---------- */
+@media (max-width: 980px){
+  .grid-2,.grid-3{grid-template-columns:minmax(0,1fr)!important}
+  .grid-2 > *,.grid-3 > *{min-width:0}
+}
+@media (max-width: 860px){
+  .view{min-width:0; padding-bottom:calc(60px + env(safe-area-inset-bottom,0px))}
+  .topbar{gap:8px}
+  .topbar h1{font-size:17px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .menu-toggle{width:38px; height:38px; flex:0 0 auto}
+  .topbar .icon-btn{width:38px; height:38px; flex:0 0 auto}
+  .topbar-actions{margin-left:0; flex-wrap:nowrap; flex:0 0 auto}
+  /* ações da barra superior viram botões só com ícone */
+  .topbar-actions .btn{font-size:0; gap:0; padding:0; width:38px; height:38px; justify-content:center}
+  .topbar-actions .btn svg{width:17px; height:17px}
+  .topbar-actions .icon-btn{width:38px; height:38px}
+  .sidebar{box-shadow:var(--shadow-md); padding-bottom:env(safe-area-inset-bottom,0px)}
+  .sidebar .nav-item,.sidebar [data-nav]{min-height:40px}
+  .btn{min-height:38px}
+  .btn-sm{min-height:34px}
+  input,select,textarea{font-size:16px!important} /* evita zoom automático no iOS */
+  .modal-backdrop{padding:0; align-items:flex-end}
+  .modal,.modal.modal-lg{max-width:none; border-radius:var(--radius-lg) var(--radius-lg) 0 0; margin-bottom:0}
+  .modal-body{max-height:calc(100dvh - 150px); padding:16px}
+  .modal-header{padding:14px 16px}
+  .modal-footer{padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px)); flex-wrap:wrap}
+  .modal-footer .btn{flex:1 1 auto; justify-content:center}
+  .toast-root{left:12px; right:12px; bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+}
+/* tabelas → cartões empilhados (rótulos vêm de data-label, preenchido via JS) */
+@media (max-width: 640px){
+  .table-wrap{overflow:visible}
+  .table-wrap table, table{min-width:0!important; width:100%}
+  .table-wrap thead{display:none}
+  .table-wrap table, .table-wrap tbody, .table-wrap tr, .table-wrap td{display:block}
+  .table-wrap tbody tr{position:relative; padding:12px 14px; border-bottom:1px solid var(--border)}
+  .table-wrap tbody tr:last-child{border-bottom:none}
+  .table-wrap tbody tr:hover{background:transparent}
+  .table-wrap td{border:none!important; padding:3px 0!important; display:flex; align-items:center; justify-content:space-between; gap:12px; text-align:right; min-height:24px; font-size:13.5px}
+  .table-wrap td.num{text-align:right}
+  .table-wrap td::before{content:attr(data-label); flex:0 0 auto; max-width:48%; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-muted)}
+  .table-wrap td[data-label=""]::before{content:none}
+  .table-wrap td > *{min-width:0}
+  .table-wrap td.td-title{display:block; text-align:left; font-size:14.5px; padding:0 0 6px!important; padding-right:36px!important}
+  .table-wrap td.td-title::before{content:none}
+  .table-wrap td.td-title{font-weight:600}
+  .table-wrap td.truncate-cell{white-space:normal; max-width:none; overflow:visible; text-overflow:clip}
+  .table-wrap td.td-full{display:block; text-align:left}
+  .table-wrap td.td-full::before{content:none}
+  .table-wrap td.td-check{position:absolute; top:10px; right:12px; padding:0!important; min-height:0}
+  .table-wrap td.td-check input{width:20px; height:20px}
+  .table-wrap td.td-actions{justify-content:flex-start; flex-wrap:wrap; gap:6px; padding-top:10px!important; margin-top:4px; border-top:1px dashed var(--border)!important}
+  .table-wrap td:empty{display:none}
+  .table-wrap td .input, .table-wrap td select{max-width:60%}
+}
+
+@media (max-width: 520px){
+  .view{padding-left:12px; padding-right:12px}
+  .kpi{padding:13px 13px}
+  .kpi-label{font-size:10.5px; letter-spacing:.02em}
+  .kpi-icon{width:22px; height:22px}
+  .kpi-icon svg{width:12px; height:12px}
+  .kpi-value{font-size:21px; overflow-wrap:anywhere}
+  .card-pad{padding:14px}
+  .theme-toggle button{padding:9px 0}
+  .filters-row .search-wrap{flex:1 1 100%; max-width:none; min-width:0}
+  .filters-row > select, .filters-row > .input, .filters-row > .select{flex:1 1 140px; min-width:0}
+  .quick-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi-grid > .kpi:last-child:nth-child(odd){grid-column:1 / -1}
+  .chart-card{padding:14px}
+  .chart-card-head{flex-wrap:wrap}
+  .chart-card-head button, .chart-card-head .btn{white-space:nowrap}
+  /* agenda: colunas iguais, eventos viram barrinhas coloridas */
+  .cal-grid{grid-template-columns:repeat(7,minmax(0,1fr)); gap:3px}
+  .cal-dow{font-size:9.5px; letter-spacing:0}
+  .cal-cell{min-height:52px; padding:4px 3px; border-radius:7px; gap:2px}
+  .cal-cell .d{font-size:11.5px; text-align:center}
+  .cal-evt{font-size:0; height:5px; padding:0; border-radius:3px}
 }
 [hidden]{display:none!important}
 #auth-gate{position:fixed; inset:0; background:var(--bg); display:flex; align-items:center; justify-content:center; z-index:9999}
@@ -750,7 +830,7 @@ function barMini(data, opts){
 function columnChart(data, opts){
   // vertical grouped columns: data [{label, series:[{value,color,name}]}]
   opts = opts || {};
-  const w = 560, h = 190, padL = 40, padB = 26, padT = 10;
+  const w = (window.innerWidth < 640 ? 340 : 560), h = 190, padL = 40, padB = 26, padT = 10; /* no celular, desenha na largura real para o texto não encolher */
   const plotW = w - padL - 12, plotH = h - padB - padT;
   const maxV = Math.max(1, ...data.flatMap(d=>d.series.map(s=>s.value)));
   const groupW = plotW / data.length;
@@ -2993,6 +3073,36 @@ async function boot(user){
     ()=>{ LOADED.company = true; rerenderCurrent(); }
   );
 }
+
+/* ======================= MOBILE: tabelas viram cartões =======================
+   Copia o texto de cada cabeçalho (th) para data-label das células, para que no
+   celular cada linha vire um cartão "rótulo: valor" em vez de rolar para o lado. */
+function labelTables(root){
+  (root||document).querySelectorAll("table").forEach(t=>{
+    const heads = Array.from(t.querySelectorAll("thead th")).map(th=>th.textContent.trim());
+    t.querySelectorAll("tbody tr").forEach(tr=>{
+      let titled = false;
+      Array.from(tr.children).forEach((td,i)=>{
+        if(td.tagName!=="TD") return;
+        const label = heads[i]||"";
+        td.dataset.label = label;
+        const onlyCheck = td.querySelector('input[type="checkbox"]') && !td.textContent.trim() && td.children.length===1;
+        td.classList.toggle("td-check", !!onlyCheck);
+        const isTitle = !onlyCheck && !titled && !td.hasAttribute("colspan");
+        td.classList.toggle("td-title", isTitle);
+        if(isTitle) titled = true;
+        td.classList.toggle("td-full", td.hasAttribute("colspan"));
+        td.classList.toggle("td-actions", !onlyCheck && !isTitle && !label && !!td.querySelector("button,a,select"));
+      });
+    });
+  });
+}
+(function(){
+  let pending = false;
+  const run = ()=>{ pending = false; labelTables(document); };
+  new MutationObserver(()=>{ if(!pending){ pending = true; requestAnimationFrame(run); } })
+    .observe(document.body, {childList:true, subtree:true});
+})();
 
 /* Só entra se: (1) autenticado no Firebase, (2) documento users/{uid} tem
    assinatura ativa OU é uma conta admin (isAdmin:true, que sempre tem acesso
