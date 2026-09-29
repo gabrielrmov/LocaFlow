@@ -1,0 +1,30 @@
+# Locarion — endurecimento para hospedagem Apache/LiteSpeed (Hostinger).
+# Equivale aos cabeçalhos de firebase.json (que só valem no Firebase Hosting).
+
+Options -Indexes
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+  Header always set Content-Security-Policy "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'"
+  Header always set Cross-Origin-Opener-Policy "same-origin-allow-popups"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>
+
+# Força HTTPS
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} off
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # Nunca serve arquivos internos do projeto
+  RewriteRule ^(functions|\.git|\.firebase)(/|$) - [F,L]
+  RewriteRule ^(SETUP\.md|README\.md|firebase\.json|firestore\.rules|\.firebaserc)$ - [F,L]
+</IfModule>
+
+# Bloqueia arquivos ocultos (exceto .well-known, usado no SSL)
+<FilesMatch "^\.(?!well-known)">
+  Require all denied
+</FilesMatch>
