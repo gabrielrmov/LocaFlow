@@ -637,6 +637,113 @@ th{background:color-mix(in srgb, var(--surface-2) 70%, var(--surface))}
 .ghost-label::after{content:""; flex:1; height:1px; background:var(--border)}
 .kpi-ghost{opacity:.72}
 @media (max-width:860px){ .setup-steps{grid-template-columns:1fr} .setup{padding:18px} .setup-prog{align-items:flex-start} }
+
+/* =====================================================================
+   DESIGN v3 · linguagem financeira (mesma da landing)
+   ===================================================================== */
+:root{
+  --bg:#F3F3F7; --surface:#FFFFFF; --surface-2:#F0F0F5; --surface-hover:#F7F7FA;
+  --border:#E6E7EE; --border-strong:#D3D5DF;
+  --ink:#15191E; --ink-2:#5B626B; --ink-muted:#8A909A;
+  --accent:#FF3D00; --accent-ink:#FFFFFF; --accent-hover:#E03600; --accent-soft:#FFEDE6; --accent-soft-ink:#B32A00;
+  --series-1:#15191E;
+  --shadow-sm:0 1px 2px rgba(21,25,30,.04); --shadow-md:0 14px 34px -12px rgba(21,25,30,.22);
+  --radius-sm:8px; --radius-md:14px; --radius-lg:18px;
+  --font-display:'Inter',system-ui,-apple-system,sans-serif;
+}
+:root[data-theme="dark"]{
+  --bg:#05080D; --surface:#0E141C; --surface-2:#161D27; --surface-hover:#1A222D;
+  --border:#212A36; --border-strong:#2F3A48;
+  --ink:#F3F5F8; --ink-2:#A7AFBA; --ink-muted:#78818D;
+  --accent:#FF5A26; --accent-ink:#120500; --accent-hover:#FF7444; --accent-soft:#3A1608; --accent-soft-ink:#FFB59C;
+  --series-1:#F3F5F8;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.5);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#05080D; --surface:#0E141C; --surface-2:#161D27; --surface-hover:#1A222D;
+  --border:#212A36; --border-strong:#2F3A48;
+  --ink:#F3F5F8; --ink-2:#A7AFBA; --ink-muted:#78818D;
+  --accent:#FF5A26; --accent-ink:#120500; --accent-hover:#FF7444; --accent-soft:#3A1608; --accent-soft-ink:#FFB59C;
+  --series-1:#F3F5F8;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.5);
+}}
+body{font-feature-settings:"cv11"; letter-spacing:-.006em}
+h1,h2,h3,h4{font-weight:600; letter-spacing:-.02em}
+#app{background:var(--bg)}
+
+/* barra lateral escura */
+.sidebar{--surface:#000710; --surface-2:rgba(255,255,255,.07); --surface-hover:rgba(255,255,255,.06); --border:rgba(255,255,255,.09); --border-strong:rgba(255,255,255,.18); --ink:#fff; --ink-2:rgba(255,255,255,.72); --ink-muted:rgba(255,255,255,.44); --accent-soft:rgba(255,255,255,.10); --accent-soft-ink:#fff; background:#000710; border-right:0; color:#fff}
+.sidebar .brand-mark{width:30px; height:30px; border-radius:9px; background:#fff; box-shadow:0 8px 22px -8px rgba(255,61,0,.6)}
+.sidebar .brand-mark svg{width:16px; height:16px}
+.sidebar .brand-mark svg path{fill:#1E3A5F}
+.brand-name{font-size:17px; font-weight:600; letter-spacing:-.02em; color:#fff}
+.nav-group-label{font-size:11px; font-weight:500; letter-spacing:.02em; text-transform:none; color:var(--ink-muted)}
+.nav-item{border-radius:10px; padding:8px 10px; font-weight:500}
+.nav-item.active{background:rgba(255,255,255,.10); color:#fff; font-weight:600}
+.nav-item::before{background:var(--accent)}
+.nav-item.active .count{background:var(--accent); color:#fff}
+.sidebar .theme-toggle button.active{background:rgba(255,255,255,.16); color:#fff; box-shadow:none}
+.sidebar .plan-chip{background:rgba(255,255,255,.07)}
+.sidebar .plan-chip .tag{background:rgba(255,255,255,.12); color:#fff}
+
+/* topo e boas-vindas */
+.topbar{background:color-mix(in srgb, var(--bg) 86%, transparent); border-bottom:1px solid var(--border)}
+.topbar h1{font-size:17px; font-weight:600}
+.view{padding:30px 36px 70px}
+.dash-hello{margin:0 0 26px}
+.dash-hello .eyebrow{font-size:12px; letter-spacing:.02em; text-transform:none; font-weight:500}
+.dash-hello h2{font-size:36px; font-weight:500; letter-spacing:-.045em; line-height:1.05; margin-top:6px}
+.dash-hello p{font-size:15px}
+
+/* botões e campos */
+.btn{border-radius:10px; font-weight:500; padding:9px 15px}
+.btn-primary{background:var(--accent); color:var(--accent-ink); box-shadow:none}
+.btn-primary:hover{background:var(--accent-hover); transform:none; box-shadow:none}
+.btn-secondary{background:var(--surface); border-color:var(--border-strong)}
+.icon-btn{border-radius:10px}
+.input,.select,.textarea{border-radius:10px}
+.input:focus,.select:focus,.textarea:focus{border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent)}
+
+/* cartões */
+.card,.chart-card,.table-wrap{border-radius:var(--radius-md); box-shadow:none}
+.kpi:hover,.chart-card:hover,.onboard-step:hover,.card.card-pad:hover{background-image:none}
+.card-head{padding:18px 20px 8px}
+.dev-list{padding:6px 20px 10px}
+
+/* indicadores */
+.kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px}
+.kpi-grid:has(> .kpi:nth-child(4):last-child){grid-template-columns:repeat(4,minmax(0,1fr))}
+.kpi-grid:has(> .kpi:nth-child(2):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}
+.kpi{border-radius:var(--radius-md); box-shadow:none; padding:20px 20px 18px; display:flex; flex-direction:column}
+.kpi::before{display:none}
+.kpi-top{margin-bottom:22px; flex:1 1 auto; align-items:flex-start}
+.kpi-label{font-size:13px; font-weight:500; color:var(--ink-2)}
+.kpi-icon{width:30px; height:30px; border-radius:99px}
+.kpi-icon.accent,.kpi-icon.neutral{background:var(--surface-2); color:var(--ink-2)}
+.kpi-value{font-size:34px; font-weight:500; letter-spacing:-.045em; line-height:1}
+.kpi-sub{font-size:12.5px; margin-top:8px}
+.rev-top .kpi-value{font-size:34px}
+
+/* alertas */
+.alert-card{border-radius:var(--radius-md); box-shadow:none; padding:16px 20px 8px; background:color-mix(in srgb, var(--al-bg) 32%, var(--surface)); border-color:color-mix(in srgb, var(--al) 20%, var(--border))}
+.kpi-value[style*="--warning"]{color:var(--ink)!important}
+.alert-card::before{display:none}
+.alert-head h3{font-size:14.5px}
+
+/* barras do faturamento */
+.mb i{border-radius:6px 6px 3px 3px}
+
+/* tabelas */
+th{background:var(--surface-2); font-weight:500}
+
+/* onboarding */
+.setup{border-radius:var(--radius-lg); box-shadow:none}
+.setup-step{border-radius:var(--radius-md)}
+.setup-step.current{border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent)}
+
+@media (max-width:1000px){ .kpi-grid,.kpi-grid:has(> .kpi:nth-child(4):last-child){grid-template-columns:repeat(2,minmax(0,1fr))} .kpi-grid > .kpi:last-child:nth-child(odd){grid-column:1 / -1} }
+@media (max-width:860px){ .view{padding:20px 16px 60px} .dash-hello h2{font-size:28px} .kpi-value,.rev-top .kpi-value{font-size:28px} .kpi-top{margin-bottom:16px} }
+@media (max-width:520px){ .kpi{padding:15px 15px 14px} .kpi-value,.rev-top .kpi-value{font-size:25px} }
 </style>
 </head>
 <body>
