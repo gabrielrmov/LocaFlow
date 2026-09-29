@@ -744,6 +744,24 @@ th{background:var(--surface-2); font-weight:500}
 @media (max-width:1000px){ .kpi-grid,.kpi-grid:has(> .kpi:nth-child(4):last-child){grid-template-columns:repeat(2,minmax(0,1fr))} .kpi-grid > .kpi:last-child:nth-child(odd){grid-column:1 / -1} }
 @media (max-width:860px){ .view{padding:20px 16px 60px} .dash-hello h2{font-size:28px} .kpi-value,.rev-top .kpi-value{font-size:28px} .kpi-top{margin-bottom:16px} }
 @media (max-width:520px){ .kpi{padding:15px 15px 14px} .kpi-value,.rev-top .kpi-value{font-size:25px} }
+/* ======================= CELULAR: toque, rolagem e detalhes =======================
+   Alvos de toque de 44px (recomendação da Apple/Google) só em telas de toque; no
+   computador nada muda. */
+html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
+*{-webkit-tap-highlight-color:transparent}
+button,a,select,label,[data-action],[data-nav]{touch-action:manipulation}
+.nav-scroll,.modal-body{overscroll-behavior:contain}
+body:has(.modal-backdrop){overflow:hidden}
+@media (pointer:coarse){
+  .nav-item{min-height:44px}
+  .menu-toggle,.icon-btn{width:44px; height:44px}
+  .btn,.btn-sm,.input,.select{min-height:44px}
+  .pill-tabs button,.theme-toggle button{min-height:44px}
+  #logout-btn{min-width:44px; min-height:44px}
+  input[type=checkbox],.td-check input,.ct-row-check{width:24px; height:24px}
+  .row-actions{gap:8px}
+  #cfg-save{margin-top:14px}
+}
 </style>
 </head>
 <body>
