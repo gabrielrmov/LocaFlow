@@ -2,25 +2,57 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Cada usuário só lê/edita o próprio documento de conta/assinatura.
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // Único conjunto de campos que o próprio usuário pode gravar no perfil.
+    // Plano, status de assinatura e isAdmin NÃO estão aqui: só as Cloud
+    // Functions (Admin SDK, que ignora estas regras) alteram esses campos.
+    function profileKeys() {
+      return ['email', 'name', 'photoURL', 'updatedAt'];
+    }
+
+    // Assinatura ativa (ou conta admin) no documento users/{uid}.
+    function hasAccess(uid) {
+      let u = get(/databases/$(database)/documents/users/$(uid)).data;
+      return u.get('subscriptionStatus', '') == 'active' || u.get('isAdmin', false) == true;
+    }
+
+    // O usuário lê o próprio perfil e só edita os campos de identificação.
+    // Sem listagem, sem exclusão.
     match /users/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow get: if isOwner(uid);
+      allow list: if false;
+      allow create: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(profileKeys());
+      allow update: if isOwner(uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(profileKeys());
+      allow delete: if false;
     }
 
     // Dados da empresa (equipamentos, contratos, clientes...) ficam
-    // isolados por uid do dono da conta Google.
+    // isolados por uid do dono da conta Google. Leitura sempre liberada ao
+    // dono; escrita só com assinatura ativa.
     match /companies/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read: if isOwner(uid);
+      allow write: if isOwner(uid) && hasAccess(uid);
 
       match /{collection}/{docId} {
-        allow read, write: if request.auth != null && request.auth.uid == uid;
+        allow read: if isOwner(uid);
+        allow write: if isOwner(uid) && hasAccess(uid);
       }
     }
 
-    // Só as Cloud Functions (Admin SDK, que ignora estas regras) leem e
-    // escrevem aqui — createAsaasCheckout cria o registro e confirmSubscription
-    // o consome depois que o webhook do Asaas confirma o pagamento.
+    // Só as Cloud Functions (Admin SDK) leem e escrevem aqui —
+    // createAsaasCheckout cria o registro e confirmSubscription o consome
+    // depois que o webhook do Asaas confirma o pagamento.
     match /pendingCheckouts/{token} {
+      allow read, write: if false;
+    }
+
+    // Controle de frequência de chamadas (createAsaasCheckout). Só Functions.
+    match /rateLimits/{id} {
       allow read, write: if false;
     }
   }
