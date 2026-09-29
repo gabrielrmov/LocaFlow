@@ -30,7 +30,7 @@ const ASAAS_WEBHOOK_TOKEN = defineSecret("ASAAS_WEBHOOK_TOKEN");
 
 // Troque se for usar o ambiente de testes (sandbox) do Asaas:
 const ASAAS_BASE_URL = "https://api.asaas.com/v3";
-const SITE_URL = process.env.SITE_URL || "https://locaflow-fc924.web.app";
+const SITE_URL = process.env.SITE_URL || "https://locarion.app";
 
 const PLANS = {
   profissional: { name: "Locarion — Profissional", value: 97.0 },

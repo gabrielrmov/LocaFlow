@@ -70,7 +70,7 @@ No painel do Asaas: **Integrações** → **Webhooks** → criar novo webhook:
 
 ### 3.5. Ajustar a URL do site nas functions
 
-Em `functions/index.js`, a constante `SITE_URL` deve apontar pro domínio real onde o `index.html`/`login.html` vão ficar publicados (ex: `https://locaflow-fc924.web.app` ou seu domínio próprio). Depois de mudar, rode `firebase deploy --only functions` de novo.
+Em `functions/index.js`, a constante `SITE_URL` deve apontar pro domínio real onde o `index.html`/`login.html` vão ficar publicados (hoje: `https://locarion.app`, hospedado na Hostinger). Depois de mudar, rode `firebase deploy --only functions` de novo.
 
 > Como funciona a segurança: o `index.html` chama `createAsaasCheckout`, que cria um registro temporário no Firestore (`pendingCheckouts`) e devolve o link de pagamento do Asaas. Só quando o Asaas confirma o pagamento pelo webhook (`asaasWebhook`) esse registro passa a `status: "paid"`. No `login.html`, depois do login com Google, a function `confirmSubscription` verifica esse status no servidor antes de liberar `subscriptionStatus: "active"` — ninguém consegue burlar isso só editando a URL.
 
