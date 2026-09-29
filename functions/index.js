@@ -154,8 +154,64 @@ exports.createAsaasCheckout = onCall(
    asaasWebhook — recebe eventos do Asaas (configure em Integrações >
    Webhooks, apontando para a URL desta function, com o mesmo token
    cadastrado em ASAAS_WEBHOOK_TOKEN). Confirma o pagamento no nosso banco
-   sem depender do navegador do cliente.
+   sem depender do navegador do cliente e mantém o acesso em dia:
+     - pagamento confirmado/recebido  -> libera (e reativa quem já assinou)
+     - atraso, estorno, chargeback    -> bloqueia na hora ("inactive")
+     - assinatura removida/inativada  -> bloqueia na hora ("canceled")
    ------------------------------------------------------------------------- */
+const PAID_EVENTS = ["CHECKOUT_PAID", "PAYMENT_CONFIRMED", "PAYMENT_RECEIVED"];
+const BLOCK_EVENTS = {
+  PAYMENT_OVERDUE: "inactive",
+  PAYMENT_REFUNDED: "inactive",
+  PAYMENT_CHARGEBACK_REQUESTED: "inactive",
+  SUBSCRIPTION_DELETED: "canceled",
+  SUBSCRIPTION_INACTIVATED: "canceled",
+};
+
+/* Acha o pendingCheckout do evento: pelo externalReference (token), pelo id
+   do checkout, ou pelos ids de assinatura/cliente guardados antes. */
+async function findPendingCheckout(ids) {
+  if (ids.externalReference) {
+    const ref = db.collection("pendingCheckouts").doc(ids.externalReference);
+    const snap = await ref.get();
+    if (snap.exists) return snap;
+  }
+  const lookups = [
+    ["asaasCheckoutId", ids.checkoutId],
+    ["asaasSubscriptionId", ids.subscriptionId],
+    ["asaasCustomerId", ids.customerId],
+  ];
+  for (const [field, value] of lookups) {
+    if (!value) continue;
+    const q = await db.collection("pendingCheckouts").where(field, "==", value).limit(1).get();
+    if (!q.empty) return q.docs[0];
+  }
+  return null;
+}
+
+/* Fallback: acha o usuário direto pelos ids do Asaas gravados no perfil. */
+async function findUserByAsaasIds(ids) {
+  const lookups = [
+    ["asaasSubscriptionId", ids.subscriptionId],
+    ["asaasCustomerId", ids.customerId],
+  ];
+  for (const [field, value] of lookups) {
+    if (!value) continue;
+    const q = await db.collection("users").where(field, "==", value).limit(1).get();
+    if (!q.empty) return q.docs[0].ref;
+  }
+  return null;
+}
+
+async function setUserStatus(userRef, status, extra) {
+  const snap = await userRef.get();
+  if (snap.exists && snap.data().isAdmin === true) return; // conta admin nunca é bloqueada
+  await userRef.set(
+    { subscriptionStatus: status, updatedAt: admin.firestore.FieldValue.serverTimestamp(), ...(extra || {}) },
+    { merge: true }
+  );
+}
+
 exports.asaasWebhook = onRequest(
   { secrets: [ASAAS_WEBHOOK_TOKEN], region: "southamerica-east1", maxInstances: 10 },
   async (req, res) => {
@@ -171,54 +227,66 @@ exports.asaasWebhook = onRequest(
     }
 
     const event = req.body && req.body.event;
-    const paidEvents = ["CHECKOUT_PAID", "PAYMENT_CONFIRMED", "PAYMENT_RECEIVED"];
+    const isPaid = PAID_EVENTS.includes(event);
+    const blockStatus = BLOCK_EVENTS[event];
 
-    if (!paidEvents.includes(event)) {
+    if (!isPaid && !blockStatus) {
       res.status(200).send("ignored");
       return;
     }
 
     const checkout = req.body.checkout || {};
     const payment = req.body.payment || {};
-    const externalReference = checkout.externalReference || payment.externalReference;
-    const asaasCheckoutId = checkout.id;
+    const subscription = req.body.subscription || {};
+    const ids = {
+      externalReference: checkout.externalReference || payment.externalReference || subscription.externalReference || null,
+      checkoutId: checkout.id || null,
+      subscriptionId: (typeof payment.subscription === "string" ? payment.subscription : null) || subscription.id || null,
+      customerId: (typeof payment.customer === "string" ? payment.customer : null) || subscription.customer || null,
+    };
 
     try {
-      let docRef = null;
+      const pendingSnap = await findPendingCheckout(ids);
+      const asaasFields = {};
+      if (ids.checkoutId) asaasFields.asaasCheckoutId = ids.checkoutId;
+      if (ids.subscriptionId) asaasFields.asaasSubscriptionId = ids.subscriptionId;
+      if (ids.customerId) asaasFields.asaasCustomerId = ids.customerId;
 
-      if (externalReference) {
-        docRef = db.collection("pendingCheckouts").doc(externalReference);
-        const snap = await docRef.get();
-        if (!snap.exists) docRef = null;
+      let userRef = null;
+      if (pendingSnap && pendingSnap.data().consumedBy) {
+        userRef = db.collection("users").doc(pendingSnap.data().consumedBy);
+      } else if (!pendingSnap || blockStatus) {
+        userRef = await findUserByAsaasIds(ids);
       }
 
-      if (!docRef && asaasCheckoutId) {
-        const query = await db
-          .collection("pendingCheckouts")
-          .where("asaasCheckoutId", "==", asaasCheckoutId)
-          .limit(1)
-          .get();
-        if (!query.empty) docRef = query.docs[0].ref;
-      }
-
-      if (!docRef) {
+      if (!pendingSnap && !userRef) {
         // Não loga o corpo inteiro (traz dados pessoais do pagador).
-        logger.warn("Webhook do Asaas sem pendingCheckout correspondente", { event, externalReference, asaasCheckoutId });
+        logger.warn("Webhook do Asaas sem correspondência", { event, ...ids });
         res.status(200).send("no-match");
         return;
       }
 
-      const current = await docRef.get();
-      if (current.data().status === "paid") {
-        res.status(200).send("already-paid");
+      if (isPaid) {
+        if (pendingSnap) {
+          const update = { ...asaasFields };
+          if (pendingSnap.data().status !== "paid") {
+            update.status = "paid";
+            update.paidAt = admin.firestore.FieldValue.serverTimestamp();
+          }
+          await pendingSnap.ref.update(update);
+        }
+        // Quem já assinou e voltou a pagar (renovação ou regularização) é reativado.
+        if (userRef) await setUserStatus(userRef, "active", asaasFields);
+        res.status(200).send("ok");
         return;
       }
 
-      await docRef.update({
-        status: "paid",
-        paidAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-
+      // Evento de bloqueio: corta o acesso na hora.
+      if (pendingSnap && !pendingSnap.data().consumedBy) {
+        await pendingSnap.ref.update({ ...asaasFields, status: "revoked" });
+      }
+      if (userRef) await setUserStatus(userRef, blockStatus, asaasFields);
+      logger.info("Acesso bloqueado pelo Asaas", { event, status: blockStatus });
       res.status(200).send("ok");
     } catch (err) {
       logger.error("Erro ao processar webhook do Asaas", err);
@@ -340,6 +408,8 @@ exports.confirmSubscription = onCall(
         {
           subscriptionStatus: "active",
           plan: data.plan,
+          ...(data.asaasSubscriptionId ? { asaasSubscriptionId: data.asaasSubscriptionId } : {}),
+          ...(data.asaasCustomerId ? { asaasCustomerId: data.asaasCustomerId } : {}),
           email: request.auth.token.email || null,
           name: request.auth.token.name || null,
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
