@@ -12,7 +12,7 @@
 <meta name="description" content="Sistema para locadora de equipamentos de construção: contratos no seu modelo, agenda de retirada e devolução, estoque de andaimes por peça, manutenção e financeiro. No computador e no celular.">
 <meta property="og:title" content="Locarion · O sistema da locadora de obra">
 <meta property="og:description" content="Contratos, agenda, estoque, manutenção e financeiro da locadora de equipamentos de construção.">
-<meta property="og:image" content="https://locarion.app/assets/dashboard-preview.png">
+<meta property="og:image" content="https://locarion.app/assets/dashboard-preview.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://images.unsplash.com">
@@ -693,11 +693,16 @@ footer .brand-mark svg path{fill:#1E3A5F}
   .step{padding-left:0 !important; padding-right:0 !important}
   .step p{max-width:none}
   .closing{padding-top:72px; padding-bottom:72px; margin-top:56px}
-  /* hero: no celular só o aparelho, grande e legível (o painel de desktop fica minúsculo) */
-  .hero-scene{height:480px; margin-top:32px}
-  .scene-dash,.scene-dot{display:none}
-  .scene-phone{width:min(62%,236px); right:auto; left:50%; bottom:-3%; transform:translateX(-50%) perspective(1800px) rotateX(6deg); border-radius:38px; padding:8px}
-  .scene-phone-in{border-radius:31px}
+  /* hero: no celular só o aparelho, inteiro, reto e limpo (sem inclinação, cruzes ou linhas decorativas) */
+  .hero-scene{height:auto; margin-top:28px; padding:34px 0 38px; display:flex; justify-content:center; align-items:flex-start}
+  .scene-surface{left:16px; right:16px; border-radius:30px}
+  .scene-dash,.scene-dot,.scene-x,.scene-line{display:none}
+  .scene-phone{position:relative; left:auto; right:auto; bottom:auto; width:min(64%,244px); transform:none; margin:0; border-radius:40px; padding:8px; box-shadow:0 34px 56px -22px rgba(40,20,10,.5)}
+  .scene-phone-in{border-radius:32px}
+  /* sem a barrinha de progresso (colava no texto que rola por baixo do menu) e com faixa
+     suave atrás do menu, para o texto não aparecer "cortado" acima dele */
+  .progress{display:none}
+  .top::before{content:""; position:absolute; left:0; right:0; top:-40px; height:66px; z-index:-1; pointer-events:none; background:linear-gradient(to bottom, var(--bg) 0, var(--bg) 60%, rgba(246,246,248,0))}
   /* menu: "Entrar" volta a aparecer (quem já assina precisa dele) e a pílula fica opaca,
      para o botão do hero não aparecer por baixo */
   .top-cta{gap:4px}
@@ -759,8 +764,8 @@ footer .brand-mark svg path{fill:#1E3A5F}
     <div class="scene-x"></div>
     <svg class="scene-line" viewBox="0 0 700 520" preserveAspectRatio="none"><path d="M40 470 C 200 300, 420 180, 690 60" fill="none" stroke="#FF3D00" stroke-width="1" opacity=".55"/></svg>
     <i class="scene-dot"></i>
-    <div class="scene-dash"><img src="assets/painel-claro.webp" width="1200" height="750" alt=""></div>
-    <div class="scene-phone"><div class="scene-phone-in"><img src="assets/celular-claro.webp" width="600" height="1000" alt=""></div></div>
+    <div class="scene-dash"><img src="assets/painel-claro.webp?v=2" width="1200" height="750" alt=""></div>
+    <div class="scene-phone"><div class="scene-phone-in"><img src="assets/celular-claro.webp?v=2" width="600" height="1000" alt=""></div></div>
   </div>
 </section>
 
@@ -912,7 +917,7 @@ footer .brand-mark svg path{fill:#1E3A5F}
       </ul>
     </div>
     <div class="phone-wrap">
-      <div class="phone"><div class="phone-screen"><img src="assets/celular-claro.webp" width="600" height="1000" loading="lazy" alt="Tela inicial do Locarion aberta no celular"></div></div>
+      <div class="phone"><div class="phone-screen"><img src="assets/celular-claro.webp?v=2" width="600" height="1000" loading="lazy" alt="Tela inicial do Locarion aberta no celular"></div></div>
     </div>
   </div>
 </section>
