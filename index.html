@@ -692,12 +692,26 @@ footer .brand-mark svg path{fill:#1E3A5F}
   .steps{margin-top:32px; gap:26px}
   .step{padding-left:0 !important; padding-right:0 !important}
   .step p{max-width:none}
-  .closing{padding-top:72px; padding-bottom:72px}
+  .closing{padding-top:72px; padding-bottom:72px; margin-top:56px}
   /* hero: no celular só o aparelho, grande e legível (o painel de desktop fica minúsculo) */
   .hero-scene{height:480px; margin-top:32px}
   .scene-dash,.scene-dot{display:none}
   .scene-phone{width:min(62%,236px); right:auto; left:50%; bottom:-3%; transform:translateX(-50%) perspective(1800px) rotateX(6deg); border-radius:38px; padding:8px}
   .scene-phone-in{border-radius:31px}
+  /* menu: "Entrar" volta a aparecer (quem já assina precisa dele) e a pílula fica opaca,
+     para o botão do hero não aparecer por baixo */
+  .top-cta{gap:4px}
+  .top-cta .tlink:first-child{display:inline-flex; align-items:center; min-height:44px; padding:0 10px; font-size:15px; font-weight:600}
+  .top-inner{background:rgba(255,255,255,.97); gap:8px}
+  .top-cta .btn{height:38px; padding:0 13px; font-size:14px}
+}
+@media (max-width:400px){
+  .top-inner{padding:0 6px 0 12px}
+  .top-cta .tlink:first-child{padding:0 6px; font-size:14px}
+  .top-cta .btn{padding:0 10px; font-size:13px}
+}
+@media (max-width:370px){
+  .top-inner .brand{font-size:0}
 }
 </style>
 </head>
