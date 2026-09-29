@@ -943,6 +943,37 @@ function monthKey(iso){ return iso.slice(0,7); }
 function monthLabel(key){ const [y,m]=key.split("-").map(Number); return new Date(y,m-1,1).toLocaleDateString("pt-BR",{month:"short"}).replace(".","") ; }
 
 function byId(list, id){ return list.find(x=>x.id===id); }
+/* ---- WhatsApp: abre a conversa com a mensagem pronta (o usuário só envia) ---- */
+function waPhone(cl, prefer){
+  const raw = (prefer==="billing" ? (cl?.billingPhone||cl?.whatsapp||cl?.phone) : (cl?.whatsapp||cl?.phone)) || "";
+  let d = String(raw).replace(/\D/g,"");
+  if(d.startsWith("00")) d = d.slice(2);
+  if(d.length===10 || d.length===11) d = "55"+d; /* DDD + número: assume Brasil */
+  return (d.length>=12 && d.length<=15) ? d : null;
+}
+function waFirstName(cl){ return String(cl?.name||"").trim().split(/\s+/)[0] || ""; }
+function openWhatsApp(cl, msg, prefer){
+  const phone = waPhone(cl, prefer);
+  if(!phone){ toast("Este cliente não tem telefone ou WhatsApp válido. Cadastre no perfil do cliente.","err"); return; }
+  window.open("https://wa.me/"+phone+"?text="+encodeURIComponent(msg), "_blank", "noopener,noreferrer");
+}
+function waCompany(){ return STATE.company.name || "Locarion"; }
+function waPaymentMessage(p, cl){
+  const late = paymentComputedStatus(p)==="atrasado";
+  const what = `${fmtMoney(p.amount)}${p.description?" ("+p.description+")":""}`;
+  return `Olá, ${waFirstName(cl)}! Aqui é da ${waCompany()}. ` + (late
+    ? `Identificamos que a fatura de ${what}, com vencimento em ${fmtDate(p.dueDate)}, ainda está em aberto. Pode nos confirmar o pagamento ou a previsão? Qualquer dúvida, é só responder esta mensagem.`
+    : `Passando para lembrar da fatura de ${what}, com vencimento em ${fmtDate(p.dueDate)}. Qualquer dúvida, é só responder esta mensagem.`);
+}
+function waContractMessage(c, cl){
+  const st = contractComputedStatus(c);
+  const eq = equipmentNamesSummary(c.equipmentIds);
+  const head = `Olá, ${waFirstName(cl)}! Aqui é da ${waCompany()}. `;
+  if(st==="atrasado") return head+`A devolução de ${eq} (contrato ${c.code}) estava prevista para ${fmtDate(c.endDate)}. Pode nos avisar quando será possível devolver? Obrigado!`;
+  if(st==="ativo" || st==="vencendo_hoje") return head+`Lembrando que a devolução de ${eq} (contrato ${c.code}) está prevista para ${fmtDate(c.endDate)}. Qualquer dúvida, é só responder esta mensagem.`;
+  return head+`Confirmando a retirada de ${eq} (contrato ${c.code}) em ${fmtDate(c.startDate)}. Qualquer dúvida, é só responder esta mensagem.`;
+}
+
 function clientName(id){ return byId(STATE.clients,id)?.name || "Cliente removido"; }
 function equipmentName(id){ return byId(STATE.equipment,id)?.name || "Equipamento removido"; }
 /* Agrupa ids repetidos (itens de estoque com quantidade > 1) em "Nome ×N" para exibição. */
@@ -1724,6 +1755,7 @@ function renderContractsTable(){
         <td><span class="badge ${meta.cls}"><span class="dot"></span>${meta.label}</span></td>
         <td class="num tabular">${fmtMoney(c.value)}</td>
         <td><div class="row-actions">
+          ${(st!=="devolvido"&&st!=="cancelado"&&st!=="orcamento") ? `<button class="icon-btn" title="Enviar mensagem no WhatsApp" data-action="wa-contract" data-id="${c.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.7-5.5A8.4 8.4 0 1 1 21 11.5z"/></svg></button>` : ""}
           ${(st==="ativo"||st==="vencendo_hoje"||st==="atrasado") ? `<button class="icon-btn" title="Registrar devolução" data-action="return-contract" data-id="${c.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></button>` : ""}
           <button class="icon-btn" title="Gerar contrato" data-action="gen-contract-doc" data-id="${c.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg></button>
           <button class="icon-btn" title="Ver / editar" data-action="edit-contract" data-id="${c.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
@@ -2272,7 +2304,7 @@ function renderPayTable(){
         <td><span class="badge ${meta.cls}"><span class="dot"></span>${meta.label}</span></td>
         <td class="num tabular">${fmtMoney(p.amount)}</td>
         <td><div class="row-actions">
-          ${!done? `<button class="icon-btn" title="Marcar como pago" data-action="pay-payment" data-id="${p.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></button>` : ""}
+          ${!done? `<button class="icon-btn" title="Cobrar no WhatsApp" data-action="wa-payment" data-id="${p.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.7-5.5A8.4 8.4 0 1 1 21 11.5z"/></svg></button><button class="icon-btn" title="Marcar como pago" data-action="pay-payment" data-id="${p.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></button>` : ""}
           <button class="icon-btn" title="Editar" data-action="edit-payment" data-id="${p.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
           <button class="icon-btn" title="Excluir" data-action="delete-payment" data-id="${p.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>
         </div></td>
@@ -2533,7 +2565,7 @@ function clientDetailModal(id){
       <h4 style="font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-muted);margin:14px 0 8px">Faturas</h4>
       ${payments.length? payments.map(p=>{ const m=paymentStatusMeta(paymentComputedStatus(p)); return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px"><span>${escapeHtml(p.description||"Fatura")} · ${fmtMoney(p.amount)}</span><span class="badge ${m.cls}"><span class="dot"></span>${m.label}</span></div>`; }).join("") : `<p class="hint">Nenhuma fatura.</p>`}
     </div>
-  `, `<button class="btn btn-secondary" data-action="close-modal">Fechar</button><button class="btn btn-primary" data-action="edit-client" data-id="${c.id}">Editar cliente</button>`, {large:true});
+  `, `<button class="btn btn-secondary" data-action="close-modal">Fechar</button>${waPhone(c)?`<button class="btn btn-secondary" data-action="wa-client" data-id="${c.id}">WhatsApp</button>`:""}<button class="btn btn-primary" data-action="edit-client" data-id="${c.id}">Editar cliente</button>`, {large:true});
 }
 
 /* ======================= RELATÓRIOS ======================= */
@@ -3271,7 +3303,7 @@ function renderContasPR(){
       <div class="card">
         <div class="card-pad"><h3 class="section-title">A receber</h3></div>
         ${receivables.length? `<div class="table-wrap" style="border:none;border-radius:0"><table><thead><tr><th>Cliente</th><th>Vencimento</th><th class="num">Valor</th><th></th></tr></thead><tbody>
-          ${receivables.map(p=>{ const meta=paymentStatusMeta(paymentComputedStatus(p)); return `<tr><td>${escapeHtml(clientName(p.clientId))}</td><td class="tabular">${fmtDate(p.dueDate)} <span class="badge ${meta.cls}" style="margin-left:4px"><span class="dot"></span>${meta.label}</span></td><td class="num tabular">${fmtMoney(p.amount)}</td><td><button class="icon-btn" title="Marcar como pago" data-action="pay-payment" data-id="${p.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></button></td></tr>`; }).join("")}
+          ${receivables.map(p=>{ const meta=paymentStatusMeta(paymentComputedStatus(p)); return `<tr><td>${escapeHtml(clientName(p.clientId))}</td><td class="tabular">${fmtDate(p.dueDate)} <span class="badge ${meta.cls}" style="margin-left:4px"><span class="dot"></span>${meta.label}</span></td><td class="num tabular">${fmtMoney(p.amount)}</td><td><button class="icon-btn" title="Cobrar no WhatsApp" data-action="wa-payment" data-id="${p.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.7-5.5A8.4 8.4 0 1 1 21 11.5z"/></svg></button><button class="icon-btn" title="Marcar como pago" data-action="pay-payment" data-id="${p.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></button></td></tr>`; }).join("")}
         </tbody></table></div>` : emptyState("Nada a receber","Todas as faturas estão pagas.")}
       </div>
       <div class="card">
@@ -3294,7 +3326,7 @@ function renderIntegracoes(){
   const view = $("#view");
   const co = STATE.company;
   const integrations = [
-    {name:"WhatsApp Business", desc:"Envie lembretes de vencimento e confirmações de retirada/devolução direto no WhatsApp do cliente.", badge:"Em breve"},
+    {name:"WhatsApp Business", desc:"Abra a conversa com o cliente e a mensagem já pronta, em contratos, cobranças e no perfil do cliente. O envio automático virá numa próxima etapa.", badge:"Disponível"},
     {name:"Boletos e Pix", desc:"Geração de boletos e cobranças Pix com baixa automática, via integração Asaas acima.", badge:co.asaasApiKey?"Conectado":"Requer Asaas"},
     {name:"Exportação contábil", desc:"Exporte lançamentos de receitas e despesas em formato compatível com seu sistema de contabilidade.", badge:"Disponível no Enterprise"},
     {name:"Google Agenda", desc:"Sincronize retiradas e devoluções da Agenda do Locarion com sua agenda pessoal.", badge:"Em breve"},
@@ -3312,7 +3344,7 @@ function renderIntegracoes(){
     </div>
     <p class="hint" style="margin-bottom:16px;max-width:640px">Outras integrações conectam o Locarion a mais ferramentas da sua locadora. As marcadas como Enterprise fazem parte do plano Enterprise (multi-filial, integrações sob medida e suporte dedicado).</p>
     <div class="grid-3">
-      ${integrations.map(i=>{ const cls = i.badge==='Em breve'?'st-neutral':i.badge==='Conectado'?'st-good':i.badge==='Requer Asaas'?'st-warning':'st-accent'; return `<div class="card card-pad">
+      ${integrations.map(i=>{ const cls = i.badge==='Em breve'?'st-neutral':(i.badge==='Conectado'||i.badge==='Disponível')?'st-good':i.badge==='Requer Asaas'?'st-warning':'st-accent'; return `<div class="card card-pad">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px">
           <div style="font-family:var(--font-display);font-weight:700;font-size:14px">${escapeHtml(i.name)}</div>
           <span class="badge ${cls}"><span class="dot"></span>${i.badge}</span>
@@ -3403,6 +3435,9 @@ function handleAction(action, id){
     case "edit-contract": contractFormModal(id); break;
     case "delete-contract": confirmDialog("Excluir este contrato? Essa ação não pode ser desfeita.", ()=>deleteDoc("contracts",id).then(()=>toast("Contrato excluído.","ok"))); break;
     case "return-contract": returnContract(id); break;
+    case "wa-contract": { const c = byId(STATE.contracts,id); if(c) openWhatsApp(byId(STATE.clients,c.clientId), waContractMessage(c, byId(STATE.clients,c.clientId))); break; }
+    case "wa-payment": { const pm = byId(STATE.payments,id); if(pm) openWhatsApp(byId(STATE.clients,pm.clientId), waPaymentMessage(pm, byId(STATE.clients,pm.clientId)), "billing"); break; }
+    case "wa-client": { const cl = byId(STATE.clients,id); if(cl) openWhatsApp(cl, `Olá, ${waFirstName(cl)}! Aqui é da ${waCompany()}.`); break; }
     case "new-maintenance": maintenanceFormModal(); break;
     case "schedule-suggested-maintenance": maintenanceFormModal(null, {equipmentId:id, scheduledDate:todayISO()}); break;
     case "edit-maintenance": maintenanceFormModal(id); break;
