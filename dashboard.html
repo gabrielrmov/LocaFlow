@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
@@ -762,6 +762,17 @@ body:has(.modal-backdrop){overflow:hidden}
   .row-actions{gap:8px}
   #cfg-save{margin-top:14px}
 }
+
+/* barra de navegação inferior (só no celular): os 4 destinos mais usados + menu */
+.tabbar{display:none}
+@media (max-width:860px){
+  .tabbar{display:flex; position:fixed; left:0; right:0; bottom:0; z-index:30; gap:2px; padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px)); background:var(--surface); border-top:1px solid var(--border); box-shadow:0 -8px 24px -14px rgba(0,0,0,.28)}
+  .tab{flex:1; min-width:0; min-height:52px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:4px 2px; border:0; border-radius:12px; background:none; color:var(--ink-muted); font-family:inherit; font-size:11px; font-weight:600; line-height:1.1; cursor:pointer; touch-action:manipulation}
+  .tab svg{width:22px; height:22px; flex:0 0 auto}
+  .tab.active{color:var(--accent); background:var(--accent-soft)}
+  .view{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+  .toast-root{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+}
 </style>
 </head>
 <body>
@@ -837,6 +848,14 @@ body:has(.modal-backdrop){overflow:hidden}
     <main class="view" id="view"></main>
   </div>
 </div>
+
+<nav class="tabbar" id="tabbar" aria-label="Navegação principal">
+  <button class="tab" data-nav="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Início</span></button>
+  <button class="tab" data-nav="contratos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg><span>Contratos</span></button>
+  <button class="tab" data-nav="agenda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Agenda</span></button>
+  <button class="tab" data-nav="financeiro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg><span>Financeiro</span></button>
+  <button class="tab" id="tab-more" aria-label="Abrir menu completo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg><span>Menu</span></button>
+</nav>
 
 <div id="modal-root"></div>
 <div class="toast-root" id="toast-root"></div>
@@ -1290,6 +1309,9 @@ function navigate(route){ location.hash = "#/"+route; }
 function renderRoute(){
   const route = currentRoute();
   $all(".nav-item").forEach(b=> b.classList.toggle("active", b.dataset.nav===route));
+  const tabRoutes = ["dashboard","contratos","agenda","financeiro"];
+  $all(".tab[data-nav]").forEach(b=> b.classList.toggle("active", b.dataset.nav===route));
+  $("#tab-more").classList.toggle("active", !tabRoutes.includes(route));
   $("#page-title").textContent = NAV_TITLES[route];
   closeSidebarMobile();
   const renderers = { dashboard:renderDashboard, historico:renderHistorico, equipamentos:renderEquipamentos, disponiveis:renderDisponiveis, localizar:renderLocalizar, contratos:renderContratos, orcamentos:renderOrcamentos, agenda:renderAgenda, manutencao:renderManutencao, financeiro:renderFinanceiro, receitas:renderReceitas, contaspr:renderContasPR, clientes:renderClientes, relatorios:renderRelatorios, integracoes:renderIntegracoes, juridico:renderJuridico, config:renderConfig, admin:renderAdmin };
@@ -3514,6 +3536,7 @@ async function boot(user){
   window.addEventListener("hashchange", renderRoute);
 
   $("#menu-toggle").addEventListener("click", ()=>{ $("#sidebar").classList.toggle("open"); $("#backdrop").classList.toggle("open"); });
+  $("#tab-more").addEventListener("click", ()=>{ $("#sidebar").classList.add("open"); $("#backdrop").classList.add("open"); });
   $("#backdrop").addEventListener("click", closeSidebarMobile);
   $("#global-search-btn").addEventListener("click", globalSearchModal);
   $("#alerts-btn").addEventListener("click", alertsModal);
