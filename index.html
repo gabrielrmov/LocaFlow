@@ -658,6 +658,28 @@ footer .brand{color:#fff}
   .chip{font-size:17px}
   #para-quem{padding:70px 0}
 }
+
+/* menu solto + fechamento sem emenda */
+.top{position:sticky; top:14px; margin-top:14px; margin-bottom:-78px; background:none; border-bottom:0; backdrop-filter:none; -webkit-backdrop-filter:none; pointer-events:none}
+.top{padding:0 16px}
+.top .wrap{max-width:1152px}
+.top-inner{pointer-events:auto; height:58px; padding:0 10px 0 20px; border-radius:18px; background:rgba(255,255,255,.82); backdrop-filter:saturate(1.6) blur(16px); -webkit-backdrop-filter:saturate(1.6) blur(16px); border:1px solid var(--line-2); box-shadow:0 1px 2px rgba(16,17,20,.05), 0 14px 34px -14px rgba(16,17,20,.22)}
+.top.scrolled .top-inner{background:rgba(255,255,255,.95); box-shadow:0 1px 2px rgba(16,17,20,.06), 0 20px 44px -16px rgba(16,17,20,.3)}
+.hero-grid{padding-top:112px}
+.closing::before{background:radial-gradient(60% 46% at 50% 54%,rgba(255,61,0,.30),rgba(255,61,0,.10) 55%,transparent 100%)}
+.closing{padding-bottom:130px}
+.foot a.brand,footer .foot a.brand{color:#fff}
+footer .foot a.brand{font-size:19px; font-weight:600; gap:12px; letter-spacing:-.02em; opacity:1}
+footer .brand-mark{width:32px; height:32px; border-radius:9px; background:#fff; box-shadow:0 0 0 1px rgba(255,255,255,.14), 0 8px 24px -8px rgba(255,61,0,.55)}
+footer .brand-mark svg{width:20px; height:20px}
+footer .brand-mark svg path{fill:#1E3A5F}
+@media (max-width:640px){
+  .top{top:10px; margin-top:10px; margin-bottom:-68px}
+  .top{padding:0 12px}
+  .top-inner{height:52px; padding:0 8px 0 14px; border-radius:16px}
+  .hero-grid{padding-top:92px}
+  .closing{padding-bottom:96px}
+}
 </style>
 </head>
 <body>
@@ -966,7 +988,6 @@ footer .brand{color:#fff}
     </div>
     <div class="foot-bottom">
       <span>© <span id="year"></span> Locarion · Goiânia, GO</span>
-      <span>Fotos: <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a></span>
     </div>
   </div>
 </footer>
