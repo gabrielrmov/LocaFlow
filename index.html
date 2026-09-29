@@ -6,441 +6,595 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
-<meta name="theme-color" content="#1E3A5F">
-<title>Locarion — Gestão de locação de equipamentos para construção civil</title>
-<meta name="description" content="Locarion é o sistema de gestão para locadoras de equipamentos de construção civil: contratos, agenda de retirada e devolução em obra, financeiro e clientes em um só lugar.">
+<meta name="theme-color" content="#F3F0E8">
+<title>Locarion · Sistema para locadora de equipamentos de construção</title>
+<meta name="description" content="Sistema de gestão para locadora de equipamentos de construção: contratos, agenda de retirada e devolução, estoque de andaimes, manutenção e financeiro. Funciona no computador e no celular.">
+<meta property="og:title" content="Locarion · Sistema para locadora de equipamentos de construção">
+<meta property="og:description" content="Contrato, retirada, devolução, manutenção e cobrança da sua locadora no mesmo lugar.">
+<meta property="og:image" content="https://locarion.app/assets/dashboard-preview.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-functions-compat.js"></script>
 <style>
 :root{
-  --bg:#0A0E1A; --surface:#12172A; --surface-2:#161C33;
-  --border:rgba(255,255,255,.09); --border-strong:rgba(255,255,255,.16);
-  --ink:#F5F6FB; --ink-2:#AEB4CE; --ink-muted:#767EA0;
-  --accent:#1E3A5F; --accent-soft:rgba(56,110,178,.16); --accent-soft-ink:#8FB6E8;
-  --amber:#F2994A; --amber-soft:rgba(242,153,74,.14); --amber-ink:#F7B978;
-  --cta:#F2994A; --cta-ink:#1E140A; --cta-hover:#FFAA5C;
-  --good:#3DDC7A; --good-bg:rgba(61,220,122,.12);
-  --radius-sm:9px; --radius-md:14px; --radius-lg:20px; --radius-xl:26px;
-  --shadow-md:0 14px 34px rgba(0,0,0,.35);
-  --shadow-lg:0 40px 90px -20px rgba(0,0,0,.65);
-  --font-display:'Sora',system-ui,-apple-system,sans-serif;
-  --font-body:'Inter',system-ui,-apple-system,sans-serif;
-  color-scheme:dark;
+  --paper:#F3F0E8; --paper-2:#E9E4D8; --paper-3:#DED7C7;
+  --card:#FFFFFF;
+  --ink:#131A24; --ink-2:#465061; --ink-3:#7A8292;
+  --line:#D6CFBF; --line-soft:#E4DED1;
+  --navy:#1E3A5F; --navy-2:#162C49; --navy-ink:#FFFFFF;
+  --orange:#F2994A; --orange-deep:#C4661C;
+  --good:#1D7A45; --good-bg:#E3F2E8;
+  --warn:#9A5A0E; --warn-bg:#FBEBD6;
+  --bad:#B42318; --bad-bg:#FBE4E1;
+  --muted-bg:#EEF0F4;
+  --display:'Archivo', 'Arial Narrow', system-ui, sans-serif;
+  --body:'Inter', system-ui, -apple-system, sans-serif;
+  --mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  color-scheme:light;
 }
 *,*::before,*::after{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--font-body); font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased}
-h1,h2,h3{font-family:var(--font-display); font-weight:700; margin:0; color:var(--ink)}
+html{scroll-behavior:smooth; -webkit-text-size-adjust:100%}
+body{margin:0; overflow-x:clip; background:var(--paper); color:var(--ink); font-family:var(--body); font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--display); margin:0; font-weight:760; letter-spacing:-.01em; line-height:1.04}
 p{margin:0}
-a{color:inherit; text-decoration:none}
-.wrap{max-width:1160px; margin:0 auto; padding:0 24px}
-.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:13px 23px; border-radius:var(--radius-sm); font-weight:600; font-size:15px; cursor:pointer; border:1px solid transparent; transition:transform .15s ease, background .15s ease, box-shadow .15s ease}
-.btn-primary{background:var(--cta); color:var(--cta-ink); box-shadow:0 10px 24px -8px rgba(242,153,74,.45)}
-.btn-primary:hover{background:var(--cta-hover); transform:translateY(-1px)}
-.btn-ghost{background:transparent; color:var(--ink); border-color:var(--border-strong)}
-.btn-ghost:hover{background:rgba(255,255,255,.06)}
-.btn-block{width:100%}
+a{color:inherit}
+img{display:block; max-width:100%; height:auto}
+.wrap{max-width:1180px; margin:0 auto; padding:0 28px}
+.mono{font-family:var(--mono); font-size:12.5px; letter-spacing:.02em}
+.kicker{font-family:var(--mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3)}
+.kicker b{color:var(--orange-deep); font-weight:500}
 
-/* header */
-header.nav{position:sticky; top:0; z-index:30; background:rgba(10,14,26,.78); backdrop-filter:blur(10px); border-bottom:1px solid var(--border)}
-.nav-inner{display:flex; align-items:center; justify-content:space-between; padding:16px 24px}
-.brand{display:flex; align-items:center; gap:9px; font-family:var(--font-display); font-weight:700; font-size:18px; color:#fff}
-.brand-mark{width:28px; height:28px; border-radius:8px; background:var(--accent); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px -3px rgba(30,58,95,.7)}
-.nav-links{display:flex; align-items:center; gap:30px; font-size:14.5px; font-weight:500; color:var(--ink-2)}
-.nav-links a{position:relative; padding:4px 0; transition:color .2s ease}
-.nav-links a::after{content:""; position:absolute; left:0; right:100%; bottom:0; height:1.5px; background:var(--amber); transition:right .25s cubic-bezier(.16,1,.3,1)}
-.nav-links a:hover{color:#fff}
-.nav-links a:hover::after{right:0}
-.nav-cta{display:flex; align-items:center; gap:12px}
-.nav .btn-ghost{border-color:var(--border-strong); color:#fff}
-@media (max-width:720px){ .nav-links{display:none} }
+/* botões */
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:10px; padding:14px 22px; border-radius:6px; font:600 15px/1 var(--body); text-decoration:none; cursor:pointer; border:1.5px solid transparent; transition:background .15s ease, border-color .15s ease, color .15s ease}
+.btn-primary{background:var(--navy); color:var(--navy-ink)}
+.btn-primary:hover{background:var(--navy-2)}
+.btn-line{background:transparent; color:var(--ink); border-color:var(--ink)}
+.btn-line:hover{background:var(--ink); color:var(--paper)}
+.btn-block{width:100%}
+.btn .arr{font-family:var(--mono); font-weight:500}
+.link{font-weight:600; text-decoration:underline; text-decoration-thickness:1.5px; text-underline-offset:4px; text-decoration-color:var(--orange)}
+.link:hover{text-decoration-color:var(--ink)}
+
+/* topo */
+.top{border-bottom:1px solid var(--line); background:var(--paper)}
+.top-inner{display:flex; align-items:center; gap:36px; height:68px}
+.brand{display:flex; align-items:center; gap:10px; font:760 19px/1 var(--display); letter-spacing:-.01em; text-decoration:none; color:var(--ink)}
+.brand-mark{width:28px; height:28px; border-radius:7px; background:var(--navy); display:flex; align-items:center; justify-content:center; flex:0 0 auto}
+.top nav{display:flex; gap:26px; font-size:14.5px; color:var(--ink-2)}
+.top nav a{text-decoration:none}
+.top nav a:hover{color:var(--ink)}
+.top-cta{margin-left:auto; display:flex; align-items:center; gap:20px; font-size:14.5px}
+.top-cta .btn{padding:10px 16px; font-size:14px}
+.top-cta a.enter{text-decoration:none; font-weight:600}
+.top-cta a.enter:hover{text-decoration:underline}
 
 /* hero */
-.hero{position:relative; padding:120px 0 96px; overflow:hidden; background:
-    radial-gradient(900px 480px at 50% -10%, rgba(30,58,95,.65), transparent 60%),
-    radial-gradient(700px 420px at 90% 0%, rgba(242,153,74,.14), transparent 55%);
-}
-.hero::before{content:""; position:absolute; inset:0;
-  background-image:
-    linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
-  background-size:46px 46px;
-  -webkit-mask-image:radial-gradient(700px 420px at 50% 0%, rgba(0,0,0,.9), transparent 72%);
-  mask-image:radial-gradient(700px 420px at 50% 0%, rgba(0,0,0,.9), transparent 72%);
-  pointer-events:none;
-}
-.hero-inner{position:relative; z-index:1; text-align:center; max-width:780px; margin:0 auto}
-.eyebrow{display:inline-flex; align-items:center; gap:7px; background:var(--amber-soft); border:1px solid rgba(242,153,74,.35); color:var(--amber-ink); font-size:13px; font-weight:600; padding:6px 13px; border-radius:99px; margin-bottom:24px}
-.hero h1{font-size:60px; letter-spacing:-.025em; line-height:1.08; color:#fff}
-@media (max-width:720px){ .hero h1{font-size:38px} }
-.hero p.lead{margin-top:22px; font-size:18px; color:var(--ink-2); max-width:560px; margin-left:auto; margin-right:auto}
-.hero-actions{display:flex; gap:12px; margin-top:34px; flex-wrap:wrap; justify-content:center}
-.hero-note{margin-top:18px; font-size:13px; color:var(--ink-muted)}
+.hero{padding:72px 0 0}
+.hero-grid{display:grid; grid-template-columns:minmax(0,11fr) minmax(0,13fr); gap:56px; align-items:center}
+.hero h1{font-size:clamp(38px,4.1vw,54px); font-stretch:90%; letter-spacing:-.022em; margin-top:18px}
+.hero h1 em{font-style:normal; background:linear-gradient(transparent 62%, rgba(242,153,74,.55) 62%, rgba(242,153,74,.55) 92%, transparent 92%)}
+.hero .lead{margin-top:24px; font-size:18px; color:var(--ink-2); max-width:470px}
+.hero-actions{display:flex; align-items:center; gap:22px; margin-top:32px; flex-wrap:wrap}
+.facts{display:flex; flex-wrap:wrap; gap:8px 18px; margin-top:28px; padding-top:18px; border-top:1px dashed var(--line); color:var(--ink-2)}
+.facts span::before{content:"■"; color:var(--orange); font-size:8px; vertical-align:2px; margin-right:7px}
+.shot{margin:0; position:relative}
+.shot-frame{background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; box-shadow:10px 10px 0 var(--paper-2)}
+.shot figcaption{margin-top:16px; color:var(--ink-3)}
+.hero-shot{margin-right:calc(-1 * min(120px, max(0px, (100vw - 1180px) / 2 - 20px)))}
+.hero-shot .shot-frame img{width:100%}
 
-/* showcase (framed product screenshots) */
-.showcase{position:relative; z-index:1; margin-top:64px}
-.showcase-frame{background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--radius-xl); box-shadow:var(--shadow-lg); overflow:hidden}
-.showcase-bar{display:flex; align-items:center; gap:6px; padding:14px 18px; border-bottom:1px solid var(--border); background:var(--surface-2)}
-.showcase-bar span{width:9px; height:9px; border-radius:50%; background:var(--border-strong)}
-.showcase-frame img{display:block; width:100%; height:auto}
+/* faixa de equipamentos */
+.equip{margin-top:88px; border-top:1px solid var(--ink); border-bottom:1px solid var(--line); background:var(--paper)}
+.equip-inner{display:flex; gap:0; overflow-x:auto; scrollbar-width:none}
+.equip-inner::-webkit-scrollbar{display:none}
+.equip-inner span{flex:0 0 auto; padding:16px 22px; font-family:var(--mono); font-size:12.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-2); border-right:1px solid var(--line)}
+.equip-inner span:first-child{padding-left:0}
 
-/* trust line */
-.trust-line{padding:52px 0; text-align:center; border-bottom:1px solid var(--border)}
-.trust-line p{color:var(--ink-muted); font-size:13.5px; letter-spacing:.03em; text-transform:uppercase; font-weight:600}
+/* seções */
+.sec{padding:112px 0}
+.sec-head{display:grid; grid-template-columns:minmax(0,5fr) minmax(0,7fr); gap:56px; align-items:end; margin-bottom:56px}
+.sec-head h2{font-size:clamp(32px,3.6vw,46px); font-stretch:94%; letter-spacing:-.02em; margin-top:14px}
+.sec-head p:not(.kicker){color:var(--ink-2); font-size:17px; max-width:520px}
 
-/* sections */
-section{padding:100px 0}
-.section-head{text-align:center; max-width:640px; margin:0 auto 50px}
-.eyebrow-sm{display:inline-block; color:var(--amber-ink); font-size:13px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; margin-bottom:10px}
-.section-head h2{font-size:33px; letter-spacing:-.01em; color:#fff}
-.section-head p{margin-top:13px; color:var(--ink-2); font-size:16px}
+/* um dia na locadora */
+.day{border-top:1px solid var(--ink)}
+.day-row{display:grid; grid-template-columns:120px minmax(0,5fr) minmax(0,6fr); gap:40px; padding:34px 0; border-bottom:1px solid var(--line); align-items:start}
+.day-time{font-family:var(--mono); font-size:15px; font-weight:500; color:var(--orange-deep); padding-top:4px}
+.day-q{font:700 23px/1.2 var(--display); font-stretch:96%; letter-spacing:-.01em}
+.day-a{margin-top:12px; color:var(--ink-2); font-size:15.5px; max-width:430px}
 
-/* story (repeated feature+screenshot sections) */
-.story{border-top:1px solid var(--border)}
-.story-head{text-align:center; max-width:620px; margin:0 auto 46px}
-.story-head .eyebrow-sm{margin-bottom:14px}
-.story-head h2{font-size:48px; letter-spacing:-.02em; color:#fff}
-@media (max-width:640px){ .story-head h2{font-size:32px} }
-.story-head p{margin-top:16px; color:var(--ink-2); font-size:17px; max-width:520px; margin-left:auto; margin-right:auto}
+/* recortes de interface (feitos em HTML, mesmo visual do sistema) */
+.ui{background:var(--card); border:1px solid #E1E4EA; border-radius:10px; font-family:var(--body); font-size:13px; color:#1B2230; box-shadow:0 1px 2px rgba(20,26,36,.05)}
+.ui-head{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; border-bottom:1px solid #EDEFF3}
+.ui-title{font-weight:700; font-size:13.5px}
+.ui-sub{color:#7A8292; font-size:12px}
+.ui-row{display:flex; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid #F0F1F4}
+.ui-row:last-child{border-bottom:none}
+.ui-row .grow{flex:1; min-width:0}
+.ui-row .t{font-weight:600}
+.ui-row .s{color:#7A8292; font-size:12px; margin-top:1px}
+.ui-kv{display:flex; justify-content:space-between; gap:12px; padding:8px 14px; border-bottom:1px solid #F0F1F4}
+.ui-kv:last-child{border-bottom:none}
+.ui-kv span:first-child{color:#7A8292}
+.ui-kv span:last-child{font-weight:600; text-align:right}
+.tag{display:inline-flex; align-items:center; gap:6px; padding:3px 9px; border-radius:99px; font-size:11.5px; font-weight:600; white-space:nowrap}
+.tag::before{content:""; width:6px; height:6px; border-radius:50%; background:currentColor}
+.tag.ok{background:var(--good-bg); color:var(--good)}
+.tag.warn{background:var(--warn-bg); color:var(--warn)}
+.tag.bad{background:var(--bad-bg); color:var(--bad)}
+.tag.info{background:#E4ECF7; color:var(--navy)}
+.tag.muted{background:var(--muted-bg); color:#4A5261}
+.meter{height:8px; border-radius:99px; background:#EEF0F4; overflow:hidden; margin:4px 14px 12px}
+.meter i{display:block; height:100%; background:var(--navy); border-radius:99px}
+.ui-money{font:700 22px/1.1 var(--body); letter-spacing:-.01em}
+.ui-grid2{display:grid; grid-template-columns:1fr 1fr}
+.ui-grid2 > div{padding:12px 14px}
+.ui-grid2 > div + div{border-left:1px solid #EDEFF3}
+.ui-lbl{font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:#8A91A0; margin-bottom:6px}
+.ui-btn{display:inline-flex; padding:6px 10px; border-radius:6px; border:1px solid #D9DDE4; font-size:12px; font-weight:600; background:#fff}
+.ui-btn.primary{background:var(--navy); border-color:var(--navy); color:#fff}
 
-/* features */
-.grid-features{display:grid; grid-template-columns:repeat(3,1fr); gap:20px}
-@media (max-width:860px){ .grid-features{grid-template-columns:1fr 1fr} }
-@media (max-width:560px){ .grid-features{grid-template-columns:1fr} }
-.feature{background:rgba(255,255,255,.025); border:1px solid var(--border); border-radius:var(--radius-md); padding:26px; transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease}
-.feature:hover{transform:translateY(-4px); border-color:var(--border-strong)}
-.feature .ic{width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:16px}
-.ic-blue{background:var(--accent-soft); color:var(--accent-soft-ink)}
-.ic-amber{background:var(--amber-soft); color:var(--amber-ink)}
-.feature h3{font-size:17px; margin-bottom:8px; color:#fff}
-.feature p{color:var(--ink-2); font-size:14.5px}
+/* o que tem dentro */
+.inside{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); border-top:1px solid var(--ink)}
+.inside-col{padding:28px 32px 8px 0}
+.inside-col + .inside-col{padding-left:32px; border-left:1px solid var(--line)}
+.inside-col h3{font-size:14px; font-family:var(--mono); font-weight:500; letter-spacing:.08em; text-transform:uppercase; color:var(--orange-deep); margin-bottom:18px}
+.inside-col ul{list-style:none; margin:0; padding:0}
+.inside-col li{padding:14px 0; border-top:1px solid var(--line-soft)}
+.inside-col li:first-child{border-top:none; padding-top:0}
+.inside-col li b{display:block; font-weight:600; font-size:15.5px}
+.inside-col li span{display:block; color:var(--ink-2); font-size:14.5px; margin-top:3px}
 
-/* how it works */
-.steps{display:grid; grid-template-columns:repeat(3,1fr); gap:28px; position:relative}
-@media (max-width:860px){ .steps{grid-template-columns:1fr} }
-.steps::before{content:""; position:absolute; top:19px; left:12%; right:12%; height:2px; background:repeating-linear-gradient(90deg, var(--border-strong) 0 8px, transparent 8px 16px)}
-@media (max-width:860px){ .steps::before{display:none} }
-.step{position:relative; text-align:center}
-.step-num{width:38px; height:38px; border-radius:50%; background:var(--amber); color:var(--cta-ink); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:15px; font-weight:700; margin:0 auto 16px; position:relative; z-index:1; box-shadow:0 0 0 6px var(--bg)}
-.step h3{font-size:16.5px; margin-bottom:7px; color:#fff}
-.step p{color:var(--ink-2); font-size:14.5px; max-width:260px; margin:0 auto}
+/* escritório e rua */
+.devices{background:var(--navy); color:#E8EDF5}
+.devices .kicker{color:#9FB2CC}
+.devices .kicker b{color:var(--orange)}
+.devices h2{color:#fff}
+.devices .sec-head p{color:#B9C6D9}
+.devices-grid{display:grid; grid-template-columns:minmax(0,7fr) minmax(0,5fr); gap:56px; align-items:center}
+.devices-list{list-style:none; margin:0; padding:0; border-top:1px solid rgba(255,255,255,.22)}
+.devices-list li{padding:20px 0; border-bottom:1px solid rgba(255,255,255,.14)}
+.devices-list b{display:block; color:#fff; font-weight:600; font-size:16.5px}
+.devices-list span{display:block; color:#B9C6D9; font-size:15px; margin-top:4px}
+.devices .phone{max-width:300px; justify-self:center}
+.devices .shot-frame{border-color:rgba(255,255,255,.14); box-shadow:10px 10px 0 rgba(0,0,0,.22)}
+.devices .shot figcaption{color:#9FB2CC}
+.phone .shot-frame{border-radius:22px; border:6px solid #0E1D31}
 
-/* pricing */
-.plans{display:grid; grid-template-columns:1fr 1fr; gap:24px; max-width:840px; margin:0 auto}
-@media (max-width:720px){ .plans{grid-template-columns:1fr} }
-.plan{background:rgba(255,255,255,.025); border:1px solid var(--border); border-radius:var(--radius-lg); padding:34px; display:flex; flex-direction:column; transition:transform .18s ease, border-color .18s ease}
-.plan:hover{transform:translateY(-3px)}
-.plan.featured{border-color:rgba(242,153,74,.5); position:relative; background:linear-gradient(180deg, rgba(242,153,74,.08), rgba(255,255,255,.025) 140px)}
-.plan.featured::before{content:"Mais popular"; position:absolute; top:-13px; left:50%; transform:translateX(-50%); background:var(--amber); color:var(--cta-ink); font-size:12px; font-weight:700; padding:4px 13px; border-radius:99px}
-.plan-name{font-family:var(--font-display); font-weight:700; font-size:19px; color:#fff}
-.plan-desc{color:var(--ink-2); font-size:14px; margin-top:6px; min-height:40px}
-.plan-price{margin-top:22px; display:flex; align-items:baseline; gap:6px}
-.plan-price .num{font-family:var(--font-display); font-size:40px; font-weight:800; color:#fff}
-.plan-price .per{color:var(--ink-muted); font-size:14px}
-.plan-list{list-style:none; padding:0; margin:26px 0 28px; display:flex; flex-direction:column; gap:12px; flex:1}
-.plan-list li{display:flex; gap:10px; font-size:14.5px; color:var(--ink-2)}
-.plan-list li svg{flex:0 0 auto; color:var(--good); margin-top:2px}
+/* planos */
+.plans{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); border:1px solid var(--ink); border-radius:10px; overflow:hidden; background:var(--card)}
+.plan{padding:34px 36px 36px; display:flex; flex-direction:column}
+.plan + .plan{border-left:1px solid var(--ink)}
+.plan-name{font:760 26px/1 var(--display); font-stretch:96%}
+.plan-for{color:var(--ink-2); margin-top:10px; font-size:15px; min-height:46px}
+.plan-price{display:flex; align-items:baseline; gap:8px; margin-top:26px; padding-bottom:26px; border-bottom:1px dashed var(--line)}
+.plan-price .num{font:800 48px/1 var(--display); font-stretch:90%; letter-spacing:-.02em}
+.plan-price .per{color:var(--ink-3); font-family:var(--mono); font-size:13px}
+.plan ul{list-style:none; margin:22px 0 30px; padding:0; flex:1}
+.plan li{padding:9px 0 9px 26px; position:relative; font-size:15px; color:var(--ink-2)}
+.plan li::before{content:""; position:absolute; left:2px; top:15px; width:12px; height:7px; border-left:2px solid var(--good); border-bottom:2px solid var(--good); transform:rotate(-45deg)}
+.plans-note{margin-top:18px; color:var(--ink-3)}
 
-/* faq */
-.faq{max-width:720px; margin:0 auto; display:flex; flex-direction:column; gap:10px}
-.faq-item{background:rgba(255,255,255,.025); border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; transition:border-color .15s ease}
-.faq-item.open{border-color:var(--border-strong)}
-.faq-q{width:100%; text-align:left; padding:19px 20px; background:none; border:0; font-family:var(--font-body); font-weight:600; font-size:15px; color:var(--ink); cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:12px}
-.faq-a{padding:0 20px; max-height:0; overflow:hidden; transition:padding .2s ease, max-height .2s ease; color:var(--ink-2); font-size:14.5px}
-.faq-item.open .faq-a{padding:0 20px 19px; max-height:240px}
-.faq-item.open .chev{transform:rotate(180deg)}
-.chev{transition:transform .2s ease; flex:0 0 auto; color:var(--ink-muted)}
+/* perguntas */
+.faq{border-top:1px solid var(--ink); display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:56px}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{list-style:none; cursor:pointer; padding:22px 36px 22px 0; position:relative; font-weight:600; font-size:16.5px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+"; position:absolute; right:4px; top:18px; font-family:var(--mono); font-size:22px; font-weight:400; color:var(--orange-deep)}
+.faq details[open] summary::after{content:"−"}
+.faq details p{padding:0 36px 22px 0; color:var(--ink-2); font-size:15.5px}
 
-/* final cta */
-.final-cta{position:relative; text-align:center; padding:90px 0 90px}
-.final-cta::before{content:""; position:absolute; left:50%; top:0; transform:translateX(-50%); width:640px; height:320px; background:radial-gradient(circle, rgba(242,153,74,.16), transparent 68%); pointer-events:none}
-.final-cta h2{position:relative; font-size:40px; color:#fff; letter-spacing:-.02em}
-@media (max-width:640px){ .final-cta h2{font-size:28px} }
-.final-cta p{position:relative; color:var(--ink-2); margin-top:14px; max-width:480px; margin-left:auto; margin-right:auto; font-size:16px}
-.final-cta .hero-actions{position:relative; justify-content:center; margin-top:30px}
+/* fechamento */
+.closing{border-top:1px solid var(--ink); padding:88px 0}
+.closing-grid{display:grid; grid-template-columns:minmax(0,7fr) minmax(0,4fr); gap:56px; align-items:end}
+.closing h2{font-size:clamp(34px,4.2vw,56px); font-stretch:92%; letter-spacing:-.025em}
+.closing p{color:var(--ink-2); font-size:17px; margin-top:18px; max-width:520px}
+.closing-actions{display:flex; flex-direction:column; gap:14px; align-items:flex-start}
 
-footer{border-top:1px solid var(--border); padding:34px 0; text-align:center; color:var(--ink-muted); font-size:13px}
-footer .brand{justify-content:center; margin-bottom:10px; font-size:15px; color:var(--ink-2)}
-footer .brand-mark{width:22px; height:22px}
+footer{border-top:1px solid var(--line); padding:28px 0 calc(28px + env(safe-area-inset-bottom,0px)); font-size:13.5px; color:var(--ink-3)}
+.foot{display:flex; align-items:center; gap:24px; flex-wrap:wrap}
+.foot .brand{font-size:16px}
+.foot .brand-mark{width:24px; height:24px}
+.foot nav{display:flex; gap:20px}
+.foot nav a{text-decoration:none; color:var(--ink-2)}
+.foot nav a:hover{color:var(--ink)}
+.foot .right{margin-left:auto}
 
-/* checkout modal */
-.modal-overlay{position:fixed; inset:0; background:rgba(4,6,14,.7); display:none; align-items:center; justify-content:center; z-index:100; padding:20px}
+/* modal de checkout */
+.modal-overlay{position:fixed; inset:0; background:rgba(19,26,36,.55); display:none; align-items:center; justify-content:center; z-index:100; padding:20px}
 .modal-overlay.open{display:flex}
-.modal-card{background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--radius-lg); padding:28px; max-width:400px; width:100%; box-shadow:var(--shadow-lg)}
-.modal-card h3{font-size:19px; margin-bottom:6px; color:#fff}
-.modal-card p{color:var(--ink-2); font-size:14px; margin-bottom:18px}
-.modal-actions{display:flex; gap:10px; margin-top:20px}
+.modal-card{background:var(--card); border:1px solid var(--ink); border-radius:10px; padding:28px; max-width:420px; width:100%}
+.modal-card h3{font-size:22px; font-stretch:96%}
+.modal-card p{color:var(--ink-2); font-size:14.5px; margin-top:10px}
+.modal-actions{display:flex; gap:10px; margin-top:22px}
 
-/* ---------- mobile ---------- */
-.final-cta{overflow:hidden}
-@media (max-width:720px){
-  .wrap{padding:0 20px}
-  .nav-inner{padding:12px 16px}
-  section{padding:68px 0}
-  .section-head{margin-bottom:34px}
-  .section-head h2{font-size:28px}
-  .story-head{margin-bottom:32px}
-  .hero{padding:56px 0 64px}
-  .hero p.lead{font-size:16.5px; margin-top:18px}
-  .hero-actions{flex-direction:column; align-items:stretch; max-width:340px; margin-left:auto; margin-right:auto; margin-top:28px}
-  .hero-actions .btn{width:100%; padding:14px 20px}
-  .showcase{margin-top:44px}
-  .showcase-bar{padding:10px 14px}
-  .trust-line{padding:36px 0}
-  .trust-line p{font-size:12.5px}
-  .plan{padding:26px 22px}
-  .plan-desc{min-height:0}
-  .plan:hover{transform:none}
-  .faq-q{padding:16px 16px; font-size:14.5px}
-  .faq-a{padding:0 16px}
-  .faq-item.open .faq-a{padding:0 16px 16px; max-height:400px}
-  .final-cta{padding:64px 0}
-  .final-cta::before{width:100%}
-  footer{padding:28px 0 calc(28px + env(safe-area-inset-bottom,0px))}
+:focus-visible{outline:2px solid var(--orange-deep); outline-offset:3px}
+
+/* ---------- tablet ---------- */
+@media (max-width:1100px){
+  .hero-shot{margin-right:0}
 }
-@media (max-width:560px){
-  /* no celular a vitrine mostra o painel na versão mobile, num quadro estreito */
-  .showcase-frame{max-width:300px; margin:0 auto; border-radius:26px}
-  .showcase-bar{justify-content:center}
-  .showcase-frame img{max-height:520px; object-fit:cover; object-position:top}
+@media (max-width:960px){
+  .top nav{display:none}
+  .hero-grid, .sec-head, .closing-grid{grid-template-columns:minmax(0,1fr); gap:28px}
+  .hero{padding-top:48px}
+  .hero .lead{max-width:600px}
+  .hero-shot{margin-top:12px}
+  .equip{margin-top:64px}
+  .sec{padding:80px 0}
+  .sec-head{margin-bottom:40px}
+  .day-row{grid-template-columns:90px minmax(0,1fr); gap:10px 24px}
+  .day-row .ui{grid-column:2}
+  .inside{grid-template-columns:minmax(0,1fr)}
+  .inside-col, .inside-col + .inside-col{padding:26px 0 6px; border-left:none}
+  .inside-col + .inside-col{border-top:1px solid var(--line)}
+  .devices-grid{grid-template-columns:minmax(0,1fr) minmax(0,240px); gap:32px}
+  .faq{grid-template-columns:minmax(0,1fr)}
 }
-@media (max-width:480px){
-  .nav-inner{gap:10px}
-  .nav .brand{font-size:16px}
-  .nav-cta{gap:8px}
-  .nav-cta .btn{padding:9px 13px; font-size:13.5px; white-space:nowrap}
-  .nav-cta .btn-primary{box-shadow:none}
-  .eyebrow{font-size:12px; padding:5px 11px; margin-bottom:20px}
-  .hero h1{font-size:33px; letter-spacing:-.02em}
+/* ---------- celular ---------- */
+@media (max-width:640px){
+  .wrap{padding:0 18px}
+  .top-inner{height:60px; gap:16px}
+  .top-cta{gap:14px; font-size:14px}
+  .top-cta .btn{padding:9px 13px; font-size:13.5px}
+  .hero{padding-top:36px}
+  .hero h1{font-size:38px; letter-spacing:-.02em}
+  .hero .lead{font-size:16.5px; margin-top:18px}
+  .hero-actions{flex-direction:column; align-items:stretch; gap:16px}
+  .hero-actions .btn{width:100%}
+  .hero-actions .link{text-align:center}
+  .shot-frame{box-shadow:6px 6px 0 var(--paper-2)}
+  .equip{margin-top:48px}
+  .equip-inner span{padding:14px 18px}
+  .sec{padding:64px 0}
+  .sec-head h2{font-size:30px}
+  .sec-head p{font-size:16px}
+  .day-row{grid-template-columns:minmax(0,1fr); gap:12px; padding:28px 0}
+  .day-row .ui{grid-column:1}
+  .day-time{padding-top:0}
+  .day-q{font-size:21px}
+  .devices-grid{grid-template-columns:minmax(0,1fr)}
+  .devices .phone{max-width:260px}
+  .plans{grid-template-columns:minmax(0,1fr)}
+  .plan{padding:28px 22px}
+  .plan + .plan{border-left:none; border-top:1px solid var(--ink)}
+  .plan-for{min-height:0}
+  .closing{padding:64px 0}
+  .closing h2{font-size:32px}
+  .closing-actions{align-items:stretch}
+  .closing-actions .btn{width:100%}
+  .foot .right{margin-left:0; width:100%}
 }
 @media (max-width:360px){
-  .nav-cta .btn-ghost{display:none}
-  .hero h1{font-size:30px}
+  .top-cta a.enter{display:none}
+  .hero h1{font-size:33px}
 }
-
-/* scroll-reveal animations */
-@media (prefers-reduced-motion: no-preference){
-  [data-reveal]{opacity:0; transform:translateY(28px); transition:opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1); transition-delay:var(--d,0ms)}
-  [data-reveal].in-view{opacity:1; transform:translateY(0)}
-  .hero-inner .eyebrow{transition-delay:0ms}
-  .hero-inner h1{transition-delay:80ms}
-  .hero-inner .lead{transition-delay:160ms}
-  .hero-inner .hero-actions{transition-delay:230ms}
-  .hero-inner .hero-note{transition-delay:290ms}
-}
-@keyframes pulseGlow{
-  0%,100%{opacity:.55}
-  50%{opacity:1}
-}
-.eyebrow svg{animation:pulseGlow 2.8s ease-in-out infinite}
-
-/* card hover motion */
-.showcase-frame{transition:transform .35s cubic-bezier(.16,1,.3,1), border-color .35s ease, box-shadow .35s ease}
-.showcase:hover .showcase-frame{transform:translateY(-6px); border-color:rgba(242,153,74,.35); box-shadow:0 50px 100px -20px rgba(0,0,0,.7)}
-.feature, .plan, .faq-item{transition:transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s ease, border-color .3s ease}
-.step-num{transition:transform .3s ease, box-shadow .3s ease}
-.step:hover .step-num{transform:scale(1.1)}
+@media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} }
 </style>
 </head>
 <body>
 
-<header class="nav">
-  <div class="wrap nav-inner">
-    <div class="brand">
-      <div class="brand-mark"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M8.4 6 L9 6 Q10.4 6 10.4 7.4 L10.4 13.6 L14.8 13.6 Q16.2 13.6 16.2 15 L16.2 15.6 Q16.2 17 14.8 17 L8.4 17 Q7 17 7 15.6 L7 7.4 Q7 6 8.4 6 Z" fill="white"/><circle cx="13.3" cy="5.4" r="1.5" fill="#F2994A"/></svg></div>
+<header class="top">
+  <div class="wrap top-inner">
+    <a class="brand" href="#" aria-label="Locarion, início">
+      <span class="brand-mark"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8.4 6 L9 6 Q10.4 6 10.4 7.4 L10.4 13.6 L14.8 13.6 Q16.2 13.6 16.2 15 L16.2 15.6 Q16.2 17 14.8 17 L8.4 17 Q7 17 7 15.6 L7 7.4 Q7 6 8.4 6 Z" fill="white"/><circle cx="13.3" cy="5.4" r="1.5" fill="#F2994A"/></svg></span>
       Locarion
-    </div>
-    <nav class="nav-links">
-      <a href="#recursos">Recursos</a>
-      <a href="#como-funciona">Como funciona</a>
-      <a href="#precos">Preços</a>
-      <a href="#faq">Perguntas frequentes</a>
+    </a>
+    <nav aria-label="Seções">
+      <a href="#dia">Na prática</a>
+      <a href="#sistema">O que tem</a>
+      <a href="#precos">Planos</a>
+      <a href="#perguntas">Perguntas</a>
     </nav>
-    <div class="nav-cta">
-      <a href="login.html" class="btn btn-ghost">Entrar</a>
-      <a href="#precos" class="btn btn-primary">Assinar agora</a>
+    <div class="top-cta">
+      <a class="enter" href="login.html">Entrar</a>
+      <a class="btn btn-primary" href="#precos">Ver planos</a>
     </div>
   </div>
 </header>
 
+<main>
 <section class="hero">
-  <div class="wrap">
-    <div class="hero-inner">
-      <span class="eyebrow" data-reveal><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2 3 6v6c0 5 4 8.5 9 10 5-1.5 9-5 9-10V6l-9-4Z"/></svg> Feito para locação de equipamentos na construção civil</span>
-      <h1 data-reveal>Chega de planilha para controlar sua locadora de equipamentos de obra</h1>
-      <p class="lead" data-reveal>O Locarion reúne equipamentos, contratos, agenda de retiradas e devoluções em obra, financeiro e clientes em um só sistema — pensado para locadoras que atendem construtoras, empreiteiras e profissionais da construção civil.</p>
-      <div class="hero-actions" data-reveal>
-        <a href="#precos" class="btn btn-primary">Assinar agora</a>
-        <a href="login.html" class="btn btn-ghost">Já tenho conta</a>
+  <div class="wrap hero-grid">
+    <div>
+      <p class="kicker"><b>●</b> Sistema para locadora de equipamentos de obra</p>
+      <h1>Cada betoneira, andaime e gerador: <em>onde está</em>, com quem e quando volta.</h1>
+      <p class="lead">O Locarion junta contrato, retirada, devolução, manutenção e cobrança num lugar só. Você para de depender de planilha e do caderno do balcão para saber o que está na rua.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#precos">Ver planos e assinar <span class="arr">→</span></a>
+        <a class="link" href="login.html">Já sou cliente, entrar</a>
       </div>
-      <p class="hero-note" data-reveal>Cancele quando quiser. Sem cartão para começar a testar.</p>
+      <div class="facts mono">
+        <span>A partir de R$ 97/mês</span>
+        <span>Sem fidelidade</span>
+        <span>Funciona no celular</span>
+      </div>
     </div>
-    <div class="showcase wrap" style="padding:0" data-reveal>
-      <div class="showcase-frame">
-        <div class="showcase-bar"><span></span><span></span><span></span></div>
-        <picture><source media="(max-width:560px)" srcset="assets/dashboard-mobile.webp" type="image/webp" width="600" height="800"><img src="assets/dashboard-preview.png" alt="Painel do Locarion mostrando visão geral de equipamentos, contratos e financeiro"></picture>
+    <figure class="shot hero-shot">
+      <div class="shot-frame">
+        <picture>
+          <source media="(max-width:640px)" srcset="assets/dashboard-mobile.webp" type="image/webp" width="600" height="800">
+          <source srcset="assets/painel.webp" type="image/webp" width="1280" height="800">
+          <img src="assets/dashboard-preview.png" width="2000" height="1156" alt="Tela inicial do Locarion com alertas de contratos, devoluções previstas, faturamento do mês e disponibilidade dos equipamentos">
+        </picture>
+      </div>
+      <figcaption class="mono">Tela inicial do Locarion (dados de exemplo)</figcaption>
+    </figure>
+  </div>
+
+  <div class="equip" aria-label="Tipos de equipamento">
+    <div class="wrap equip-inner">
+      <span>Betoneiras</span><span>Andaimes</span><span>Escoras</span><span>Compactadores</span><span>Placas vibratórias</span><span>Geradores</span><span>Marteletes</span><span>Serras</span>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="dia">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <p class="kicker"><b>01</b> &nbsp;Na prática</p>
+        <h2>Um dia comum de locadora, com o Locarion aberto.</h2>
+      </div>
+      <p>Estas situações se repetem toda semana no balcão de qualquer locadora. Veja o que o sistema faz em cada uma.</p>
+    </div>
+
+    <div class="day">
+      <div class="day-row">
+        <div class="day-time">07:10</div>
+        <div>
+          <h3 class="day-q">O motorista chega e pergunta o que sai hoje.</h3>
+          <p class="day-a">A agenda mostra o que sai e o que volta no dia, com cliente e equipamento. Ele confere pelo celular mesmo.</p>
+        </div>
+        <div class="ui" aria-hidden="true">
+          <div class="ui-head"><span class="ui-title">Hoje</span><span class="ui-sub">3 movimentações</span></div>
+          <div class="ui-row"><div class="grow"><div class="t">Retirada · Betoneira 400L</div><div class="s">Construtora Alfa · Residencial Jardins, Setor Bueno</div></div><span class="tag info">Sai</span></div>
+          <div class="ui-row"><div class="grow"><div class="t">Retirada · Placa vibratória</div><div class="s">Vega Engenharia · Galpão DAIA, Anápolis</div></div><span class="tag info">Sai</span></div>
+          <div class="ui-row"><div class="grow"><div class="t">Devolução · Serra mármore</div><div class="s">Obras Ferreira · Rua 9, Setor Oeste</div></div><span class="tag ok">Volta</span></div>
+        </div>
+      </div>
+
+      <div class="day-row">
+        <div class="day-time">09:30</div>
+        <div>
+          <h3 class="day-q">A construtora liga pedindo mais 10 dias de andaime.</h3>
+          <p class="day-a">Você muda a data no contrato e o valor é recalculado pela melhor tarifa do item: diária, semanal, quinzenal ou mensal. O texto sai do seu próprio modelo de contrato.</p>
+        </div>
+        <div class="ui" aria-hidden="true">
+          <div class="ui-head"><span class="ui-title">Contrato CT-0232</span><span class="tag warn">Assinatura pendente</span></div>
+          <div class="ui-kv"><span>Cliente</span><span>Vega Engenharia</span></div>
+          <div class="ui-kv"><span>Itens</span><span>60 × Andaime tubular 1,5m</span></div>
+          <div class="ui-kv"><span>Devolução</span><span>12/10 → 22/10</span></div>
+          <div class="ui-kv"><span>Valor</span><span>R$ 4.320,00</span></div>
+        </div>
+      </div>
+
+      <div class="day-row">
+        <div class="day-time">13:00</div>
+        <div>
+          <h3 class="day-q">Pedem 40 peças de andaime e ninguém lembra quantas estão no pátio.</h3>
+          <p class="day-a">Andaime, escora e peça miúda ficam em estoque por quantidade. O saldo livre aparece na hora, descontando o que já está alugado.</p>
+        </div>
+        <div class="ui" aria-hidden="true">
+          <div class="ui-head"><span class="ui-title">Andaime tubular 1,5m</span><span class="ui-sub">estoque</span></div>
+          <div class="ui-grid2">
+            <div><div class="ui-lbl">No pátio</div><div class="ui-money">180</div></div>
+            <div><div class="ui-lbl">Alugadas</div><div class="ui-money">60</div></div>
+          </div>
+          <div class="meter"><i style="width:75%"></i></div>
+        </div>
+      </div>
+
+      <div class="day-row">
+        <div class="day-time">16:45</div>
+        <div>
+          <h3 class="day-q">O compactador voltou fazendo barulho estranho.</h3>
+          <p class="day-a">Você registra a manutenção e ele sai da lista de disponíveis até ficar pronto. Dá para programar a revisão preventiva a cada tantos meses.</p>
+        </div>
+        <div class="ui" aria-hidden="true">
+          <div class="ui-head"><span class="ui-title">Manutenção</span><span class="tag warn">Agendada</span></div>
+          <div class="ui-kv"><span>Equipamento</span><span>Compactador de solo (sapo)</span></div>
+          <div class="ui-kv"><span>Tipo</span><span>Corretiva</span></div>
+          <div class="ui-kv"><span>Oficina</span><span>Oficina Central</span></div>
+          <div class="ui-kv"><span>Status do equipamento</span><span><span class="tag warn">Manutenção</span></span></div>
+        </div>
+      </div>
+
+      <div class="day-row">
+        <div class="day-time">18:00</div>
+        <div>
+          <h3 class="day-q">Fechando o dia: quem está devendo?</h3>
+          <p class="day-a">O financeiro separa o que entrou no mês, o que ainda vai vencer e o que já atrasou, cliente por cliente. Os atrasos aparecem como alerta logo na tela inicial.</p>
+        </div>
+        <div class="ui" aria-hidden="true">
+          <div class="ui-grid2" style="border-bottom:1px solid #EDEFF3">
+            <div><div class="ui-lbl">Recebido no mês</div><div class="ui-money" style="color:var(--good)">R$ 3.540</div></div>
+            <div><div class="ui-lbl">A receber</div><div class="ui-money" style="color:var(--warn)">R$ 1.300</div></div>
+          </div>
+          <div class="ui-row"><div class="grow"><div class="t">Obras Ferreira</div><div class="s">Locação serra mármore · venceu há 2 dias</div></div><span class="tag bad">Atrasado</span></div>
+          <div class="ui-row"><div class="grow"><div class="t">Vega Engenharia</div><div class="s">Boleto · vence amanhã</div></div><span class="tag warn">Pendente</span></div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<div class="trust-line">
-  <p>Feito para locadoras de betoneiras, andaimes, geradores e compactadores</p>
-</div>
-
-<section id="recursos">
+<section class="sec" id="sistema" style="padding-top:24px">
   <div class="wrap">
-    <div class="section-head" data-reveal>
-      <span class="eyebrow-sm">Recursos</span>
-      <h2>Tudo que a sua locadora de equipamentos de obra precisa, em um lugar só</h2>
-      <p>Sem planilha, sem papel espalhado, sem perder o controle do que está alugado em cada canteiro de obra.</p>
+    <div class="sec-head">
+      <div>
+        <p class="kicker"><b>02</b> &nbsp;O que tem dentro</p>
+        <h2>Feito para o jeito que locadora de obra trabalha.</h2>
+      </div>
+      <p>Tudo roda no navegador, sem instalar nada. Cada empresa tem seus dados separados, acessados com a conta Google de quem usa.</p>
     </div>
-    <div class="grid-features">
-      <div class="feature" data-reveal style="--d:0ms">
-        <div class="ic ic-blue"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
-        <h3>Controle de equipamentos</h3>
-        <p>Cadastre seu inventário de equipamentos de obra, acompanhe status (em uso, disponível, manutenção) e histórico de cada item.</p>
+    <div class="inside">
+      <div class="inside-col">
+        <h3>Operação</h3>
+        <ul>
+          <li><b>Equipamentos por unidade ou por quantidade</b><span>Betoneira com código próprio, andaime e escora por saldo em estoque. Tarifa diária, semanal, quinzenal e mensal.</span></li>
+          <li><b>Disponíveis e localizar</b><span>O que está livre agora e em qual obra está cada item alugado.</span></li>
+          <li><b>Agenda de retirada e devolução</b><span>Calendário do mês e lista dos próximos dias.</span></li>
+          <li><b>Manutenção</b><span>Corretiva e preventiva, com custo e oficina registrados.</span></li>
+        </ul>
       </div>
-      <div class="feature" data-reveal style="--d:60ms">
-        <div class="ic ic-amber"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/></svg></div>
-        <h3>Contratos e orçamentos</h3>
-        <p>Gere contratos a partir de modelo próprio, controle assinaturas e converta orçamentos em contratos com um clique — prontos para construtoras e empreiteiras.</p>
+      <div class="inside-col">
+        <h3>Contratos</h3>
+        <ul>
+          <li><b>Contrato no seu modelo</b><span>Cláusulas suas, preenchidas com cliente, itens, datas e valores.</span></li>
+          <li><b>Orçamentos</b><span>A proposta reserva o equipamento até virar contrato ou ser recusada.</span></li>
+          <li><b>Assinaturas</b><span>Saiba quais contratos ainda estão sem assinatura do cliente.</span></li>
+          <li><b>Clientes</b><span>PF e PJ, endereços de entrega, contatos e limite de crédito.</span></li>
+        </ul>
       </div>
-      <div class="feature" data-reveal style="--d:120ms">
-        <div class="ic ic-blue"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="6" width="19" height="13" rx="2"/><path d="M2.5 10h19"/></svg></div>
-        <h3>Financeiro completo</h3>
-        <p>Faturas, contas a pagar e receber, despesas e relatórios — saiba exatamente quanto entra e sai em cada obra.</p>
-      </div>
-      <div class="feature" data-reveal style="--d:0ms">
-        <div class="ic ic-blue"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg></div>
-        <h3>Agenda de retiradas e devoluções</h3>
-        <p>Veja de forma visual o que sai e o que volta de cada canteiro de obra, sem depender da memória de ninguém.</p>
-      </div>
-      <div class="feature" data-reveal style="--d:60ms">
-        <div class="ic ic-amber"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/></svg></div>
-        <h3>Base de clientes</h3>
-        <p>Histórico de locações, contatos e origem de cada construtora, empreiteira ou cliente centralizados.</p>
-      </div>
-      <div class="feature" data-reveal style="--d:120ms">
-        <div class="ic ic-blue"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.3 2.3L16 10"/></svg></div>
-        <h3>Manutenção preventiva</h3>
-        <p>Acompanhe manutenções agendadas e concluídas para reduzir imprevistos com equipamentos que trabalham pesado na obra.</p>
+      <div class="inside-col">
+        <h3>Dinheiro</h3>
+        <ul>
+          <li><b>Faturas e recebimentos</b><span>Pendentes, pagas e atrasadas, por cliente e contrato.</span></li>
+          <li><b>Contas a pagar e receber</b><span>Despesas da locadora no mesmo lugar que as receitas.</span></li>
+          <li><b>Relatórios</b><span>Receita por mês, formas de pagamento e uso dos equipamentos.</span></li>
+          <li><b>Exportar em CSV</b><span>Leve os lançamentos para a sua planilha ou para o contador.</span></li>
+        </ul>
       </div>
     </div>
   </div>
 </section>
 
-<section id="como-funciona" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border)">
+<section class="sec devices">
   <div class="wrap">
-    <div class="section-head" data-reveal>
-      <span class="eyebrow-sm">Como funciona</span>
-      <h2>Comece a usar em poucos minutos</h2>
-      <p>Sem instalar nada, direto no navegador.</p>
+    <div class="sec-head">
+      <div>
+        <p class="kicker"><b>03</b> &nbsp;Escritório e rua</p>
+        <h2>Abre no celular de quem está na obra.</h2>
+      </div>
+      <p>A mesma conta funciona no computador do escritório e no navegador do celular. Não tem aplicativo para baixar nem nada para instalar.</p>
     </div>
-    <div class="steps">
-      <div class="step" data-reveal style="--d:0ms"><div class="step-num">1</div><h3>Escolha seu plano</h3><p>Selecione o plano ideal para o tamanho da sua operação.</p></div>
-      <div class="step" data-reveal style="--d:100ms"><div class="step-num">2</div><h3>Entre com sua conta Google</h3><p>Login rápido e seguro — sem senha para lembrar.</p></div>
-      <div class="step" data-reveal style="--d:200ms"><div class="step-num">3</div><h3>Comece a gerenciar</h3><p>Cadastre equipamentos e clientes e já emita seu primeiro contrato para a obra.</p></div>
+    <div class="devices-grid">
+      <ul class="devices-list">
+        <li><b>Motorista confere a agenda na rua</b><span>O que retirar, o que devolver e em qual obra, sem ligar para o escritório.</span></li>
+        <li><b>Contrato aberto em qualquer lugar</b><span>Itens, datas, valor e se o cliente já assinou.</span></li>
+        <li><b>Listas que cabem na tela</b><span>No celular, cada linha vira uma ficha com os dados principais e as ações embaixo.</span></li>
+      </ul>
+      <figure class="shot phone">
+        <div class="shot-frame"><img src="assets/dashboard-mobile.webp" width="600" height="800" loading="lazy" alt="Tela inicial do Locarion no celular"></div>
+        <figcaption class="mono">Tela inicial no celular (dados de exemplo)</figcaption>
+      </figure>
     </div>
   </div>
 </section>
 
-<section id="precos">
+<section class="sec" id="precos">
   <div class="wrap">
-    <div class="section-head" data-reveal>
-      <span class="eyebrow-sm">Preços</span>
-      <h2>Preços simples e diretos</h2>
-      <p>Sem taxa de setup, sem contrato de fidelidade.</p>
+    <div class="sec-head">
+      <div>
+        <p class="kicker"><b>04</b> &nbsp;Planos</p>
+        <h2>Dois planos. Mensal, sem fidelidade.</h2>
+      </div>
+      <p>Sem taxa de implantação. Se não servir para a sua locadora, você cancela quando quiser.</p>
     </div>
     <div class="plans">
-      <div class="plan" data-reveal style="--d:0ms">
+      <div class="plan">
         <span class="plan-name">Profissional</span>
-        <p class="plan-desc">Para locadoras de equipamentos de obra em crescimento.</p>
+        <p class="plan-for">Para a locadora que quer tirar a operação da planilha.</p>
         <div class="plan-price"><span class="num">R$ 97</span><span class="per">/mês</span></div>
-        <ul class="plan-list">
-          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Equipamentos e contratos ilimitados</li>
-          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Agenda e financeiro completos</li>
-          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Até 3 usuários</li>
-          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Suporte por e-mail</li>
+        <ul>
+          <li>Equipamentos e contratos ilimitados</li>
+          <li>Agenda e financeiro completos</li>
+          <li>Até 3 usuários</li>
+          <li>Suporte por e-mail</li>
         </ul>
-        <button class="btn btn-primary btn-block" data-plan="profissional" data-price="R$ 97/mês" onclick="openCheckout(this)">Assinar Profissional</button>
+        <button class="btn btn-line btn-block" data-plan="profissional" data-price="R$ 97/mês" onclick="openCheckout(this)">Assinar o Profissional</button>
       </div>
-      <div class="plan featured" data-reveal style="--d:100ms">
+      <div class="plan">
         <span class="plan-name">Enterprise</span>
-        <p class="plan-desc">Para operações maiores, com múltiplas filiais e obras simultâneas.</p>
+        <p class="plan-for">Para operações maiores, com filiais e muitas obras ao mesmo tempo.</p>
         <div class="plan-price"><span class="num">R$ 197</span><span class="per">/mês</span></div>
-        <ul class="plan-list">
-          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Tudo do Profissional</li>
-          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Usuários ilimitados</li>
-          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Relatórios avançados</li>
-          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Suporte prioritário</li>
+        <ul>
+          <li>Tudo do Profissional</li>
+          <li>Usuários ilimitados</li>
+          <li>Relatórios avançados</li>
+          <li>Suporte prioritário</li>
         </ul>
-        <button class="btn btn-primary btn-block" data-plan="enterprise" data-price="R$ 197/mês" onclick="openCheckout(this)">Assinar Enterprise</button>
+        <button class="btn btn-primary btn-block" data-plan="enterprise" data-price="R$ 197/mês" onclick="openCheckout(this)">Assinar o Enterprise</button>
       </div>
     </div>
+    <p class="plans-note mono">Pagamento pelo Asaas. Depois de assinar, você entra com sua conta Google.</p>
   </div>
 </section>
 
-<section id="faq" style="background:var(--surface); border-top:1px solid var(--border)">
+<section class="sec" id="perguntas" style="padding-top:24px">
   <div class="wrap">
-    <div class="section-head" data-reveal>
-      <span class="eyebrow-sm">FAQ</span>
-      <h2>Perguntas frequentes</h2>
+    <div class="sec-head">
+      <div>
+        <p class="kicker"><b>05</b> &nbsp;Perguntas</p>
+        <h2>O que costumam perguntar.</h2>
+      </div>
     </div>
     <div class="faq">
-      <div class="faq-item" data-reveal style="--d:0ms">
-        <button class="faq-q" onclick="toggleFaq(this)">Preciso instalar algum programa?<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
-        <div class="faq-a">Não. O Locarion roda direto no navegador, em qualquer computador ou celular.</div>
+      <div>
+        <details>
+          <summary>Preciso instalar algum programa?</summary>
+          <p>Não. O Locarion abre no navegador, no computador ou no celular. É só entrar com a conta Google.</p>
+        </details>
+        <details>
+          <summary>Consigo acompanhar várias obras ao mesmo tempo?</summary>
+          <p>Sim. Cada contrato guarda o endereço da obra, e você vê o que está alugado, onde está e quando volta, mesmo com várias construtoras ao mesmo tempo.</p>
+        </details>
+        <details>
+          <summary>Serve para andaime e escora, que são muitas peças?</summary>
+          <p>Serve. Esses itens ficam em estoque por quantidade, e o sistema mostra quantas peças estão livres e quantas estão alugadas.</p>
+        </details>
       </div>
-      <div class="faq-item" data-reveal style="--d:40ms">
-        <button class="faq-q" onclick="toggleFaq(this)">Dá para acompanhar equipamentos em várias obras ao mesmo tempo?<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
-        <div class="faq-a">Sim. Você vê de forma centralizada o que está alugado, em qual obra e quando deve voltar, mesmo atendendo várias construtoras e canteiros ao mesmo tempo.</div>
-      </div>
-      <div class="faq-item" data-reveal style="--d:80ms">
-        <button class="faq-q" onclick="toggleFaq(this)">Como funciona o login?<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
-        <div class="faq-a">O acesso é feito exclusivamente com sua conta Google — sem senha adicional para gerenciar.</div>
-      </div>
-      <div class="faq-item" data-reveal style="--d:120ms">
-        <button class="faq-q" onclick="toggleFaq(this)">Posso cancelar quando quiser?<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
-        <div class="faq-a">Sim, não há fidelidade. Você pode cancelar sua assinatura a qualquer momento.</div>
-      </div>
-      <div class="faq-item" data-reveal style="--d:160ms">
-        <button class="faq-q" onclick="toggleFaq(this)">Meus dados ficam seguros?<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
-        <div class="faq-a">Sim, cada empresa tem seus dados isolados e acessíveis apenas pela própria conta.</div>
+      <div>
+        <details>
+          <summary>Como funciona o login?</summary>
+          <p>Pela sua conta Google. Não tem senha nova para decorar, e cada empresa só enxerga os próprios dados.</p>
+        </details>
+        <details>
+          <summary>Posso cancelar quando quiser?</summary>
+          <p>Pode. Não tem fidelidade nem multa. A assinatura é mensal.</p>
+        </details>
+        <details>
+          <summary>Posso usar o meu modelo de contrato?</summary>
+          <p>Pode. Você cola o texto do seu contrato nas configurações e o sistema preenche cliente, equipamentos, datas e valores em cada locação.</p>
+        </details>
       </div>
     </div>
   </div>
 </section>
 
-<section class="final-cta" style="border-top:1px solid var(--border)">
-  <div class="wrap" data-reveal>
-    <h2>Pronto para organizar a locação de equipamentos da sua obra?</h2>
-    <p>Assine agora e comece a usar o Locarion hoje mesmo.</p>
-    <div class="hero-actions">
-      <a href="#precos" class="btn btn-primary">Ver planos</a>
-      <a href="login.html" class="btn btn-ghost">Já sou cliente</a>
+<section class="closing">
+  <div class="wrap closing-grid">
+    <div>
+      <h2>Cadastre seus equipamentos hoje e emita o primeiro contrato ainda nesta semana.</h2>
+      <p>Assine, entre com a conta Google e comece pelo que você mais usa. O resto vai entrando conforme as locações acontecem.</p>
+    </div>
+    <div class="closing-actions">
+      <a class="btn btn-primary" href="#precos">Ver planos <span class="arr">→</span></a>
+      <a class="link" href="login.html">Já sou cliente, entrar</a>
     </div>
   </div>
 </section>
+</main>
 
 <footer>
-  <div class="wrap">
-    <div class="brand"><div class="brand-mark"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M8.4 6 L9 6 Q10.4 6 10.4 7.4 L10.4 13.6 L14.8 13.6 Q16.2 13.6 16.2 15 L16.2 15.6 Q16.2 17 14.8 17 L8.4 17 Q7 17 7 15.6 L7 7.4 Q7 6 8.4 6 Z" fill="white"/><circle cx="13.3" cy="5.4" r="1.5" fill="#F2994A"/></svg></div>Locarion</div>
-    © <span id="year"></span> Locarion. Todos os direitos reservados.
+  <div class="wrap foot">
+    <a class="brand" href="#"><span class="brand-mark"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8.4 6 L9 6 Q10.4 6 10.4 7.4 L10.4 13.6 L14.8 13.6 Q16.2 13.6 16.2 15 L16.2 15.6 Q16.2 17 14.8 17 L8.4 17 Q7 17 7 15.6 L7 7.4 Q7 6 8.4 6 Z" fill="white"/><circle cx="13.3" cy="5.4" r="1.5" fill="#F2994A"/></svg></span>Locarion</a>
+    <nav aria-label="Rodapé"><a href="#precos">Planos</a><a href="#perguntas">Perguntas</a><a href="login.html">Entrar</a></nav>
+    <span class="right mono">© <span id="year"></span> Locarion · Goiânia, GO</span>
   </div>
 </footer>
 
-<div class="modal-overlay" id="checkout-modal">
+<div class="modal-overlay" id="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
   <div class="modal-card">
     <h3 id="checkout-title">Assinar plano</h3>
-    <p id="checkout-desc">Você será redirecionado para o pagamento seguro. Depois de confirmar a assinatura, você fará login com sua conta Google para acessar o painel.</p>
+    <p id="checkout-desc">Você vai para a página de pagamento do Asaas. Depois de confirmar a assinatura, entre com sua conta Google para acessar o painel.</p>
     <div class="modal-actions">
-      <button class="btn btn-ghost btn-block" onclick="closeCheckout()">Cancelar</button>
+      <button class="btn btn-line btn-block" onclick="closeCheckout()">Cancelar</button>
       <button class="btn btn-primary btn-block" id="checkout-confirm">Ir para pagamento</button>
     </div>
   </div>
@@ -451,33 +605,6 @@ footer .brand-mark{width:22px; height:22px}
 document.getElementById("year").textContent = new Date().getFullYear();
 
 /* =========================================================================
-   Scroll reveal — anima elementos [data-reveal] conforme entram na tela.
-   Respeita prefers-reduced-motion (mostra tudo de imediato, sem observer).
-   ========================================================================= */
-(function(){
-  const els = document.querySelectorAll("[data-reveal]");
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if(reduceMotion || !("IntersectionObserver" in window)){
-    els.forEach(el => el.classList.add("in-view"));
-    return;
-  }
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if(entry.isIntersecting){
-        entry.target.classList.add("in-view");
-        io.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.15, rootMargin: "0px 0px -40px 0px" });
-  els.forEach(el => io.observe(el));
-})();
-
-function toggleFaq(btn){
-  const item = btn.closest(".faq-item");
-  item.classList.toggle("open");
-}
-
-/* =========================================================================
    Checkout — cria a cobrança no Asaas via Cloud Function e redireciona
    o cliente pro link de pagamento seguro (checkout hospedado pelo Asaas).
    ========================================================================= */
@@ -486,7 +613,7 @@ let selectedPlan = null;
 
 function openCheckout(btn){
   selectedPlan = btn.dataset.plan;
-  document.getElementById("checkout-title").textContent = "Assinar " + (selectedPlan === "enterprise" ? "Enterprise" : "Profissional") + " — " + btn.dataset.price;
+  document.getElementById("checkout-title").textContent = "Assinar o " + (selectedPlan === "enterprise" ? "Enterprise" : "Profissional") + " · " + btn.dataset.price;
   document.getElementById("checkout-confirm").textContent = "Ir para pagamento";
   document.getElementById("checkout-confirm").disabled = false;
   document.getElementById("checkout-modal").classList.add("open");
@@ -494,6 +621,8 @@ function openCheckout(btn){
 function closeCheckout(){
   document.getElementById("checkout-modal").classList.remove("open");
 }
+document.getElementById("checkout-modal").addEventListener("click", (e) => { if(e.target.id === "checkout-modal") closeCheckout(); });
+document.addEventListener("keydown", (e) => { if(e.key === "Escape") closeCheckout(); });
 document.getElementById("checkout-confirm").addEventListener("click", async () => {
   const btn = document.getElementById("checkout-confirm");
   btn.disabled = true;
@@ -504,9 +633,9 @@ document.getElementById("checkout-confirm").addEventListener("click", async () =
     window.location.href = data.url;
   }catch(err){
     console.error(err);
-    alert("Não foi possível iniciar o pagamento. Tente novamente em instantes.");
+    document.getElementById("checkout-desc").textContent = "Não foi possível iniciar o pagamento agora. Tente de novo em instantes.";
     btn.disabled = false;
-    btn.textContent = "Ir para pagamento";
+    btn.textContent = "Tentar de novo";
   }
 });
 </script>
