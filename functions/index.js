@@ -19,6 +19,7 @@
 const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const logger = require("firebase-functions/logger");
+const crypto = require("crypto");
 const admin = require("firebase-admin");
 
 admin.initializeApp();
@@ -36,6 +37,34 @@ const PLANS = {
   enterprise: { name: "Locarion — Enterprise", value: 197.0 },
 };
 
+/* Limita chamadas por IP (createAsaasCheckout é público, antes do login):
+   evita que alguém encha o Firestore e o Asaas de checkouts falsos. */
+async function enforceRateLimit(request, key, max, windowMs) {
+  const ip = (request.rawRequest && request.rawRequest.ip) || "unknown";
+  const id = crypto.createHash("sha256").update(`${key}:${ip}`).digest("hex");
+  const ref = db.collection("rateLimits").doc(id);
+  const now = Date.now();
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const d = snap.exists ? snap.data() : null;
+    if (d && now - d.windowStart < windowMs) {
+      if (d.count >= max) {
+        throw new HttpsError("resource-exhausted", "Muitas tentativas. Tente novamente em alguns minutos.");
+      }
+      tx.update(ref, { count: d.count + 1 });
+    } else {
+      tx.set(ref, { windowStart: now, count: 1 });
+    }
+  });
+}
+
+/* Comparação em tempo constante (evita ataque de timing no token do webhook). */
+function safeEqual(a, b) {
+  const ha = crypto.createHash("sha256").update(String(a)).digest();
+  const hb = crypto.createHash("sha256").update(String(b)).digest();
+  return crypto.timingSafeEqual(ha, hb);
+}
+
 function nextDueDate() {
   const d = new Date();
   d.setDate(d.getDate() + 1);
@@ -49,13 +78,15 @@ function nextDueDate() {
    de pagamento pro navegador redirecionar o cliente.
    ------------------------------------------------------------------------- */
 exports.createAsaasCheckout = onCall(
-  { secrets: [ASAAS_API_KEY], region: "southamerica-east1" },
+  { secrets: [ASAAS_API_KEY], region: "southamerica-east1", maxInstances: 10 },
   async (request) => {
     const plan = request.data && request.data.plan;
-    const planInfo = PLANS[plan];
+    const planInfo = typeof plan === "string" && Object.prototype.hasOwnProperty.call(PLANS, plan) ? PLANS[plan] : null;
     if (!planInfo) {
       throw new HttpsError("invalid-argument", "Plano inválido.");
     }
+
+    await enforceRateLimit(request, "checkout", 5, 60 * 60 * 1000);
 
     const tokenRef = db.collection("pendingCheckouts").doc();
     const token = tokenRef.id;
@@ -74,7 +105,7 @@ exports.createAsaasCheckout = onCall(
       minutesToExpire: 60,
       externalReference: token,
       callback: {
-        successUrl: `${SITE_URL}/login.html?checkout_token=${token}&plan=${plan}`,
+        successUrl: `${SITE_URL}/login.html?checkout_token=${token}&plan=${encodeURIComponent(plan)}`,
         cancelUrl: `${SITE_URL}/index.html?checkout=cancelado`,
         expiredUrl: `${SITE_URL}/index.html?checkout=expirado`,
       },
@@ -126,10 +157,14 @@ exports.createAsaasCheckout = onCall(
    sem depender do navegador do cliente.
    ------------------------------------------------------------------------- */
 exports.asaasWebhook = onRequest(
-  { secrets: [ASAAS_WEBHOOK_TOKEN], region: "southamerica-east1" },
+  { secrets: [ASAAS_WEBHOOK_TOKEN], region: "southamerica-east1", maxInstances: 10 },
   async (req, res) => {
+    if (req.method !== "POST") {
+      res.status(405).send("method-not-allowed");
+      return;
+    }
     const receivedToken = req.get("asaas-access-token");
-    if (!receivedToken || receivedToken !== ASAAS_WEBHOOK_TOKEN.value()) {
+    if (!receivedToken || !safeEqual(receivedToken, ASAAS_WEBHOOK_TOKEN.value())) {
       logger.warn("Webhook do Asaas com token inválido");
       res.status(401).send("unauthorized");
       return;
@@ -167,8 +202,15 @@ exports.asaasWebhook = onRequest(
       }
 
       if (!docRef) {
-        logger.warn("Webhook do Asaas sem pendingCheckout correspondente", req.body);
+        // Não loga o corpo inteiro (traz dados pessoais do pagador).
+        logger.warn("Webhook do Asaas sem pendingCheckout correspondente", { event, externalReference, asaasCheckoutId });
         res.status(200).send("no-match");
+        return;
+      }
+
+      const current = await docRef.get();
+      if (current.data().status === "paid") {
+        res.status(200).send("already-paid");
         return;
       }
 
@@ -209,7 +251,7 @@ const VALID_STATUSES = ["active", "inactive", "canceled"];
    com plano e status de assinatura, pra tela de administração.
    ------------------------------------------------------------------------- */
 exports.adminListUsers = onCall(
-  { region: "southamerica-east1" },
+  { region: "southamerica-east1", maxInstances: 5 },
   async (request) => {
     await assertIsAdmin(request);
     const snap = await db.collection("users").get();
@@ -235,12 +277,14 @@ exports.adminListUsers = onCall(
    Firestore, que travam escrita de terceiros nesse documento).
    ------------------------------------------------------------------------- */
 exports.adminSetUserAccess = onCall(
-  { region: "southamerica-east1" },
+  { region: "southamerica-east1", maxInstances: 5 },
   async (request) => {
     await assertIsAdmin(request);
 
     const { targetUid, plan, subscriptionStatus } = request.data || {};
-    if (!targetUid) throw new HttpsError("invalid-argument", "Cliente não informado.");
+    if (typeof targetUid !== "string" || !targetUid || targetUid.length > 128 || targetUid.includes("/")) {
+      throw new HttpsError("invalid-argument", "Cliente não informado.");
+    }
     if (plan && !VALID_PLANS.includes(plan)) throw new HttpsError("invalid-argument", "Plano inválido.");
     if (subscriptionStatus && !VALID_STATUSES.includes(subscriptionStatus)) {
       throw new HttpsError("invalid-argument", "Status de assinatura inválido.");
@@ -261,16 +305,17 @@ exports.adminSetUserAccess = onCall(
    pelo webhook (nunca confia direto no parâmetro da URL).
    ------------------------------------------------------------------------- */
 exports.confirmSubscription = onCall(
-  { region: "southamerica-east1" },
+  { region: "southamerica-east1", maxInstances: 10 },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Faça login antes de confirmar a assinatura.");
     }
 
     const token = request.data && request.data.token;
-    if (!token) {
-      throw new HttpsError("invalid-argument", "Token de checkout ausente.");
+    if (typeof token !== "string" || !/^[A-Za-z0-9]{20}$/.test(token)) {
+      throw new HttpsError("invalid-argument", "Token de checkout inválido.");
     }
+    await enforceRateLimit(request, `confirm:${request.auth.uid}`, 10, 60 * 60 * 1000);
 
     const tokenRef = db.collection("pendingCheckouts").doc(token);
 
