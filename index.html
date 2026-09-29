@@ -6,7 +6,7 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
-<meta name="theme-color" content="#F7F7F5">
+<meta name="theme-color" content="#FFFFFF">
 <script>document.documentElement.classList.add("js")</script>
 <title>Locarion · O sistema da locadora de obra</title>
 <meta name="description" content="Sistema para locadora de equipamentos de construção: contratos no seu modelo, agenda de retirada e devolução, estoque de andaimes por peça, manutenção e financeiro. No computador e no celular.">
@@ -23,7 +23,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-functions-compat.js"></script>
 <style>
 :root{
-  --bg:#F7F7F5; --bg-2:#EFEFEB;
+  --bg:#FFFFFF; --bg-2:#F5F6F8;
   --card:#FFFFFF; --card-2:#FFFFFF;
   --line:rgba(16,17,20,.08); --line-2:rgba(16,17,20,.14); --line-3:rgba(16,17,20,.26);
   --ink:#0F1013; --ink-2:#565861; --ink-3:#8A8C94;
@@ -53,8 +53,9 @@ kbd{font-family:var(--mono); font-size:12px; line-height:1; padding:4px 6px; bor
 .btn-sm{height:36px; padding:0 14px; font-size:14px; border-radius:9px}
 
 /* topo */
-.top{position:sticky; top:0; z-index:40; background:rgba(247,247,245,.78); backdrop-filter:saturate(1.4) blur(14px); -webkit-backdrop-filter:saturate(1.4) blur(14px); border-bottom:1px solid var(--line)}
-.top-inner{display:flex; align-items:center; gap:32px; height:64px}
+.top{position:sticky; top:14px; z-index:40; margin-top:14px; pointer-events:none}
+.top .wrap{max-width:1120px}
+.top-inner{pointer-events:auto; display:flex; align-items:center; gap:32px; height:58px; padding:0 10px 0 18px; border-radius:18px; background:rgba(255,255,255,.78); backdrop-filter:saturate(1.6) blur(16px); -webkit-backdrop-filter:saturate(1.6) blur(16px); border:1px solid var(--line-2); box-shadow:0 1px 2px rgba(16,17,20,.05), 0 14px 34px -14px rgba(16,17,20,.22)}
 .brand{display:flex; align-items:center; gap:10px; font-weight:600; font-size:17px; letter-spacing:-.01em}
 .brand-mark{width:26px; height:26px; border-radius:7px; background:#1E3A5F; display:flex; align-items:center; justify-content:center; box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
 .top nav{display:flex; gap:26px; font-size:14px; color:var(--ink-2)}
@@ -63,7 +64,7 @@ kbd{font-family:var(--mono); font-size:12px; line-height:1; padding:4px 6px; bor
 
 /* hero */
 .hero{position:relative; padding:112px 0 0; text-align:center; overflow-x:clip}
-.hero::before{content:""; position:absolute; left:50%; top:-120px; width:1100px; height:620px; transform:translateX(-50%); background:radial-gradient(closest-side, rgba(240,118,28,.13), rgba(240,118,28,0)); pointer-events:none}
+.hero::before{content:""; position:absolute; left:50%; top:-120px; width:1100px; height:620px; transform:translateX(-50%); background:radial-gradient(closest-side, rgba(240,118,28,.05), rgba(240,118,28,0)); pointer-events:none}
 .hero h1{position:relative; font-size:clamp(44px,7.4vw,88px); letter-spacing:-.045em; line-height:1; background:linear-gradient(180deg,#0F1013 30%, #4C4E57 100%); -webkit-background-clip:text; background-clip:text; color:transparent; padding-bottom:.08em}
 .hero .sub{position:relative; margin:24px auto 0; max-width:640px; font-size:19px; color:var(--ink-2)}
 .hero-cta{position:relative; display:flex; gap:12px; justify-content:center; margin-top:36px; flex-wrap:wrap}
@@ -71,15 +72,15 @@ kbd{font-family:var(--mono); font-size:12px; line-height:1; padding:4px 6px; bor
 .hero-note kbd{margin:0 2px}
 
 .stage{position:relative; margin:72px auto 0; max-width:1200px; padding:0 24px}
-.stage::before{content:""; position:absolute; left:50%; top:-40px; width:78%; height:240px; transform:translateX(-50%); background:radial-gradient(closest-side, rgba(240,118,28,.20), rgba(240,118,28,0)); filter:blur(10px); pointer-events:none}
+.stage::before{content:""; position:absolute; left:50%; top:-40px; width:78%; height:240px; transform:translateX(-50%); background:radial-gradient(closest-side, rgba(240,118,28,.08), rgba(240,118,28,0)); filter:blur(10px); pointer-events:none}
 .window{position:relative; border-radius:14px; background:#fff; border:1px solid var(--line-2); box-shadow:0 0 0 1px rgba(16,17,20,.03), 0 50px 100px -34px rgba(16,17,20,.38), 0 16px 36px -16px rgba(16,17,20,.16); overflow:hidden}
 .window::before{content:""; position:absolute; left:10%; right:10%; top:0; height:1px; background:linear-gradient(90deg, transparent, rgba(240,118,28,.65), transparent); z-index:2}
-.window-bar{display:flex; align-items:center; gap:7px; height:40px; padding:0 14px; border-bottom:1px solid var(--line); background:#F3F3F0}
-.window-bar i{width:11px; height:11px; border-radius:50%; background:#D9D9D4}
+.window-bar{display:flex; align-items:center; gap:7px; height:40px; padding:0 14px; border-bottom:1px solid var(--line); background:#F5F6F8}
+.window-bar i{width:11px; height:11px; border-radius:50%; background:#D6D9DF}
 .window-bar .url{margin:0 auto; transform:translateX(-24px); font-family:var(--mono); font-size:12px; color:var(--ink-3); background:#fff; border:1px solid var(--line); border-radius:7px; padding:4px 14px}
 .window img{width:100%}
 .stage-fade{position:relative}
-.stage-fade::after{content:""; position:absolute; left:0; right:0; bottom:0; height:38%; background:linear-gradient(180deg, rgba(247,247,245,0), var(--bg)); pointer-events:none}
+.stage-fade::after{content:""; position:absolute; left:0; right:0; bottom:0; height:38%; background:linear-gradient(180deg, rgba(255,255,255,0), var(--bg)); pointer-events:none}
 
 /* valores rápidos */
 .props{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); margin-top:8px; border-top:1px solid var(--line)}
@@ -99,7 +100,7 @@ kbd{font-family:var(--mono); font-size:12px; line-height:1; padding:4px 6px; bor
 
 /* fotos */
 .photos{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px}
-.photo{position:relative; margin:0; aspect-ratio:3/4; border-radius:16px; overflow:hidden; border:1px solid var(--line); background:#D9D9D4}
+.photo{position:relative; margin:0; aspect-ratio:3/4; border-radius:16px; overflow:hidden; border:1px solid var(--line); background:#D6D9DF}
 .photo img{width:100%; height:100%; object-fit:cover; filter:saturate(.85) contrast(1.05)}
 .photo::after{content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(7,8,10,0) 45%, rgba(7,8,10,.88) 100%)}
 .photo figcaption{position:absolute; left:18px; right:18px; bottom:16px; z-index:1}
@@ -110,8 +111,8 @@ kbd{font-family:var(--mono); font-size:12px; line-height:1; padding:4px 6px; bor
 .cards{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px}
 .card{position:relative; border-radius:18px; border:1px solid var(--line); background:var(--card); box-shadow:0 1px 2px rgba(16,17,20,.04), 0 18px 40px -26px rgba(16,17,20,.18); overflow:hidden; display:flex; flex-direction:column}
 .card::before{content:""; position:absolute; inset:0 0 auto 0; height:1px; background:linear-gradient(90deg, transparent, transparent, transparent)}
-.card-vis{position:relative; padding:22px 22px 0; height:236px; overflow:hidden; background:linear-gradient(180deg,#F4F4F1,#F8F8F6); border-bottom:1px solid var(--line)}
-.card-vis::after{content:""; position:absolute; left:0; right:0; bottom:0; height:64px; background:linear-gradient(180deg, rgba(248,248,246,0), #F8F8F6)}
+.card-vis{position:relative; padding:22px 22px 0; height:236px; overflow:hidden; background:linear-gradient(180deg,#F3F4F6,#F8F9FA); border-bottom:1px solid var(--line)}
+.card-vis::after{content:""; position:absolute; left:0; right:0; bottom:0; height:64px; background:linear-gradient(180deg, rgba(248,249,250,0), #F8F9FA)}
 .card-txt{padding:18px 24px 24px}
 .card-txt h3{font-size:17px; letter-spacing:-.01em}
 .card-txt p{color:var(--ink-2); font-size:14.5px; margin-top:6px}
@@ -132,7 +133,7 @@ kbd{font-family:var(--mono); font-size:12px; line-height:1; padding:4px 6px; bor
 .tag.warn{background:var(--ui-warn-bg); color:var(--ui-warn)}
 .tag.bad{background:var(--ui-bad-bg); color:var(--ui-bad)}
 .tag.info{background:var(--ui-info-bg); color:var(--ui-info)}
-.doc{background:#FFFEFB; border:1px solid #E7E3D9; color:#1B1D22; border-radius:9px; padding:18px 18px 22px; font-family:var(--mono); font-size:10.8px; line-height:1.75; box-shadow:0 20px 40px -16px rgba(16,17,20,.3); transform:rotate(-1.2deg); margin:6px 8px 0}
+.doc{background:#FFFFFF; border:1px solid #E3E5EA; color:#1B1D22; border-radius:9px; padding:18px 18px 22px; font-family:var(--mono); font-size:10.8px; line-height:1.75; box-shadow:0 20px 40px -16px rgba(16,17,20,.3); transform:rotate(-1.2deg); margin:6px 8px 0}
 .doc h4{margin:0 0 8px; font:600 11px/1.3 var(--mono); letter-spacing:.02em}
 .doc mark{background:rgba(240,118,28,.22); color:#1B1D22; padding:0 3px; border-radius:3px}
 .doc .ln{height:6px; border-radius:3px; background:#ECE9E0; margin:7px 0}
@@ -157,8 +158,14 @@ kbd{font-family:var(--mono); font-size:12px; line-height:1; padding:4px 6px; bor
 .ui-r.sel{background:rgba(30,58,95,.06)}
 
 /* texto "o que mais" */
-.more{margin-top:120px; font-size:clamp(24px,3.1vw,38px); line-height:1.3; letter-spacing:-.025em; font-weight:600; max-width:1000px}
-.more .dim{color:var(--ink-3)}
+.more{margin-top:120px}
+.more h3{text-align:center; font-size:clamp(26px,3.2vw,38px); letter-spacing:-.03em; line-height:1.1; margin:0 0 26px}
+.more ul{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px}
+.more li{display:flex; gap:13px; align-items:flex-start; padding:18px 18px; border:1px solid var(--line); border-radius:14px; background:#fff; font-size:16px; font-weight:500; line-height:1.4; letter-spacing:-.01em; color:var(--ink); box-shadow:0 1px 2px rgba(16,17,20,.04)}
+.more .ck{flex:0 0 auto; width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:rgba(217,98,15,.10); color:var(--orange)}
+.more .ck svg{width:15px; height:15px}
+@media (max-width:900px){ .more ul{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:560px){ .more ul{grid-template-columns:1fr} .more li{font-size:15px} }
 
 /* celular */
 .mobile{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,420px); gap:64px; align-items:center}
@@ -199,7 +206,7 @@ kbd{font-family:var(--mono); font-size:12px; line-height:1; padding:4px 6px; bor
 /* fechamento */
 .closing{position:relative; margin-top:140px; min-height:520px; display:flex; align-items:center; overflow:hidden; border-top:1px solid var(--line); border-bottom:1px solid var(--line)}
 .closing-bg{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.42; filter:saturate(.8) contrast(.95)}
-.closing::before{content:""; position:absolute; inset:0; background:linear-gradient(180deg, var(--bg) 0%, rgba(247,247,245,.62) 38%, rgba(247,247,245,.62) 62%, var(--bg) 100%); z-index:1}
+.closing::before{content:""; position:absolute; inset:0; background:linear-gradient(180deg, var(--bg) 0%, rgba(255,255,255,.7) 38%, rgba(255,255,255,.7) 62%, var(--bg) 100%); z-index:1}
 .closing .wrap{position:relative; z-index:2; text-align:center; width:100%}
 .closing h2{font-size:clamp(34px,5vw,60px); letter-spacing:-.04em; line-height:1.03}
 .closing p{color:var(--ink-2); font-size:18px; margin:18px auto 0; max-width:560px}
@@ -238,7 +245,7 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
 /* ---------- celular ---------- */
 @media (max-width:640px){
   .wrap, .stage{padding-left:18px; padding-right:18px}
-  .top-inner{height:58px; gap:12px}
+  .top-inner{height:52px; gap:12px; padding:0 8px 0 14px; border-radius:16px}
   .top-cta .btn-dark{display:none}
   .hero{padding-top:64px}
   .hero h1{font-size:44px; letter-spacing:-.04em}
@@ -263,7 +270,7 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
   .photo figcaption span{display:none}
   .cards{grid-template-columns:minmax(0,1fr)}
   .card-vis{height:220px}
-  .more{margin-top:80px; font-size:23px}
+  .more{margin-top:80px}
   .phone{width:260px; border-radius:40px}
   .phone-screen{border-radius:31px}
   .plans{grid-template-columns:minmax(0,1fr)}
@@ -293,8 +300,8 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
 .progress{position:fixed; left:0; top:0; right:0; height:2px; z-index:60; transform:scaleX(0); transform-origin:0 50%; background:linear-gradient(90deg,#D9620F,#FF9A4D); box-shadow:0 0 12px rgba(240,118,28,.5); pointer-events:none}
 
 /* topo */
-.top{transition:background .3s ease, border-color .3s ease}
-.top.scrolled{background:rgba(247,247,245,.94); border-bottom-color:var(--line-2)}
+.top-inner{transition:background .3s ease, box-shadow .3s ease}
+.top.scrolled .top-inner{background:rgba(255,255,255,.94); box-shadow:0 1px 2px rgba(16,17,20,.06), 0 20px 44px -16px rgba(16,17,20,.3)}
 .top nav a{position:relative; padding:6px 0; transition:color .2s ease}
 .top nav a::after{content:""; position:absolute; left:0; right:0; bottom:0; height:1.5px; background:var(--orange); transform:scaleX(0); transform-origin:left; transition:transform .3s var(--ease)}
 .top nav a:hover::after,.top nav a.on::after{transform:scaleX(1)}
@@ -321,8 +328,8 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
   background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px); background-size:64px 64px; background-position:center top;
   -webkit-mask-image:radial-gradient(55% 75% at 50% 0%,#000 0%,transparent 78%); mask-image:radial-gradient(55% 75% at 50% 0%,#000 0%,transparent 78%)}
 .orb{position:absolute; z-index:0; border-radius:50%; filter:blur(70px); pointer-events:none}
-.orb.o1{width:340px; height:340px; left:8%; top:60px; background:rgba(30,58,95,.10); animation:drift 14s ease-in-out infinite}
-.orb.o2{width:300px; height:300px; right:6%; top:140px; background:rgba(240,118,28,.13); animation:drift 17s ease-in-out -6s infinite reverse}
+.orb.o1{width:340px; height:340px; left:8%; top:60px; background:rgba(30,58,95,.11); animation:drift 14s ease-in-out infinite}
+.orb.o2{width:300px; height:300px; right:6%; top:140px; background:rgba(240,118,28,.10); animation:drift 17s ease-in-out -6s infinite reverse}
 @keyframes drift{0%,100%{transform:translate3d(0,0,0)} 33%{transform:translate3d(60px,-30px,0)} 66%{transform:translate3d(-30px,40px,0)}}
 .pill{position:relative; display:inline-flex; align-items:center; gap:9px; padding:6px 15px 6px 11px; border-radius:99px; font-size:13px; color:var(--ink-2); background:rgba(255,255,255,.75); border:1px solid var(--line-2); margin-bottom:30px; overflow:hidden; box-shadow:0 1px 2px rgba(16,17,20,.04)}
 .pill::after{content:""; position:absolute; inset:0; background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.9) 50%,transparent 70%); transform:translateX(-120%); animation:sheen 5s ease-in-out 1.2s infinite}
@@ -408,9 +415,6 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
 .ui-r.sel{position:relative}
 .ui-r.sel::before{content:""; position:absolute; left:0; top:0; bottom:0; width:2px; background:var(--ui-blue)}
 
-/* texto "E ainda:" revelado palavra por palavra */
-.more .w{opacity:.2; transition:opacity .35s ease}
-.more .w.on{opacity:1}
 
 /* celular */
 .phone{animation:float 8s ease-in-out infinite; transition:box-shadow .4s ease}
@@ -476,16 +480,190 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
   .js .rate.best{background:rgba(74,140,232,.10)}
   .js .rate.best .tag{opacity:1; transform:none}
   .js .photo img{transform:none}
-  .more .w{opacity:1}
   .window{transform:none}
   .steps::after{transform:none}
   .marq-track{flex-wrap:wrap; width:auto; justify-content:center}
+}
+
+
+/* ===== tema "financeiro" (inspirado no brex.com) ===== */
+:root{
+  --bg:#FFFFFF; --bg-2:#F3F3F7; --card:#FFFFFF; --card-2:#FFFFFF;
+  --line:rgba(21,25,30,.08); --line-2:rgba(21,25,30,.13); --line-3:rgba(21,25,30,.24);
+  --ink:#15191E; --ink-2:#5B626B; --ink-3:#8A9099;
+  --orange:#FF3D00; --orange-hot:#FF5A26; --deep:#000710;
+}
+body{background:#fff; color:var(--ink)}
+.progress{background:linear-gradient(90deg,#FF3D00,#FF7A45); box-shadow:none}
+
+.announce{background:var(--deep); color:#fff; text-align:center; font-size:12.5px; padding:11px 16px; letter-spacing:-.005em}
+.announce a{color:#fff; text-decoration:underline; text-underline-offset:3px; text-decoration-color:rgba(255,255,255,.45); margin-left:4px}
+.announce a:hover{text-decoration-color:#fff}
+
+.top{position:sticky; top:0; margin:0; pointer-events:auto; background:rgba(255,255,255,.94); backdrop-filter:saturate(1.5) blur(14px); -webkit-backdrop-filter:saturate(1.5) blur(14px); border-bottom:1px solid var(--line)}
+.top .wrap{max-width:1152px}
+.top-inner{height:64px; padding:0 24px; border:0; border-radius:0; background:none; box-shadow:none; backdrop-filter:none; -webkit-backdrop-filter:none; gap:34px}
+.top.scrolled .top-inner{background:none; box-shadow:none}
+.top nav{gap:28px; font-size:14px; font-weight:500; color:var(--ink)}
+.top nav a{color:var(--ink)}
+.top-cta{gap:22px}
+.tlink{font-size:14px; font-weight:500; color:var(--ink)}
+.tlink:hover{color:var(--orange)}
+.btn{border-radius:10px; font-weight:500; letter-spacing:-.005em}
+.btn-white{background:var(--orange); color:#fff; border:1px solid var(--orange); box-shadow:none}
+.btn-white:hover{background:#E63500; border-color:#E63500; color:#fff}
+.btn-dark{background:#fff; color:var(--ink); border-color:var(--line-2); box-shadow:none}
+.btn-dark:hover{background:#F6F6F9; border-color:var(--line-3)}
+.btn-glow::after{display:none}
+.btn-sm{height:38px; padding:0 15px; border-radius:9px}
+
+/* hero */
+.hero{position:relative; padding:0; text-align:left; overflow:hidden; background:linear-gradient(180deg,#F7F7F9 0%,#F7F7F9 55%,#FCEFEA 100%)}
+.hero::before,.hero::after{display:none}
+.hero-grid{position:relative; z-index:2; display:grid; grid-template-columns:minmax(0,580px) 1fr; align-items:center; min-height:640px; padding-top:40px; padding-bottom:40px}
+.hero-copy{padding-right:12px}
+.hero h1{font-size:clamp(40px,4.5vw,64px); line-height:1.02; font-weight:500; letter-spacing:-.045em; color:var(--ink); background:none; -webkit-background-clip:initial; background-clip:initial; padding:0}
+.hero .sub{margin:22px 0 0; max-width:470px; font-size:18px; line-height:1.5; color:var(--ink-2)}
+.hero-cta{justify-content:flex-start; align-items:center; gap:22px; margin-top:30px}
+.hero-cta .btn{height:46px; padding:0 22px; font-size:15px}
+.hlink{display:inline-flex; align-items:center; gap:8px; font-size:14.5px; font-weight:500; color:var(--orange)}
+.hlink:hover{color:#C92E00}
+.hero-props{list-style:none; margin:34px 0 0; padding:0; display:grid; grid-template-columns:repeat(2,auto); justify-content:start; gap:10px 26px; font-size:13.5px; color:var(--ink-2)}
+.hero-props li{position:relative; padding-left:20px}
+.hero-props li::before{content:""; position:absolute; left:0; top:.42em; width:11px; height:6px; border-left:2px solid var(--orange); border-bottom:2px solid var(--orange); transform:rotate(-45deg) scale(.9)}
+
+.hero-scene{position:absolute; z-index:1; right:0; top:0; bottom:0; width:min(56vw,820px)}
+.scene-surface{position:absolute; inset:0 0 0 0; border-radius:56px 0 0 0; background:linear-gradient(140deg,#F1F1F4 0%,#F6EEEC 55%,#F8DDD3 100%)}
+.scene-surface::after{content:""; position:absolute; inset:0; border-radius:inherit; background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0) 40%)}
+.scene-x{position:absolute; right:-40px; top:8%; width:56%; height:56%; transform:rotate(-14deg); opacity:.85; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='34'%3E%3Cpath d='M12 12l10 10M22 12 12 22' stroke='%23FF3D00' stroke-width='1.3' stroke-linecap='round' opacity='.75'/%3E%3C/svg%3E"); -webkit-mask-image:radial-gradient(closest-side at 70% 30%,#000 30%,transparent 100%); mask-image:radial-gradient(closest-side at 70% 30%,#000 30%,transparent 100%)}
+.scene-line{position:absolute; left:0; top:0; width:100%; height:100%; pointer-events:none}
+.scene-dot{position:absolute; left:47%; top:26%; width:9px; height:9px; border-radius:50%; background:var(--orange); box-shadow:0 0 0 6px rgba(255,61,0,.14)}
+.scene-dash{position:absolute; left:9%; top:15%; width:82%; transform:perspective(1800px) rotateX(16deg) rotateY(-20deg) rotateZ(3deg); transform-origin:50% 60%; border-radius:14px; box-shadow:0 60px 90px -30px rgba(40,20,10,.38), 0 20px 40px -18px rgba(40,20,10,.25); border:1px solid rgba(21,25,30,.1); overflow:hidden; background:#fff}
+.scene-dash img{display:block; width:100%; height:auto}
+.scene-phone{position:absolute; right:7%; bottom:-6%; width:25%; transform:perspective(1800px) rotateX(10deg) rotateY(-14deg) rotateZ(4deg); border-radius:34px; padding:7px; background:linear-gradient(160deg,#3A3B40,#131418); box-shadow:0 50px 70px -24px rgba(40,20,10,.55)}
+.scene-phone-in{border-radius:28px; overflow:hidden; background:#fff}
+.scene-phone-in img{display:block; width:100%; height:auto}
+
+/* faixa cinza: equipamentos */
+.band{background:var(--bg-2); padding:64px 0 60px; margin:0}
+.band-h{margin:0 auto 34px; max-width:760px; text-align:center; font-size:clamp(26px,3vw,36px); line-height:1.15; font-weight:500; letter-spacing:-.035em}
+.band .marq{margin-top:0}
+.chip{background:transparent; border:0; color:#6B727B; font-size:20px; font-weight:600; letter-spacing:-.025em; padding:6px 22px}
+.chip::before{display:none}
+.chip:hover{color:var(--ink)}
+
+/* seções */
+.sec{padding-top:110px}
+.sec-head h2{background:none; -webkit-background-clip:initial; background-clip:initial; color:var(--ink); font-weight:500; font-size:clamp(30px,3.6vw,44px); letter-spacing:-.04em; line-height:1.08; padding:0}
+.sec-head p{font-size:17px; color:var(--ink-2)}
+
+/* cartões estilo painel */
+.cards{grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px}
+.card{background:var(--bg-2); border:0; box-shadow:none; border-radius:16px; flex-direction:column-reverse; justify-content:flex-end}
+.card-txt{padding:24px 24px 4px}
+.card-txt h3{font-size:19px; font-weight:500; letter-spacing:-.025em; line-height:1.2}
+.card-txt p{color:var(--ink-2); font-size:14.5px; margin-top:8px}
+.card-vis{background:none; border:0; height:250px; padding:18px 24px 0}
+.card-vis::after{background:linear-gradient(180deg,rgba(243,243,247,0),#F3F3F7)}
+.ui{border-color:var(--line); box-shadow:0 10px 26px -14px rgba(21,25,30,.18); border-radius:12px}
+.doc{border-color:var(--line); box-shadow:0 12px 30px -16px rgba(21,25,30,.25)}
+.more li{background:var(--bg-2); border:0; box-shadow:none; border-radius:12px}
+.more h3{font-weight:500; letter-spacing:-.035em}
+
+/* fotos: faixa cinza, legenda embaixo */
+#para-quem{background:var(--bg-2); margin-top:0; padding:100px 0 100px}
+.photos{gap:18px}
+.photo{aspect-ratio:auto; background:none; border:0; border-radius:0; overflow:visible; transform:none}
+.photo:hover{transform:none; border-color:transparent}
+.photo img{aspect-ratio:4/3.3; height:auto; border-radius:12px; filter:none}
+.photo::after{display:none}
+.photo figcaption{position:static; padding:16px 2px 0}
+.photo figcaption b{color:var(--ink); font-size:17px; font-weight:500; letter-spacing:-.02em}
+.photo figcaption span{color:var(--ink-2); font-size:14px; margin-top:4px}
+.photo figcaption span::after{content:"Saber mais →"; display:block; margin-top:12px; color:var(--orange); font-size:13.5px; font-weight:500}
+
+/* passos */
+.step{background:none; border:0; border-top:2px solid var(--ink); border-radius:0; box-shadow:none; padding:22px 4px 0}
+.step-n{background:none; color:var(--orange); border:0; width:auto; height:auto; font-size:14px; font-weight:600}
+.step h3{font-weight:500; letter-spacing:-.025em}
+.steps::before,.steps::after{display:none}
+
+/* celular */
+#celular{background:#fff}
+#celular .wrap.mobile{background:var(--bg-2); border-radius:24px; padding:64px 64px 0; overflow:hidden; align-items:end}
+#celular .sec-head h2{font-size:clamp(28px,3.2vw,40px)}
+.mobile ul{border-top-color:var(--line-2)}
+.phone-wrap{align-self:end}
+.phone-wrap::before{background:radial-gradient(closest-side,rgba(255,61,0,.14),transparent)}
+.phone{border-radius:44px 44px 0 0; padding:10px 10px 0; box-shadow:0 -10px 60px -20px rgba(21,25,30,.35)}
+.phone-screen{border-radius:35px 35px 0 0}
+
+/* planos */
+#precos{background:#fff}
+.plan{background:#fff; border:1px solid var(--line-2); box-shadow:none; border-radius:16px}
+.plan-name{font-weight:500; font-size:17px}
+.plan-price .num{font-weight:500}
+.plan.hot{background:var(--deep); border-color:var(--deep); color:#fff; box-shadow:none}
+.plan.hot .plan-for,.plan.hot .plan-price .per,.plan.hot li{color:rgba(255,255,255,.72)}
+.plan.hot ul{border-top-color:rgba(255,255,255,.16)}
+.plan.hot::before{display:none}
+.plan::after{display:none}
+
+/* perguntas */
+.faq summary{font-weight:500; letter-spacing:-.015em}
+
+/* fechamento e rodapé escuros */
+.closing{margin-top:110px; background:var(--deep); border:0; color:#fff; min-height:0; padding:110px 0; text-align:center}
+.closing-bg{display:none}
+.closing::before{background:radial-gradient(60% 90% at 50% 120%,rgba(255,61,0,.32),transparent 70%); z-index:0}
+.closing h2{color:#fff; font-weight:500; letter-spacing:-.04em}
+.closing p{color:rgba(255,255,255,.7)}
+.closing .hero-cta{justify-content:center}
+.closing .btn-dark{background:transparent; color:#fff; border-color:rgba(255,255,255,.28)}
+.closing .btn-dark:hover{background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.5)}
+footer{background:var(--deep); color:rgba(255,255,255,.62); padding-top:64px}
+footer .brand{color:#fff}
+.foot h4{color:#fff; font-weight:500}
+.foot a:hover{color:#fff}
+.foot-bottom{border-top-color:rgba(255,255,255,.12); color:rgba(255,255,255,.48)}
+.foot-bottom a{color:rgba(255,255,255,.7)}
+
+.step{text-align:left; padding-top:22px !important}
+.step-n{margin:0 0 14px; width:auto; height:auto; box-shadow:none !important; border:0 !important; background:none; justify-content:flex-start; font:600 14px/1 var(--mono); color:var(--orange) !important}
+#celular .sec-head{text-align:left; margin:0}
+.band{padding-bottom:10px}
+#para-quem{padding-top:70px}
+
+@media (max-width:1000px){
+  .hero-grid{grid-template-columns:1fr; min-height:0; padding-top:56px; padding-bottom:0}
+  .hero-scene{position:relative; width:100%; height:440px; margin-top:44px}
+  .scene-surface{border-radius:32px 32px 0 0; left:16px; right:16px}
+  .scene-dash{left:12%; top:14%; width:80%}
+  .scene-phone{right:10%; width:26%}
+  .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #celular .wrap.mobile{padding:44px 28px 0}
+}
+@media (max-width:640px){
+  .announce{font-size:11.5px; padding:9px 12px}
+  .hero-grid{padding-top:40px}
+  .hero-props{grid-template-columns:1fr}
+  .hero-scene{height:340px}
+  .scene-phone{width:30%; right:6%}
+  .cards{grid-template-columns:1fr}
+  .top-cta .tlink{display:none}
+  .top-inner{padding:0 16px; height:58px}
+  .hero-cta{align-items:stretch}
+  .hlink{justify-content:center}
+  .band{padding:44px 0}
+  .chip{font-size:17px}
+  #para-quem{padding:70px 0}
 }
 </style>
 </head>
 <body>
 
 <div class="progress" id="progress" aria-hidden="true"></div>
+<div class="announce"><span>Novo: agenda de retiradas e devoluções no celular do motorista. <a href="#celular">Veja como funciona →</a></span></div>
 <header class="top">
   <div class="wrap top-inner">
     <a class="brand" href="#" aria-label="Locarion, início">
@@ -499,51 +677,45 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
       <a href="#perguntas">Perguntas</a>
     </nav>
     <div class="top-cta">
-      <a class="btn btn-dark btn-sm" href="login.html">Entrar</a>
-      <a class="btn btn-white btn-sm" href="#precos">Ver planos</a>
+      <a class="tlink" href="login.html">Entrar</a>
+      <a class="tlink" href="#precos">Ver planos</a>
+      <a class="btn btn-white btn-sm" href="#precos">Começar agora</a>
     </div>
   </div>
 </header>
 
 <main>
 <section class="hero">
-  <div class="orb o1" aria-hidden="true"></div><div class="orb o2" aria-hidden="true"></div>
-  <div class="wrap">
-    <span class="pill rv"><i></i>Para locadoras de equipamentos de construção</span>
-    <h1 class="rv" style="--d:80ms">O sistema da<br><span class="l2">locadora de obra.</span></h1>
-    <p class="sub rv" style="--d:180ms">Contratos, retiradas, devoluções, estoque, manutenção e cobrança. Tudo o que sai e volta do seu pátio, no computador e no celular.</p>
-    <div class="hero-cta rv" style="--d:280ms">
-      <a class="btn btn-white btn-glow" href="#precos">Ver planos</a>
-      <a class="btn btn-dark" href="login.html">Já sou cliente</a>
-    </div>
-    <p class="hero-note rv" style="--d:360ms">Busque qualquer contrato, cliente ou equipamento com <kbd>Ctrl</kbd> <kbd>K</kbd></p>
-  </div>
-  <div class="stage">
-    <div class="stage-fade rv" style="--d:250ms">
-      <div class="float f1" aria-hidden="true"><span class="tag ok">Assinado</span><span>Contrato CT-0232<small>Vega Engenharia</small></span></div>
-      <div class="float f2" aria-hidden="true"><span class="tag warn">Amanhã</span><span>Devolução prevista<small>Compactador (sapo)</small></span></div>
-      <div class="window">
-        <div class="window-bar" aria-hidden="true"><i></i><i></i><i></i><span class="url">locarion.app/dashboard</span></div>
-        <picture>
-          <source media="(max-width:640px)" srcset="assets/celular-claro.webp" type="image/webp" width="600" height="1000">
-          <img src="assets/painel-claro.webp" width="1440" height="900" alt="Tela inicial do Locarion com alertas de contratos, indicadores, próximas devoluções e faturamento do mês">
-        </picture>
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <h1 class="rv">O sistema da locadora de obra.</h1>
+      <p class="sub rv" style="--d:120ms">Contratos, retiradas, devoluções, estoque, manutenção e cobrança. Tudo o que sai e volta do seu pátio, no computador e no celular.</p>
+      <div class="hero-cta rv" style="--d:220ms">
+        <a class="btn btn-white" href="#precos">Começar agora</a>
+        <a class="hlink" href="#recursos"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m10.5 8.6 4.2 3.4-4.2 3.4z" fill="currentColor"/></svg>Ver o Locarion em ação</a>
       </div>
+      <ul class="hero-props rv" style="--d:320ms">
+        <li>Na nuvem, nada para instalar</li><li>Funciona no celular</li><li>Login com Google</li><li>Sem fidelidade</li>
+      </ul>
     </div>
-    <div class="props" data-stagger>
-      <div class="prop"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 18a4.5 4.5 0 0 1-.5-9A6 6 0 0 1 18 8.5a4 4 0 0 1-.5 9.5H7Z"/></svg><b>Na nuvem.</b><span>Nada para instalar.</span></div>
-      <div class="prop"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg><b>No celular.</b><span>Funciona na obra também.</span></div>
-      <div class="prop"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="10.5" width="16" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg><b>Login Google.</b><span>Sem senha nova para decorar.</span></div>
-      <div class="prop"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.7M4 4v4h4"/></svg><b>Sem fidelidade.</b><span>Mensal, cancela quando quiser.</span></div>
-    </div>
+  </div>
+  <div class="hero-scene" aria-hidden="true">
+    <div class="scene-surface"></div>
+    <div class="scene-x"></div>
+    <svg class="scene-line" viewBox="0 0 700 520" preserveAspectRatio="none"><path d="M40 470 C 200 300, 420 180, 690 60" fill="none" stroke="#FF3D00" stroke-width="1" opacity=".55"/></svg>
+    <i class="scene-dot"></i>
+    <div class="scene-dash"><img src="assets/painel-claro.webp" width="1200" height="750" alt=""></div>
+    <div class="scene-phone"><div class="scene-phone-in"><img src="assets/celular-claro.webp" width="600" height="1000" alt=""></div></div>
   </div>
 </section>
 
+<section class="band"><div class="wrap"><h2 class="band-h rv">Da betoneira ao gerador, tudo o que sai do seu pátio.</h2></div>
 <div class="marq rv" aria-label="Equipamentos que o Locarion controla"><div class="marq-track" id="marq-track"><span class="chip">Betoneira</span><span class="chip">Andaime tubular</span><span class="chip">Escora metálica</span><span class="chip">Martelete rompedor</span><span class="chip">Compactador (sapo)</span><span class="chip">Placa vibratória</span><span class="chip">Serra mármore</span><span class="chip">Cortadora de piso</span><span class="chip">Gerador</span><span class="chip">Vibrador de concreto</span><span class="chip">Andaime fachadeiro</span><span class="chip">Motobomba</span><span class="chip">Bomba de concreto</span><span class="chip">Furadeira de bancada</span></div></div>
+</section>
 
 <section class="sec" id="para-quem">
   <div class="wrap">
-    <div class="sec-head">
+    <div class="sec-head center">
       <h2 class="rv">Feito para quem aluga equipamento de construção.</h2>
       <p class="rv" style="--d:100ms">Betoneira, andaime, escora, martelete, compactador, gerador. Do pátio até a obra do cliente, e de volta.</p>
     </div>
@@ -657,7 +829,17 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
 
     </div>
 
-    <p class="more" id="more">E ainda: <span class="dim">registrar manutenção e tirar o equipamento da lista de disponíveis.</span> Programar revisão preventiva. <span class="dim">Mandar orçamento que segura o equipamento.</span> Saber qual contrato falta assinar. <span class="dim">Ver em qual obra está cada item.</span> Exportar para o contador.</p>
+    <div class="more" id="more">
+      <h3>E ainda:</h3>
+      <ul data-stagger>
+        <li><span class="ck"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Registrar manutenção e tirar o equipamento da lista de disponíveis</li>
+        <li><span class="ck"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Programar revisão preventiva</li>
+        <li><span class="ck"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Mandar orçamento que segura o equipamento</li>
+        <li><span class="ck"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Saber qual contrato falta assinar</li>
+        <li><span class="ck"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Ver em qual obra está cada item</li>
+        <li><span class="ck"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Exportar para o contador</li>
+      </ul>
+    </div>
   </div>
 </section>
 
@@ -828,7 +1010,6 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
       } else if(n.nodeType === 1){ wrap(n); }
     });
   }
-  if(more){ wrap(more); }
 
   /* escalonamento */
   $$("[data-stagger]").forEach(function(c){

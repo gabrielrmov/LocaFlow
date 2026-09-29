@@ -608,6 +608,35 @@ th{background:color-mix(in srgb, var(--surface-2) 70%, var(--surface))}
 @media (max-width:860px){ .view{padding:18px 16px 60px} .dash-hello h2{font-size:23px} .kpi-grid{gap:10px} .kpi-value{font-size:23px} }
 @media (max-width:640px){ .quick-actions{grid-template-columns:repeat(2,minmax(0,1fr))} .quick-action{min-width:0; padding:11px 10px; gap:9px} .quick-action .qa-icon{width:28px; height:28px} .quick-action .qa-label{font-size:12.5px; line-height:1.25} }
 @media (max-width:520px){ .kpi{padding:13px 14px} .kpi-label{font-size:11.5px} .dash-hello{margin-bottom:16px} }
+
+/* onboarding v2 */
+.view{margin-left:auto; margin-right:auto}
+.setup-prog{display:flex; flex-direction:column; align-items:flex-end; gap:7px; font-size:12.5px; color:var(--ink-2)}
+.setup-prog b{color:var(--ink)}
+.setup-bar{width:200px; height:6px; border-radius:99px; background:var(--surface-2); overflow:hidden}
+.setup-bar i{display:block; height:100%; width:var(--p); min-width:6px; border-radius:99px; background:var(--accent); transition:width .6s var(--ease)}
+.setup{position:relative; border:1px solid var(--border); border-radius:var(--radius-lg); background:var(--surface); box-shadow:var(--shadow-sm); padding:24px; overflow:hidden; margin-bottom:26px}
+.setup::before{content:""; position:absolute; inset:0; pointer-events:none; background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px); background-size:30px 30px; opacity:.55; -webkit-mask-image:radial-gradient(55% 120% at 100% 0,#000,transparent 75%); mask-image:radial-gradient(55% 120% at 100% 0,#000,transparent 75%)}
+.setup::after{content:""; position:absolute; right:-80px; top:-120px; width:420px; height:340px; pointer-events:none; background:radial-gradient(closest-side,color-mix(in srgb,var(--accent) 16%,transparent),transparent)}
+.setup-head{position:relative; z-index:1; margin-bottom:18px}
+.setup-head h3{font-size:17px; letter-spacing:-.02em}
+.setup-head p{color:var(--ink-2); font-size:13.5px; margin-top:4px}
+.setup-steps{position:relative; z-index:1; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px}
+.setup-step{display:flex; flex-direction:column; align-items:flex-start; gap:8px; padding:18px; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--surface); transition:transform .15s ease, border-color .15s ease}
+.setup-step:hover{transform:translateY(-2px); border-color:var(--border-strong)}
+.setup-step.current{border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 15%,transparent)}
+.setup-top{display:flex; align-items:center; gap:10px; width:100%; margin-bottom:4px}
+.setup-ic{width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:var(--accent-soft); color:var(--accent-soft-ink)}
+.setup-ic svg{width:19px; height:19px}
+.setup-n{font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-muted)}
+.setup-step.done .setup-ic{background:var(--good-bg); color:var(--good)}
+.setup-step.done .setup-n{color:var(--good)}
+.setup-step h4{font-size:15px; letter-spacing:-.01em}
+.setup-step p{flex:1; color:var(--ink-muted); font-size:13px; line-height:1.5; margin-bottom:8px}
+.ghost-label{display:flex; align-items:center; gap:12px; margin:0 0 12px; font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-muted)}
+.ghost-label::after{content:""; flex:1; height:1px; background:var(--border)}
+.kpi-ghost{opacity:.72}
+@media (max-width:860px){ .setup-steps{grid-template-columns:1fr} .setup{padding:18px} .setup-prog{align-items:flex-start} }
 </style>
 </head>
 <body>
@@ -1138,25 +1167,52 @@ function renderDashboard(){
 
   if(!STATE.clients.length && !STATE.equipment.length && !STATE.contracts.length){
     const hasEq = STATE.equipment.length>0, hasCl = STATE.clients.length>0, hasCt = STATE.contracts.length>0;
-    const step = (n, done, title, text, action, label) => `
-      <div class="onboard-step ${done?'done':''}">
-        <div class="onboard-step-top">
-          <div class="onboard-num">${done?'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg>':n}</div>
-          ${done?'<span class="badge st-good"><span class="dot"></span>Concluído</span>':''}
-        </div>
+    const svgI = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+    const ICO = {
+      eq: svgI('<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4Z"/>'),
+      cl: svgI('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>'),
+      ct: svgI('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/><path d="M9 13h6M9 17h4"/>'),
+      ok: svgI('<path d="M5 12.5l4.5 4.5L19 7.5"/>')
+    };
+    const flags = [hasEq, hasCl, hasCt], nDone = flags.filter(Boolean).length, cur = flags.findIndex(x=>!x);
+    const step = (i, ico, title, text, action, label) => `
+      <div class="setup-step ${flags[i]?'done':''} ${i===cur?'current':''}">
+        <div class="setup-top"><span class="setup-ic">${flags[i]?ICO.ok:ICO[ico]}</span><span class="setup-n">${flags[i]?'Concluído':'Etapa '+(i+1)}</span></div>
         <h4>${title}</h4>
         <p>${text}</p>
-        <button class="btn btn-secondary btn-sm" data-action="${action}" style="align-self:flex-start">${label}</button>
+        <button class="btn ${i===cur?'btn-primary':'btn-secondary'} btn-sm" data-action="${action}">${label}</button>
       </div>`;
+    const hr0 = new Date().getHours();
+    const hello0 = hr0<12 ? "Bom dia" : hr0<18 ? "Boa tarde" : "Boa noite";
+    const first0 = ($("#user-name").textContent||"").trim().split(/\s+/)[0];
+    const name0 = first0 && first0!=="—" && !first0.includes("@") ? first0 : "";
+    const todayLong0 = new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});
+    const kp = (label, val, sub, cls, ico) => `<div class="kpi kpi-ghost"><div class="kpi-top"><span class="kpi-label">${label}</span><span class="kpi-icon ${cls}">${ico}</span></div><div class="kpi-value tabular">${val}</div><div class="kpi-sub">${sub}</div></div>`;
     view.innerHTML = `
-      <div class="onboard-hero">
-        <h2>Bem-vindo ao Locarion</h2>
-        <p>Sua conta ainda está vazia. Siga os passos abaixo para configurar o essencial e começar a controlar locações, contratos e manutenções em um só lugar.</p>
+      <div class="dash-hello">
+        <div>
+          <div class="eyebrow">${todayLong0}</div>
+          <h2>${hello0}${name0?", "+escapeHtml(name0):""}</h2>
+          <p>Vamos colocar a sua locadora no sistema. ${nDone===0?"São só <b>3 passos</b>.":`Faltam <b>${3-nDone}</b> de 3 passos.`}</p>
+        </div>
+        <div class="setup-prog"><span><b>${nDone}</b> de 3 etapas</span><div class="setup-bar"><i style="--p:${Math.round(nDone/3*100)}%"></i></div></div>
       </div>
-      <div class="onboard-steps">
-        ${step(1, hasEq, "Cadastre seus equipamentos", "Adicione as máquinas e serviços que você loca, com tarifas por diária, semana ou mês.", "new-equipment", "Cadastrar equipamento")}
-        ${step(2, hasCl, "Cadastre seus clientes", "Adicione pessoas físicas ou jurídicas para quem você faz locações.", "new-client", "Cadastrar cliente")}
-        ${step(3, hasCt, "Crie seu primeiro contrato", "Monte um contrato de locação vinculando cliente, equipamento e período.", "new-contract", "Novo contrato")}
+      <section class="setup">
+        <div class="setup-head">
+          <div><h3>Configure o essencial</h3><p>Com estas três etapas você já controla retiradas, devoluções e cobrança.</p></div>
+        </div>
+        <div class="setup-steps">
+          ${step(0,"eq","Cadastre seus equipamentos","Adicione as máquinas e serviços que você loca, com tarifas por diária, semana ou mês.","new-equipment","Cadastrar equipamento")}
+          ${step(1,"cl","Cadastre seus clientes","Adicione pessoas físicas ou jurídicas para quem você faz locações.","new-client","Cadastrar cliente")}
+          ${step(2,"ct","Crie seu primeiro contrato","Monte um contrato de locação vinculando cliente, equipamento e período.","new-contract","Novo contrato")}
+        </div>
+      </section>
+      <div class="ghost-label"><span>Assim vai ficar o seu painel</span></div>
+      <div class="kpi-grid">
+        ${kp("Contratos ativos","0","nenhum em andamento","accent",svgI('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/>'))}
+        ${kp("Vencendo hoje","0","devoluções previstas","neutral",svgI('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/>'))}
+        ${kp("Faturas em aberto","R$ 0,00","nenhuma fatura","neutral",svgI('<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>'))}
+        ${kp("Equipamentos","0","cadastrados","neutral",ICO.eq)}
       </div>
     `;
     return;
