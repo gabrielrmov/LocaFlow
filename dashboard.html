@@ -390,6 +390,129 @@ td.num{text-align:right}
 .user-chip .name{font-size:12.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1}
 .user-chip button{background:none; border:0; color:var(--ink-muted); cursor:pointer; padding:2px; display:flex}
 .user-chip button:hover{color:var(--critical)}
+
+/* =====================================================================
+   MOVIMENTO E ACABAMENTO
+   ===================================================================== */
+:root{--ease:cubic-bezier(.2,.7,.2,1)}
+*{scrollbar-width:thin; scrollbar-color:var(--border-strong) transparent}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.input:focus-visible,.select:focus-visible,.textarea:focus-visible{outline:none}
+
+/* fundo com brilho suave */
+#app{background:radial-gradient(900px 480px at 14% -8%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 62%), radial-gradient(760px 420px at 100% 0%, color-mix(in srgb, #F2994A 6%, transparent), transparent 60%) var(--bg)}
+
+/* menu lateral */
+.brand-mark{box-shadow:inset 0 1px 0 rgba(255,255,255,.22), 0 6px 16px -6px color-mix(in srgb, var(--accent) 70%, transparent); transition:transform .4s var(--ease)}
+.brand:hover .brand-mark{transform:rotate(-8deg) scale(1.08)}
+.nav-item{position:relative; transition:background .18s ease, color .18s ease}
+.nav-item .ic{transition:transform .3s var(--ease), opacity .2s ease}
+.nav-item:hover .ic{transform:translateX(2px) scale(1.1); opacity:1}
+.nav-item::before{content:""; position:absolute; left:0; top:50%; width:3px; height:0; border-radius:0 3px 3px 0; background:var(--accent); transform:translateY(-50%); transition:height .3s var(--ease)}
+.nav-item.active::before{height:18px}
+.nav-item.active{background:linear-gradient(90deg, var(--accent-soft), color-mix(in srgb, var(--accent-soft) 35%, transparent))}
+.nav-item .count{transition:background .2s ease, transform .3s var(--ease)}
+.nav-item:hover .count{transform:scale(1.08)}
+
+/* topo */
+.topbar{transition:box-shadow .25s ease, border-color .25s ease}
+.topbar.scrolled{box-shadow:0 8px 24px -16px rgba(0,0,0,.45); border-bottom-color:var(--border-strong)}
+#page-title.swap{animation:titlein .45s var(--ease)}
+@keyframes titlein{from{opacity:0; transform:translateY(6px)}}
+
+/* botões e campos */
+.btn{transition:background .15s ease, border-color .15s ease, transform .18s var(--ease), box-shadow .25s ease}
+.btn:active{transform:scale(.97)}
+.btn-primary{box-shadow:inset 0 1px 0 rgba(255,255,255,.16), 0 6px 16px -8px color-mix(in srgb, var(--accent) 85%, transparent)}
+.btn-primary:hover{transform:translateY(-1px); box-shadow:inset 0 1px 0 rgba(255,255,255,.2), 0 10px 22px -8px color-mix(in srgb, var(--accent) 90%, transparent)}
+.btn-secondary:hover,.btn-ghost:hover{transform:translateY(-1px)}
+.btn svg{transition:transform .25s var(--ease)}
+.btn:hover svg{transform:scale(1.12)}
+.icon-btn{transition:background .15s ease, color .15s ease, transform .18s var(--ease)}
+.icon-btn:hover{transform:translateY(-1px)}
+.icon-btn:active{transform:scale(.93)}
+.alert-badge{animation:badgering 2.4s ease-out infinite}
+@keyframes badgering{0%{box-shadow:0 0 0 0 color-mix(in srgb, var(--critical-dot) 65%, transparent)} 70%,100%{box-shadow:0 0 0 7px transparent}}
+.input,.select,.textarea{transition:border-color .15s ease, box-shadow .2s ease, background .15s ease}
+.input:hover,.select:hover,.textarea:hover{border-color:var(--ink-muted)}
+.input:focus,.select:focus,.textarea:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 24%, transparent)}
+.pill-tabs button,.theme-toggle button{transition:background .2s ease, color .2s ease, box-shadow .2s ease}
+
+/* cartões: brilho que segue o mouse */
+.card,.chart-card,.kpi,.onboard-step,.quick-action{transition:border-color .2s ease, box-shadow .3s ease, background-color .15s ease, transform .3s var(--ease)}
+.kpi:hover,.chart-card:hover,.onboard-step:hover,.card.card-pad:hover{background-image:radial-gradient(280px circle at var(--mx,50%) var(--my,50%), color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%)}
+.chart-card:hover,.card.card-pad:hover{border-color:var(--border-strong)}
+.onboard-step:hover{transform:translateY(-3px); box-shadow:var(--shadow-md)}
+.kpi-icon{transition:transform .35s var(--ease)}
+.kpi:hover .kpi-icon{transform:rotate(-8deg) scale(1.14)}
+.kpi-value{transition:color .2s ease}
+.quick-action::after{content:"→"; margin-left:auto; color:var(--ink-muted); opacity:0; transform:translateX(-6px); transition:opacity .2s ease, transform .3s var(--ease)}
+.quick-action:hover::after{opacity:.8; transform:none}
+.quick-action .qa-icon{transition:transform .3s var(--ease)}
+.quick-action:hover .qa-icon{transform:scale(1.1) rotate(-6deg)}
+
+/* tabelas */
+tbody tr{transition:background .15s ease}
+@media (min-width:641px){ tbody tr:hover td:first-child{box-shadow:inset 3px 0 0 var(--accent)} }
+.badge{transition:transform .2s var(--ease)}
+.badge:hover{transform:scale(1.05)}
+.st-critical .dot{animation:dotpulse 1.6s ease-in-out infinite}
+@keyframes dotpulse{50%{opacity:.3; transform:scale(.65)}}
+.avatar{transition:transform .25s var(--ease)}
+tr:hover .avatar{transform:scale(1.1)}
+
+/* agenda */
+.cal-cell{transition:transform .25s var(--ease), border-color .2s ease, background .2s ease}
+.cal-cell:not(.outside):hover{transform:translateY(-2px); border-color:var(--border-strong); background:var(--surface-hover)}
+.cal-cell.today{animation:todayring 2.6s ease-in-out infinite}
+@keyframes todayring{50%{box-shadow:0 0 0 1px var(--accent) inset, 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent)}}
+.cal-evt{transition:transform .2s var(--ease)}
+.cal-evt:hover{transform:scale(1.04)}
+
+/* entrada ao trocar de tela */
+.view.enter > *{animation:vin .55s var(--ease) both}
+.view.enter > *:nth-child(2){animation-delay:.05s} .view.enter > *:nth-child(3){animation-delay:.1s} .view.enter > *:nth-child(4){animation-delay:.15s} .view.enter > *:nth-child(5){animation-delay:.2s} .view.enter > *:nth-child(n+6){animation-delay:.25s}
+@keyframes vin{from{opacity:0; transform:translate3d(0,14px,0)}}
+.view.enter .kpi{animation:kpiin .6s var(--ease) both; animation-delay:calc(var(--k,0) * 60ms + 120ms)}
+.kpi:nth-child(2){--k:1} .kpi:nth-child(3){--k:2} .kpi:nth-child(4){--k:3} .kpi:nth-child(5){--k:4} .kpi:nth-child(n+6){--k:5}
+@keyframes kpiin{from{opacity:0; transform:translate3d(0,10px,0) scale(.96)}}
+.view.enter .quick-action,.view.enter .onboard-step{animation:kpiin .6s var(--ease) both; animation-delay:calc(var(--k,0) * 60ms + 200ms)}
+.quick-action:nth-child(2){--k:1} .quick-action:nth-child(3){--k:2} .quick-action:nth-child(4){--k:3} .quick-action:nth-child(n+5){--k:4}
+.onboard-step:nth-child(2){--k:1} .onboard-step:nth-child(3){--k:2}
+.view.enter tbody tr{animation:rowin .5s var(--ease) both; animation-delay:calc(var(--r,12) * 28ms + 120ms)}
+tbody tr:nth-child(1){--r:0} tbody tr:nth-child(2){--r:1} tbody tr:nth-child(3){--r:2} tbody tr:nth-child(4){--r:3} tbody tr:nth-child(5){--r:4} tbody tr:nth-child(6){--r:5} tbody tr:nth-child(7){--r:6} tbody tr:nth-child(8){--r:7} tbody tr:nth-child(9){--r:8} tbody tr:nth-child(10){--r:9} tbody tr:nth-child(11){--r:10} tbody tr:nth-child(12){--r:11}
+@keyframes rowin{from{opacity:0; transform:translate3d(-10px,0,0)}}
+.view.enter .bar-fill{transform-origin:left; animation:barin 1.1s var(--ease) .3s both}
+@keyframes barin{from{transform:scaleX(0)}}
+.view.enter svg rect[rx="3"]{transform-box:fill-box; transform-origin:50% 100%; animation:colin .9s var(--ease) both; animation-delay:calc(var(--c,0) * 45ms + 250ms)}
+@keyframes colin{from{transform:scaleY(0)}}
+.view.enter circle[data-dt]{animation:dashin 1.1s var(--ease) .3s both}
+@keyframes dashin{from{stroke-dasharray:0 var(--dt)}}
+.view.enter .util-ring .center{animation:vin .8s var(--ease) .5s both}
+
+/* carregando: esqueleto */
+.skel-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin-bottom:16px}
+.skel-row{display:grid; grid-template-columns:1.3fr 1fr; gap:16px}
+.skel{height:92px; border-radius:var(--radius-md); border:1px solid var(--border); background:linear-gradient(100deg, var(--surface) 30%, var(--surface-2) 50%, var(--surface) 70%) 0 0/250% 100%; animation:shimmer 1.5s linear infinite}
+.skel.tall{height:230px}
+@keyframes shimmer{to{background-position:-150% 0}}
+@media (max-width:980px){ .skel-row{grid-template-columns:minmax(0,1fr)} }
+
+/* janelas e avisos */
+.modal-backdrop{-webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); animation:fadein .2s ease}
+.modal{animation:modalin .38s var(--ease)}
+@keyframes fadein{from{opacity:0}}
+@keyframes modalin{from{opacity:0; transform:translateY(18px) scale(.97)}}
+@media (max-width:860px){ .modal{animation:sheetin .4s var(--ease)} }
+@keyframes sheetin{from{transform:translateY(100%)}}
+.toast{position:relative; overflow:hidden; animation:toastin2 .4s var(--ease)}
+.toast::after{content:""; position:absolute; left:0; bottom:0; height:2px; width:100%; background:currentColor; opacity:.35; transform-origin:left; animation:tprog 2.6s linear forwards}
+@keyframes toastin2{from{opacity:0; transform:translateX(24px) scale(.96)}}
+@keyframes tprog{to{transform:scaleX(0)}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important; transition-duration:.01ms!important; transition-delay:0ms!important}
+}
 </style>
 </head>
 <body>
@@ -908,7 +1031,7 @@ function setTopbarActions(html){ $("#topbar-actions").innerHTML = html; }
 function closeSidebarMobile(){ $("#sidebar").classList.remove("open"); $("#backdrop").classList.remove("open"); }
 
 function loadingView(){
-  return `<div class="empty"><div class="hint">Carregando dados do Locarion…</div></div>`;
+  return `<div class="skel-grid">${'<div class="skel"></div>'.repeat(6)}</div><div class="skel-row"><div class="skel tall"></div><div class="skel tall"></div></div>`;
 }
 function allLoaded(){ return Object.values(LOADED).every(Boolean); }
 
@@ -3102,6 +3225,91 @@ function labelTables(root){
   const run = ()=>{ pending = false; labelTables(document); };
   new MutationObserver(()=>{ if(!pending){ pending = true; requestAnimationFrame(run); } })
     .observe(document.body, {childList:true, subtree:true});
+})();
+
+/* ======================= MOVIMENTO =======================
+   Animações de entrada ao trocar de tela, números que contam, gráficos que
+   crescem e brilho que segue o mouse. Nada aqui altera dados ou regras. */
+(function(){
+  const rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const view = document.getElementById("view");
+  if(!view) return;
+  let lastRoute = null, lastLoaded = false, timer = null;
+
+  function startEnter(){
+    if(rm) return;
+    view.classList.remove("enter"); void view.offsetWidth; view.classList.add("enter");
+    clearTimeout(timer); timer = setTimeout(()=>view.classList.remove("enter"), 1600);
+    const t = document.getElementById("page-title");
+    if(t){ t.classList.remove("swap"); void t.offsetWidth; t.classList.add("swap"); }
+  }
+  /* só anima ao entrar numa tela (ou quando os dados chegam), nunca a cada atualização em tempo real */
+  const original = renderRoute;
+  renderRoute = function(){
+    const r = currentRoute(), l = allLoaded();
+    if(l && (r !== lastRoute || !lastLoaded)) startEnter();
+    lastRoute = r; lastLoaded = l;
+    return original.apply(this, arguments);
+  };
+
+  /* números dos indicadores contam até o valor */
+  function parse(text){
+    const m = text.match(/\d[\d.,]*/);
+    if(!m) return null;
+    const tok = m[0].replace(/[.,]+$/, "");
+    let val, dec = 0, style = "int";
+    if(tok.indexOf(",") >= 0){ style = "br"; dec = tok.length - tok.indexOf(",") - 1; val = parseFloat(tok.replace(/\./g, "").replace(",", ".")); }
+    else if(/^\d+\.\d{1,2}$/.test(tok)){ style = "dot"; dec = tok.length - tok.indexOf(".") - 1; val = parseFloat(tok); }
+    else { style = tok.indexOf(".") >= 0 ? "br" : "int"; val = parseFloat(tok.replace(/\./g, "")); }
+    if(!isFinite(val) || val === 0) return null;
+    const i = text.indexOf(m[0]);
+    return { val, dec, style, pre: text.slice(0, i), post: text.slice(i + m[0].length) };
+  }
+  function fmt(n, o){
+    if(o.style === "dot") return n.toFixed(o.dec);
+    return n.toLocaleString("pt-BR", { minimumFractionDigits: o.dec, maximumFractionDigits: o.dec });
+  }
+  function countUp(el){
+    if(el.hasAttribute("data-cu") || el.children.length) return;
+    el.setAttribute("data-cu", "1");
+    const o = parse(el.textContent);
+    if(!o) return;
+    const final = el.textContent, t0 = performance.now(), dur = 1100;
+    el.textContent = o.pre + fmt(0, o) + o.post;
+    (function step(t){
+      const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = p < 1 ? o.pre + fmt(o.val * e, o) + o.post : final;
+      if(p < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+  /* prepara gráficos (anéis e colunas) para a animação de entrada */
+  function prepare(){
+    view.querySelectorAll("circle[stroke-dasharray]:not([data-dt])").forEach(c=>{
+      const n = (c.getAttribute("stroke-dasharray")||"").split(/[\s,]+/).map(parseFloat);
+      if(n.length >= 2 && isFinite(n[0]) && isFinite(n[1])){ c.setAttribute("data-dt", "1"); c.style.setProperty("--dt", (n[0] + n[1]).toFixed(2)); }
+    });
+    view.querySelectorAll('svg rect[rx="3"]:not([data-c])').forEach((r, i)=>{ r.setAttribute("data-c", "1"); r.style.setProperty("--c", i); });
+  }
+  let pending = false;
+  new MutationObserver(()=>{
+    if(pending || !view.classList.contains("enter")) return;
+    pending = true;
+    requestAnimationFrame(()=>{ pending = false; prepare(); view.querySelectorAll(".kpi-value:not([data-cu])").forEach(countUp); });
+  }).observe(view, { childList: true, subtree: true });
+
+  /* brilho que segue o mouse */
+  if(!rm && window.matchMedia && matchMedia("(hover: hover)").matches){
+    document.addEventListener("pointermove", (e)=>{
+      const el = e.target.closest && e.target.closest(".kpi, .chart-card, .onboard-step, .card.card-pad");
+      if(!el) return;
+      const r = el.getBoundingClientRect();
+      el.style.setProperty("--mx", (e.clientX - r.left) + "px");
+      el.style.setProperty("--my", (e.clientY - r.top) + "px");
+    }, { passive: true });
+  }
+  /* sombra na barra do topo ao rolar */
+  const tb = document.querySelector(".topbar");
+  if(tb){ addEventListener("scroll", ()=>{ tb.classList.toggle("scrolled", window.pageYOffset > 4); }, { passive: true }); }
 })();
 
 /* Só entra se: (1) autenticado no Firebase, (2) documento users/{uid} tem

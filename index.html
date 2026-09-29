@@ -7,6 +7,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <meta name="theme-color" content="#07080A">
+<script>document.documentElement.classList.add("js")</script>
 <title>Locarion · O sistema da locadora de obra</title>
 <meta name="description" content="Sistema para locadora de equipamentos de construção: contratos no seu modelo, agenda de retirada e devolução, estoque de andaimes por peça, manutenção e financeiro. No computador e no celular.">
 <meta property="og:title" content="Locarion · O sistema da locadora de obra">
@@ -157,7 +158,7 @@ kbd{font-family:var(--mono); font-size:12px; line-height:1; padding:4px 6px; bor
 
 /* texto "o que mais" */
 .more{margin-top:120px; font-size:clamp(24px,3.1vw,38px); line-height:1.3; letter-spacing:-.025em; font-weight:600; max-width:1000px}
-.more span{color:var(--ink-3)}
+.more .dim{color:var(--ink-3)}
 
 /* celular */
 .mobile{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,420px); gap:64px; align-items:center}
@@ -275,10 +276,216 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
   .foot > div:first-child{grid-column:1 / -1}
 }
 @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} .search .caret{animation:none} }
+
+/* =====================================================================
+   MOVIMENTO
+   ===================================================================== */
+:root{--ease:cubic-bezier(.2,.7,.2,1)}
+@property --ang{syntax:'<angle>'; inherits:false; initial-value:0deg}
+
+/* entrada ao rolar (só esconde se o JS estiver ativo) */
+.js .rv{opacity:0; transform:translate3d(0,26px,0); transition:opacity .8s var(--ease), transform .8s var(--ease), filter .8s var(--ease); transition-delay:var(--d,0ms)}
+.js .rv.in{opacity:1; transform:none}
+.js h2.rv{filter:blur(7px)}
+.js h2.rv.in{filter:none}
+
+/* barra de progresso de leitura */
+.progress{position:fixed; left:0; top:0; right:0; height:2px; z-index:60; transform:scaleX(0); transform-origin:0 50%; background:linear-gradient(90deg,#F2994A,#FFB877); box-shadow:0 0 12px rgba(242,153,74,.7); pointer-events:none}
+
+/* topo */
+.top{transition:background .3s ease, border-color .3s ease}
+.top.scrolled{background:rgba(7,8,10,.9); border-bottom-color:var(--line-2)}
+.top nav a{position:relative; padding:6px 0; transition:color .2s ease}
+.top nav a::after{content:""; position:absolute; left:0; right:0; bottom:0; height:1.5px; background:var(--orange); transform:scaleX(0); transform-origin:left; transition:transform .3s var(--ease)}
+.top nav a:hover::after,.top nav a.on::after{transform:scaleX(1)}
+.top nav a.on{color:var(--ink)}
+.brand-mark{transition:transform .5s var(--ease)}
+.brand:hover .brand-mark{transform:rotate(-8deg) scale(1.08)}
+
+/* botões */
+.btn{transition:background .15s ease, border-color .15s ease, transform .18s var(--ease), box-shadow .3s ease}
+.btn:active{transform:scale(.97)}
+.btn-white{position:relative; overflow:hidden}
+.btn-white::after{content:""; position:absolute; top:0; bottom:0; left:-70%; width:45%; background:linear-gradient(100deg,transparent,rgba(255,255,255,.85),transparent); transform:skewX(-20deg); transition:left .7s var(--ease)}
+.btn-white:hover::after{left:135%}
+.btn-white:hover{box-shadow:0 8px 30px -8px rgba(255,255,255,.35); transform:translateY(-1px)}
+.btn-dark:hover{transform:translateY(-1px)}
+.btn-glow{animation:glow 3.2s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(242,153,74,0)} 50%{box-shadow:0 0 34px -4px rgba(242,153,74,.55)}}
+
+/* hero */
+.hero .wrap,.stage{z-index:1}
+.hero::before{left:calc(50% + var(--gx,0px)); transition:left 1.2s var(--ease); animation:breathe 7s ease-in-out infinite}
+@keyframes breathe{0%,100%{opacity:.85} 50%{opacity:1}}
+.hero::after{content:""; position:absolute; left:0; right:0; top:0; height:680px; z-index:0; pointer-events:none; opacity:.55;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px); background-size:64px 64px; background-position:center top;
+  -webkit-mask-image:radial-gradient(55% 75% at 50% 0%,#000 0%,transparent 78%); mask-image:radial-gradient(55% 75% at 50% 0%,#000 0%,transparent 78%)}
+.orb{position:absolute; z-index:0; border-radius:50%; filter:blur(70px); pointer-events:none}
+.orb.o1{width:340px; height:340px; left:8%; top:60px; background:rgba(74,140,232,.20); animation:drift 14s ease-in-out infinite}
+.orb.o2{width:300px; height:300px; right:6%; top:140px; background:rgba(242,153,74,.16); animation:drift 17s ease-in-out -6s infinite reverse}
+@keyframes drift{0%,100%{transform:translate3d(0,0,0)} 33%{transform:translate3d(60px,-30px,0)} 66%{transform:translate3d(-30px,40px,0)}}
+.pill{position:relative; display:inline-flex; align-items:center; gap:9px; padding:6px 15px 6px 11px; border-radius:99px; font-size:13px; color:var(--ink-2); background:rgba(255,255,255,.04); border:1px solid var(--line-2); margin-bottom:30px; overflow:hidden}
+.pill::after{content:""; position:absolute; inset:0; background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.12) 50%,transparent 70%); transform:translateX(-120%); animation:sheen 5s ease-in-out 1.2s infinite}
+@keyframes sheen{0%{transform:translateX(-120%)} 40%,100%{transform:translateX(120%)}}
+.pill i{width:7px; height:7px; border-radius:50%; background:var(--ui-good); animation:ping 2.2s ease-out infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(61,220,122,.6)} 70%,100%{box-shadow:0 0 0 9px rgba(61,220,122,0)}}
+.hero h1{background-size:100% 100%}
+.hero h1 .l2{display:inline-block; background:linear-gradient(100deg,#FFFFFF 10%,#F2994A 45%,#FFFFFF 80%); background-size:220% 100%; -webkit-background-clip:text; background-clip:text; color:transparent; animation:shine 7s ease-in-out infinite}
+@keyframes shine{0%,100%{background-position:100% 0} 50%{background-position:0 0}}
+
+/* janela do produto: inclina e endireita conforme rola */
+.stage-fade{perspective:1600px}
+.window{transform-origin:50% 0; transform:rotateX(calc(11deg * (1 - var(--tp,0)))) scale(calc(.93 + .07 * var(--tp,0))); transition:transform .18s linear}
+.window::after{content:""; position:absolute; inset:0; z-index:3; pointer-events:none; background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.06) 50%,transparent 65%); background-size:250% 100%; animation:glare 8s ease-in-out 2s infinite}
+@keyframes glare{0%{background-position:150% 0} 35%,100%{background-position:-50% 0}}
+.float{position:absolute; z-index:4; display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:12px; font-size:13px; font-weight:500; text-align:left; background:rgba(22,23,28,.88); border:1px solid var(--line-3); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); box-shadow:0 20px 50px -12px rgba(0,0,0,.8); animation:bob 6.5s ease-in-out infinite}
+.float small{display:block; color:var(--ink-3); font-size:11.5px; font-weight:400}
+.float.f1{right:-1%; top:24%}
+.float.f2{left:-1%; bottom:26%; animation-delay:-3s; animation-duration:7.5s}
+@keyframes bob{0%,100%{transform:translate3d(0,0,0)} 50%{transform:translate3d(0,-10px,0)}}
+.tag{position:relative}
+
+/* faixa de equipamentos */
+.marq{position:relative; margin-top:80px; overflow:hidden; -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent); mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.marq-track{display:flex; gap:12px; width:max-content}
+.js .marq-track{animation:marq 46s linear infinite}
+.marq:hover .marq-track{animation-play-state:paused}
+@keyframes marq{to{transform:translateX(-50%)}}
+.chip{flex:0 0 auto; display:inline-flex; align-items:center; gap:9px; padding:10px 18px; border-radius:99px; border:1px solid var(--line); background:rgba(255,255,255,.025); color:var(--ink-2); font-size:14.5px; transition:border-color .2s ease, color .2s ease, background .2s ease}
+.chip::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--orange); opacity:.8}
+.chip:hover{border-color:var(--line-3); color:var(--ink); background:rgba(255,255,255,.06)}
+
+/* fotos */
+.photo{transition:border-color .3s ease, transform .5s var(--ease)}
+.photo img{transition:transform 1.6s var(--ease), filter .6s ease}
+.js .photo img{transform:scale(1.18)}
+.js .photo.in img{transform:scale(1)}
+.photo.in:hover img{transform:scale(1.06); filter:saturate(1.05) contrast(1.05)}
+.photo:hover{border-color:var(--line-3); transform:translateY(-4px)}
+.photo figcaption{transition:transform .5s var(--ease)}
+.photo:hover figcaption{transform:translateY(-4px)}
+
+/* passos */
+.steps{list-style:none; margin:56px 0 0; padding:0; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:28px; position:relative}
+.steps::before,.steps::after{content:""; position:absolute; left:16.66%; right:16.66%; top:21px; height:1px}
+.steps::before{background:var(--line-2)}
+.steps::after{background:linear-gradient(90deg,var(--orange),rgba(242,153,74,.15)); transform:scaleX(0); transform-origin:left; transition:transform 1.9s var(--ease) .4s}
+.steps.in::after{transform:none}
+.step{position:relative; text-align:center; padding:0 10px}
+.step-n{position:relative; z-index:1; display:flex; align-items:center; justify-content:center; margin:0 auto 22px; width:44px; height:44px; border-radius:50%; background:#15161B; border:1px solid var(--line-2); font:600 15px/1 var(--mono); color:var(--ink-2); transition:border-color .5s ease, color .5s ease, box-shadow .5s ease}
+.steps.in .step-n{border-color:rgba(242,153,74,.65); color:var(--orange); box-shadow:0 0 0 6px rgba(242,153,74,.07), 0 0 24px -4px rgba(242,153,74,.45); transition-delay:calc(var(--i,0) * .55s + .5s)}
+.step:nth-child(2){--i:1} .step:nth-child(3){--i:2}
+.step h3{font-size:19px; letter-spacing:-.02em}
+.step p{color:var(--ink-2); font-size:15px; margin-top:8px; max-width:300px; margin-left:auto; margin-right:auto}
+
+/* cartões de recurso */
+.card{transition:transform .5s var(--ease), border-color .3s ease, box-shadow .4s ease}
+.card::after{content:""; position:absolute; inset:0; z-index:0; border-radius:inherit; pointer-events:none; opacity:0; transition:opacity .35s ease; background:radial-gradient(380px circle at var(--mx,50%) var(--my,0%), rgba(242,153,74,.11), transparent 60%)}
+.card:hover{transform:translateY(-4px); border-color:var(--line-3); box-shadow:0 30px 60px -30px rgba(0,0,0,.9)}
+.card:hover::after{opacity:1}
+.card-vis,.card-txt{position:relative; z-index:1}
+/* dentro dos cartões: tudo se monta quando o cartão entra na tela */
+.js .card .ui-r,.js .card .rate,.js .card .grp{opacity:0}
+.card.in .ui-r,.card.in .rate,.card.in .grp{animation:rowin .7s var(--ease) both; animation-delay:calc(var(--i,0) * 120ms + 350ms)}
+.ui-r:nth-child(2),.rate:nth-child(2){--i:1} .ui-r:nth-child(3),.rate:nth-child(3){--i:2} .ui-r:nth-child(4),.rate:nth-child(4){--i:3} .ui-r:nth-child(5),.rate:nth-child(5){--i:4} .ui-r:nth-child(6){--i:5}
+.grp{--i:2}
+@keyframes rowin{from{opacity:0; transform:translate3d(-14px,0,0)} to{opacity:1; transform:none}}
+.js .card .bar i{width:0}
+.card.in .bar i{width:75%; transition:width 1.6s var(--ease) .7s}
+.js .doc mark{background:linear-gradient(rgba(242,153,74,.30),rgba(242,153,74,.30)) no-repeat 0 0/0% 100%; transition:background-size .7s var(--ease)}
+.card.in .doc mark{background-size:100% 100%; transition-delay:calc(var(--i,0) * 170ms + 500ms)}
+.doc mark:nth-of-type(2){--i:1} .doc mark:nth-of-type(3){--i:2} .doc mark:nth-of-type(4){--i:3} .doc mark:nth-of-type(5){--i:4} .doc mark:nth-of-type(6){--i:5}
+.js .doc .ln{transform:scaleX(0); transform-origin:left}
+.card.in .doc .ln{transform:none; transition:transform .9s var(--ease) 1.4s}
+.doc{transition:transform .6s var(--ease)}
+.card:hover .doc{transform:rotate(0deg) translateY(-4px)}
+.js .rate.best{background:transparent}
+.card.in .rate.best{background:rgba(74,140,232,.10); transition:background .8s ease 1.1s}
+.js .rate.best .tag{opacity:0; transform:scale(.6)}
+.card.in .rate.best .tag{opacity:1; transform:none; transition:opacity .4s ease 1.35s, transform .5s var(--ease) 1.35s}
+.tag.bad::before{animation:dotpulse 1.6s ease-in-out infinite}
+@keyframes dotpulse{50%{opacity:.25; transform:scale(.7)}}
+.ui-r.sel{position:relative}
+.ui-r.sel::before{content:""; position:absolute; left:0; top:0; bottom:0; width:2px; background:var(--ui-blue)}
+
+/* texto "E ainda:" revelado palavra por palavra */
+.more .w{opacity:.2; transition:opacity .35s ease}
+.more .w.on{opacity:1}
+
+/* celular */
+.phone{animation:float 8s ease-in-out infinite; transition:box-shadow .4s ease}
+@keyframes float{0%,100%{transform:translate3d(0,0,0) rotate(-.6deg)} 50%{transform:translate3d(0,-12px,0) rotate(.6deg)}}
+.phone-wrap::before{animation:breathe 5s ease-in-out infinite}
+.mobile li{transition:padding-left .3s var(--ease), border-color .3s ease}
+.mobile li:hover{padding-left:10px; border-color:var(--line-3)}
+.mobile li b{transition:color .2s ease}
+.mobile li:hover b{color:var(--orange)}
+
+/* planos */
+.plan{transition:transform .5s var(--ease), border-color .3s ease, box-shadow .4s ease}
+.plan:hover{transform:translateY(-5px); border-color:var(--line-3)}
+.plan.hot:hover{border-color:rgba(242,153,74,.5)}
+.plan.hot::before{content:""; position:absolute; inset:-1px; border-radius:inherit; padding:1px; pointer-events:none;
+  background:conic-gradient(from var(--ang), transparent 0 55%, rgba(255,170,100,.95) 78%, transparent 100%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); animation:spin 6s linear infinite}
+@keyframes spin{to{--ang:360deg}}
+.plan::after{content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; opacity:0; transition:opacity .35s ease; background:radial-gradient(360px circle at var(--mx,50%) var(--my,0%), rgba(255,255,255,.06), transparent 60%)}
+.plan:hover::after{opacity:1}
+.plan li svg{transition:transform .3s var(--ease)}
+.plan li:hover svg{transform:scale(1.3) rotate(-8deg)}
+
+/* perguntas */
+.faq summary{transition:color .2s ease, padding-left .3s var(--ease)}
+.faq summary:hover{color:#fff; padding-left:6px}
+.faq details[open] summary{color:#fff}
+.faq details[open] p{animation:faqin .45s var(--ease)}
+@keyframes faqin{from{opacity:0; transform:translateY(-8px)} to{opacity:1; transform:none}}
+
+/* fechamento */
+.closing-bg{animation:kenburns 28s ease-in-out infinite alternate}
+@keyframes kenburns{from{transform:scale(1)} to{transform:scale(1.12) translate3d(-1.5%,-1%,0)}}
+.js .closing .hero-cta .btn-white{animation:glow 3.2s ease-in-out infinite}
+.foot a{transition:color .2s ease, transform .2s var(--ease)}
+.foot a:not(.brand):hover{transform:translateX(3px)}
+
+/* modal */
+.modal-overlay.open{animation:fadein .25s ease}
+.modal-overlay.open .modal-card{animation:popin .4s var(--ease)}
+@keyframes fadein{from{opacity:0}}
+@keyframes popin{from{opacity:0; transform:translateY(16px) scale(.96)}}
+
+@media (max-width:980px){
+  .float{display:none}
+  .window{transform:none}
+  .steps{grid-template-columns:minmax(0,1fr); gap:34px; margin-top:44px}
+  .steps::before,.steps::after{left:21px; right:auto; top:22px; bottom:22px; width:1px; height:auto}
+  .steps::after{transform:scaleY(0); transform-origin:top; background:linear-gradient(180deg,var(--orange),rgba(242,153,74,.15))}
+  .steps.in::after{transform:none}
+  .step{text-align:left; padding:0 0 0 66px}
+  .step-n{position:absolute; left:0; top:0; margin:0}
+  .step p{margin-left:0}
+  .marq{margin-top:56px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important; transition-duration:.01ms!important; transition-delay:0ms!important}
+  .js .rv,.js h2.rv{opacity:1; transform:none; filter:none}
+  .js .card .ui-r,.js .card .rate,.js .card .grp{opacity:1}
+  .js .card .bar i{width:75%}
+  .js .doc mark{background-size:100% 100%}
+  .js .doc .ln{transform:none}
+  .js .rate.best{background:rgba(74,140,232,.10)}
+  .js .rate.best .tag{opacity:1; transform:none}
+  .js .photo img{transform:none}
+  .more .w{opacity:1}
+  .window{transform:none}
+  .steps::after{transform:none}
+  .marq-track{flex-wrap:wrap; width:auto; justify-content:center}
+}
 </style>
 </head>
 <body>
 
+<div class="progress" id="progress" aria-hidden="true"></div>
 <header class="top">
   <div class="wrap top-inner">
     <a class="brand" href="#" aria-label="Locarion, início">
@@ -300,17 +507,21 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
 
 <main>
 <section class="hero">
+  <div class="orb o1" aria-hidden="true"></div><div class="orb o2" aria-hidden="true"></div>
   <div class="wrap">
-    <h1>O sistema da<br>locadora de obra.</h1>
-    <p class="sub">Contratos, retiradas, devoluções, estoque, manutenção e cobrança. Tudo o que sai e volta do seu pátio, no computador e no celular.</p>
-    <div class="hero-cta">
-      <a class="btn btn-white" href="#precos">Ver planos</a>
+    <span class="pill rv"><i></i>Para locadoras de equipamentos de construção</span>
+    <h1 class="rv" style="--d:80ms">O sistema da<br><span class="l2">locadora de obra.</span></h1>
+    <p class="sub rv" style="--d:180ms">Contratos, retiradas, devoluções, estoque, manutenção e cobrança. Tudo o que sai e volta do seu pátio, no computador e no celular.</p>
+    <div class="hero-cta rv" style="--d:280ms">
+      <a class="btn btn-white btn-glow" href="#precos">Ver planos</a>
       <a class="btn btn-dark" href="login.html">Já sou cliente</a>
     </div>
-    <p class="hero-note">Busque qualquer contrato, cliente ou equipamento com <kbd>Ctrl</kbd> <kbd>K</kbd></p>
+    <p class="hero-note rv" style="--d:360ms">Busque qualquer contrato, cliente ou equipamento com <kbd>Ctrl</kbd> <kbd>K</kbd></p>
   </div>
   <div class="stage">
-    <div class="stage-fade">
+    <div class="stage-fade rv" style="--d:250ms">
+      <div class="float f1" aria-hidden="true"><span class="tag ok">Assinado</span><span>Contrato CT-0232<small>Vega Engenharia</small></span></div>
+      <div class="float f2" aria-hidden="true"><span class="tag warn">Amanhã</span><span>Devolução prevista<small>Compactador (sapo)</small></span></div>
       <div class="window">
         <div class="window-bar" aria-hidden="true"><i></i><i></i><i></i><span class="url">locarion.app/dashboard</span></div>
         <picture>
@@ -319,7 +530,7 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
         </picture>
       </div>
     </div>
-    <div class="props">
+    <div class="props" data-stagger>
       <div class="prop"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 18a4.5 4.5 0 0 1-.5-9A6 6 0 0 1 18 8.5a4 4 0 0 1-.5 9.5H7Z"/></svg><b>Na nuvem.</b><span>Nada para instalar.</span></div>
       <div class="prop"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg><b>No celular.</b><span>Funciona na obra também.</span></div>
       <div class="prop"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="10.5" width="16" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg><b>Login Google.</b><span>Sem senha nova para decorar.</span></div>
@@ -328,13 +539,15 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
   </div>
 </section>
 
+<div class="marq rv" aria-label="Equipamentos que o Locarion controla"><div class="marq-track" id="marq-track"><span class="chip">Betoneira</span><span class="chip">Andaime tubular</span><span class="chip">Escora metálica</span><span class="chip">Martelete rompedor</span><span class="chip">Compactador (sapo)</span><span class="chip">Placa vibratória</span><span class="chip">Serra mármore</span><span class="chip">Cortadora de piso</span><span class="chip">Gerador</span><span class="chip">Vibrador de concreto</span><span class="chip">Andaime fachadeiro</span><span class="chip">Motobomba</span><span class="chip">Bomba de concreto</span><span class="chip">Furadeira de bancada</span></div></div>
+
 <section class="sec" id="para-quem">
   <div class="wrap">
     <div class="sec-head">
-      <h2>Feito para quem aluga equipamento de construção.</h2>
-      <p>Betoneira, andaime, escora, martelete, compactador, gerador. Do pátio até a obra do cliente, e de volta.</p>
+      <h2 class="rv">Feito para quem aluga equipamento de construção.</h2>
+      <p class="rv" style="--d:100ms">Betoneira, andaime, escora, martelete, compactador, gerador. Do pátio até a obra do cliente, e de volta.</p>
     </div>
-    <div class="sec-body photos">
+    <div class="sec-body photos" data-stagger>
       <figure class="photo"><img src="https://images.unsplash.com/photo-1588415796310-b9a124beabb0?auto=format&fit=crop&w=720&h=960&q=70" width="720" height="960" loading="lazy" alt="Betoneira ao lado de um monte de brita"><figcaption><b>Betoneiras</b><span>Controle por unidade e código</span></figcaption></figure>
       <figure class="photo"><img src="https://images.unsplash.com/photo-1755943807913-5f999c562f45?auto=format&fit=crop&w=720&h=960&q=70" width="720" height="960" loading="lazy" alt="Tubos de andaime e escoras empilhados"><figcaption><b>Andaimes e escoras</b><span>Estoque por quantidade de peças</span></figcaption></figure>
       <figure class="photo"><img src="https://images.unsplash.com/photo-1665631153909-ae7a1b6c137f?auto=format&fit=crop&w=720&h=960&q=70" width="720" height="960" loading="lazy" alt="Operário usando um martelete rompedor"><figcaption><b>Marteletes e compactadores</b><span>Manutenção e disponibilidade</span></figcaption></figure>
@@ -343,13 +556,27 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
   </div>
 </section>
 
+<section class="sec" id="passos">
+  <div class="wrap">
+    <div class="sec-head center">
+      <h2 class="rv">Do cadastro à cobrança,<br>sem sair do sistema.</h2>
+      <p class="rv" style="--d:100ms">Três passos que se repetem toda semana na locadora, agora no mesmo lugar.</p>
+    </div>
+    <ol class="steps io">
+      <li class="step rv" style="--d:0ms"><span class="step-n">1</span><h3>Cadastre o que você aluga</h3><p>Equipamentos por unidade ou por peça, com as tarifas de diária a mensal.</p></li>
+      <li class="step rv" style="--d:120ms"><span class="step-n">2</span><h3>Emita o contrato</h3><p>Escolha o cliente, os itens e o período. O contrato sai no seu modelo, com o valor calculado.</p></li>
+      <li class="step rv" style="--d:240ms"><span class="step-n">3</span><h3>Acompanhe e cobre</h3><p>A agenda mostra o que sai e volta. O financeiro mostra quem pagou e quem está devendo.</p></li>
+    </ol>
+  </div>
+</section>
+
 <section class="sec" id="recursos">
   <div class="wrap">
     <div class="sec-head center">
-      <h2>Menos ligação.<br>Menos caderno no balcão.</h2>
-      <p>O Locarion responde as perguntas que aparecem todo dia na locadora, antes de alguém precisar ligar para perguntar.</p>
+      <h2 class="rv">Menos ligação.<br>Menos caderno no balcão.</h2>
+      <p class="rv" style="--d:100ms">O Locarion responde as perguntas que aparecem todo dia na locadora, antes de alguém precisar ligar para perguntar.</p>
     </div>
-    <div class="sec-body cards">
+    <div class="sec-body cards" data-stagger>
 
       <article class="card">
         <div class="card-vis" aria-hidden="true">
@@ -382,7 +609,7 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
         <div class="card-vis" aria-hidden="true">
           <div class="ui">
             <div class="ui-h"><b>Andaime tubular 1,5m</b><small>estoque</small></div>
-            <div class="split"><div><div class="lbl">No pátio</div><div class="big-n">180</div></div><div><div class="lbl">Alugadas</div><div class="big-n">60</div></div></div>
+            <div class="split"><div><div class="lbl">No pátio</div><div class="big-n" data-count="180">180</div></div><div><div class="lbl">Alugadas</div><div class="big-n" data-count="60">60</div></div></div>
             <div class="bar"><i></i></div>
             <div class="ui-r"><div class="g"><div class="t">Vega Engenharia</div><div class="s">60 peças · até 22/10</div></div><span class="tag ok">Ativo</span></div>
           </div>
@@ -406,7 +633,7 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
       <article class="card">
         <div class="card-vis" aria-hidden="true">
           <div class="ui">
-            <div class="split" style="border-bottom:1px solid #22242C"><div><div class="lbl">Recebido no mês</div><div class="big-n" style="font-size:24px; color:var(--ui-good)">R$ 3.540</div></div><div><div class="lbl">A receber</div><div class="big-n" style="font-size:24px; color:var(--ui-warn)">R$ 1.300</div></div></div>
+            <div class="split" style="border-bottom:1px solid #22242C"><div><div class="lbl">Recebido no mês</div><div class="big-n" data-count="3540" data-prefix="R$ " style="font-size:24px; color:var(--ui-good)">R$ 3.540</div></div><div><div class="lbl">A receber</div><div class="big-n" data-count="1300" data-prefix="R$ " style="font-size:24px; color:var(--ui-warn)">R$ 1.300</div></div></div>
             <div class="ui-r"><div class="g"><div class="t">Obras Ferreira</div><div class="s">Serra mármore · venceu há 2 dias</div></div><span class="tag bad">Atrasado</span></div>
             <div class="ui-r"><div class="g"><div class="t">Vega Engenharia</div><div class="s">Boleto · vence amanhã</div></div><span class="tag warn">Pendente</span></div>
           </div>
@@ -417,7 +644,7 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
       <article class="card">
         <div class="card-vis" aria-hidden="true">
           <div class="ui">
-            <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span class="q">betoneira<span class="caret"></span></span><kbd>Esc</kbd></div>
+            <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span class="q"><span class="qt" data-type="betoneira">betoneira</span><span class="caret"></span></span><kbd>Esc</kbd></div>
             <div class="grp">Equipamentos</div>
             <div class="ui-r sel"><div class="g"><div class="t">Betoneira 400L · BET-01</div><div class="s">Alugada · Construtora Alfa</div></div></div>
             <div class="ui-r"><div class="g"><div class="t">Betoneira 400L · BET-02</div><div class="s">Disponível no pátio</div></div></div>
@@ -430,7 +657,7 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
 
     </div>
 
-    <p class="more">E ainda: <span>registrar manutenção e tirar o equipamento da lista de disponíveis.</span> Programar revisão preventiva. <span>Mandar orçamento que segura o equipamento.</span> Saber qual contrato falta assinar. <span>Ver em qual obra está cada item.</span> Exportar para o contador.</p>
+    <p class="more" id="more">E ainda: <span class="dim">registrar manutenção e tirar o equipamento da lista de disponíveis.</span> Programar revisão preventiva. <span class="dim">Mandar orçamento que segura o equipamento.</span> Saber qual contrato falta assinar. <span class="dim">Ver em qual obra está cada item.</span> Exportar para o contador.</p>
   </div>
 </section>
 
@@ -438,8 +665,8 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
   <div class="wrap mobile">
     <div>
       <div class="sec-head">
-        <h2>O escritório no bolso de quem está na rua.</h2>
-        <p>A mesma conta abre no navegador do celular. Nada de aplicativo para baixar.</p>
+        <h2 class="rv">O escritório no bolso de quem está na rua.</h2>
+        <p class="rv" style="--d:100ms">A mesma conta abre no navegador do celular. Nada de aplicativo para baixar.</p>
       </div>
       <ul>
         <li><b>Agenda na mão do motorista</b><span>O que retirar, o que devolver e em qual obra, sem ligar para o escritório.</span></li>
@@ -456,10 +683,10 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
 <section class="sec" id="precos">
   <div class="wrap">
     <div class="sec-head center">
-      <h2>Dois planos.<br>Sem fidelidade.</h2>
-      <p>Mensal e sem taxa de implantação. Se não servir para a sua locadora, cancela quando quiser.</p>
+      <h2 class="rv">Dois planos.<br>Sem fidelidade.</h2>
+      <p class="rv" style="--d:100ms">Mensal e sem taxa de implantação. Se não servir para a sua locadora, cancela quando quiser.</p>
     </div>
-    <div class="sec-body plans">
+    <div class="sec-body plans" data-stagger>
       <div class="plan">
         <span class="plan-name">Profissional</span>
         <p class="plan-for">Para a locadora que quer tirar a operação da planilha.</p>
@@ -492,7 +719,7 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
 <section class="sec" id="perguntas">
   <div class="wrap">
     <div class="sec-head center">
-      <h2>Perguntas frequentes</h2>
+      <h2 class="rv">Perguntas frequentes</h2>
     </div>
     <div class="sec-body faq">
       <details>
@@ -526,8 +753,8 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
 <section class="closing">
   <img class="closing-bg" src="https://images.unsplash.com/photo-1636714289409-e06a4dfc617c?auto=format&fit=crop&w=1920&q=60" alt="" loading="lazy">
   <div class="wrap">
-    <h2>Sua locadora organizada<br>a partir desta semana.</h2>
-    <p>Assine, entre com a conta Google, cadastre os equipamentos e emita o primeiro contrato.</p>
+    <h2 class="rv">Sua locadora organizada<br>a partir desta semana.</h2>
+    <p class="rv" style="--d:100ms">Assine, entre com a conta Google, cadastre os equipamentos e emita o primeiro contrato.</p>
     <div class="hero-cta">
       <a class="btn btn-white" href="#precos">Ver planos</a>
       <a class="btn btn-dark" href="login.html">Já sou cliente</a>
@@ -573,6 +800,127 @@ footer{padding:56px 0 calc(40px + env(safe-area-inset-bottom,0px)); font-size:14
   </div>
 </div>
 
+<script>
+/* Movimento da página: entrada ao rolar, contadores, digitação, brilho do mouse. */
+(function(){
+  var d = document, de = d.documentElement;
+  var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var $$ = function(sel, root){ return Array.prototype.slice.call((root||d).querySelectorAll(sel)); };
+
+  /* faixa de equipamentos: duplica a lista para o loop ficar contínuo */
+  var track = d.getElementById("marq-track");
+  if(track && !rm){
+    Array.prototype.slice.call(track.children).forEach(function(c){ var k = c.cloneNode(true); k.setAttribute("aria-hidden","true"); track.appendChild(k); });
+  }
+
+  /* "E ainda: ..." vira palavras que acendem conforme rola */
+  var more = d.getElementById("more"), words = [];
+  function wrap(node){
+    Array.prototype.slice.call(node.childNodes).forEach(function(n){
+      if(n.nodeType === 3){
+        var frag = d.createDocumentFragment();
+        n.nodeValue.split(/(\s+)/).forEach(function(t){
+          if(!t) return;
+          if(/^\s+$/.test(t)){ frag.appendChild(d.createTextNode(t)); return; }
+          var w = d.createElement("span"); w.className = "w"; w.textContent = t; frag.appendChild(w); words.push(w);
+        });
+        node.replaceChild(frag, n);
+      } else if(n.nodeType === 1){ wrap(n); }
+    });
+  }
+  if(more){ wrap(more); }
+
+  /* escalonamento */
+  $$("[data-stagger]").forEach(function(c){
+    Array.prototype.slice.call(c.children).forEach(function(el, i){ el.classList.add("rv"); el.style.setProperty("--d", (i * 90) + "ms"); });
+  });
+
+  /* contadores e digitação dentro dos cartões */
+  function fmt(n){ return Math.round(n).toLocaleString("pt-BR"); }
+  function countUp(el){
+    var to = parseFloat(el.getAttribute("data-count")), pre = el.getAttribute("data-prefix") || "";
+    if(rm || isNaN(to)){ return; }
+    var t0 = null, dur = 1500;
+    function step(t){
+      if(t0 === null) t0 = t;
+      var p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = pre + fmt(to * e);
+      if(p < 1) requestAnimationFrame(step); else el.textContent = pre + fmt(to);
+    }
+    el.textContent = pre + "0";
+    setTimeout(function(){ requestAnimationFrame(step); }, 450);
+  }
+  function typeIn(el){
+    var full = el.getAttribute("data-type") || el.textContent;
+    if(rm){ return; }
+    el.textContent = "";
+    var i = 0;
+    setTimeout(function(){
+      (function tick(){ i++; el.textContent = full.slice(0, i); if(i < full.length) setTimeout(tick, 85 + Math.random() * 60); })();
+    }, 900);
+  }
+  function wake(el){
+    $$("[data-count]", el).forEach(countUp);
+    $$("[data-type]", el).forEach(typeIn);
+  }
+
+  /* entrada ao rolar */
+  var targets = $$(".rv, .io");
+  if("IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(!en.isIntersecting) return;
+        var el = en.target;
+        el.classList.add("in");
+        io.unobserve(el);
+        if(el.classList.contains("card")) wake(el);
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
+    targets.forEach(function(el){ io.observe(el); });
+  } else {
+    targets.forEach(function(el){ el.classList.add("in"); });
+  }
+
+  /* rolagem: progresso, topo, inclinação do painel, seção ativa, palavras */
+  var prog = d.getElementById("progress"), top = d.querySelector(".top"), fade = d.querySelector(".stage-fade");
+  var links = $$(".top nav a"), secs = links.map(function(a){ return d.querySelector(a.getAttribute("href")); });
+  var ticking = false;
+  function onScroll(){
+    ticking = false;
+    var y = window.pageYOffset, h = de.scrollHeight - innerHeight;
+    if(prog) prog.style.transform = "scaleX(" + (h > 0 ? Math.min(1, y / h) : 0) + ")";
+    if(top) top.classList.toggle("scrolled", y > 8);
+    if(fade){
+      var r = fade.getBoundingClientRect();
+      var p = rm ? 1 : Math.max(0, Math.min(1, 1 - (r.top - innerHeight * 0.12) / (innerHeight * 0.8)));
+      fade.style.setProperty("--tp", p.toFixed(3));
+    }
+    var cur = -1;
+    secs.forEach(function(s, i){ if(s && s.getBoundingClientRect().top < innerHeight * 0.4) cur = i; });
+    links.forEach(function(a, i){ a.classList.toggle("on", i === cur); });
+    if(more && words.length){
+      var mr = more.getBoundingClientRect();
+      var pr = rm ? 1 : Math.max(0, Math.min(1, (innerHeight * 0.88 - mr.top) / (mr.height + innerHeight * 0.3)));
+      var n = Math.round(pr * words.length);
+      words.forEach(function(w, i){ w.classList.toggle("on", i < n); });
+    }
+  }
+  addEventListener("scroll", function(){ if(!ticking){ ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+  addEventListener("resize", onScroll);
+  onScroll();
+
+  /* brilho que segue o mouse nos cartões e planos; deslocamento do brilho do topo */
+  if(!rm && window.matchMedia && matchMedia("(hover: hover)").matches){
+    d.addEventListener("pointermove", function(e){
+      var el = e.target.closest && e.target.closest(".card, .plan");
+      if(el){ var r = el.getBoundingClientRect(); el.style.setProperty("--mx", (e.clientX - r.left) + "px"); el.style.setProperty("--my", (e.clientY - r.top) + "px"); }
+    }, { passive: true });
+    var hero = d.querySelector(".hero");
+    if(hero){ hero.style.setProperty("--gx", "0px"); }
+    d.addEventListener("pointermove", function(e){ if(hero) hero.style.setProperty("--gx", ((e.clientX / innerWidth - 0.5) * 90).toFixed(0) + "px"); }, { passive: true });
+  }
+})();
+</script>
 <script src="firebase-config.js"></script>
 <script>
 document.getElementById("year").textContent = new Date().getFullYear();
