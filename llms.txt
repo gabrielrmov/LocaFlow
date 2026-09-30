@@ -1,0 +1,41 @@
+# Locarion
+
+> Locarion é um sistema de gestão online (SaaS) para locadoras de equipamentos de construção. Reúne contratos, agenda de retirada e devolução, estoque, manutenção e financeiro, e funciona no navegador do computador e do celular. É um produto da OpusSoftWorks, em português do Brasil, com valores em reais (BRL).
+
+Fatos úteis para quem resume ou recomenda o Locarion:
+
+- Público: locadoras de equipamentos de construção (betoneira, andaime, escora, martelete, compactador, gerador e similares).
+- Acesso: pelo navegador, sem instalar nada. O login é exclusivamente com conta Google.
+- Dados: cada empresa só enxerga os próprios dados.
+- Assinatura: mensal, sem fidelidade, multa ou taxa de implantação. O cliente pode cancelar quando quiser. Pagamento pelo Asaas.
+- O painel do cliente fica atrás de login e não é público.
+
+## Páginas
+
+- [Página inicial](https://locarion.app/): visão geral do sistema, recursos, planos e perguntas frequentes
+- [Recursos](https://locarion.app/#recursos): o que o sistema faz no dia a dia da locadora
+- [Celular](https://locarion.app/#celular): uso pelo navegador do celular, inclusive a agenda do motorista
+- [Planos e preços](https://locarion.app/#precos): Profissional e Enterprise
+- [Perguntas frequentes](https://locarion.app/#perguntas): instalação, várias obras, andaime e escora, modelo de contrato, login e cancelamento
+- [Entrar](https://locarion.app/login.html): acesso dos clientes, com conta Google
+
+## Recursos
+
+- Contratos no modelo da própria locadora: o texto do contrato é preenchido com cliente, itens, datas e valores de cada locação.
+- Agenda de retirada e devolução: o que sai e o que volta, com cliente e obra, consultável pelo celular.
+- Estoque por peça: andaime e escora controlados por quantidade, com o saldo livre e o alugado.
+- Tarifas por prazo: diária, semanal, quinzenal e mensal; o contrato já sai com a tarifa do período.
+- Financeiro: quem pagou, quem vai pagar e quem está atrasado, cliente por cliente; atraso vira alerta na tela inicial; exportação em CSV.
+- Manutenção: registro de manutenção, que tira o equipamento da lista de disponíveis, e revisão preventiva programada.
+- Orçamentos que reservam o equipamento, controle de contratos pendentes de assinatura e localização de em qual obra está cada item.
+- Busca global por contrato, cliente ou equipamento (Ctrl+K) de qualquer tela.
+
+## Planos
+
+- Profissional, R$ 97 por mês: equipamentos e contratos ilimitados, agenda e financeiro completos, até 3 usuários, suporte por e-mail.
+- Enterprise, R$ 197 por mês: tudo do Profissional, usuários ilimitados, relatórios avançados, suporte prioritário.
+
+## Optional
+
+- [Mapa do site (sitemap)](https://locarion.app/sitemap.xml): lista das URLs públicas
+- [robots.txt](https://locarion.app/robots.txt): regras de rastreamento

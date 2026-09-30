@@ -1,0 +1,11 @@
+# robots.txt do Locarion — https://locarion.app
+# Páginas públicas liberadas para buscadores e agentes de IA.
+# O painel do cliente (dashboard) fica fora: exige login e não tem nada para indexar.
+# Resumo do site para agentes de IA: https://locarion.app/llms.txt
+
+User-agent: *
+Disallow: /dashboard.html
+Disallow: /locaflow.html
+Allow: /
+
+Sitemap: https://locarion.app/sitemap.xml
