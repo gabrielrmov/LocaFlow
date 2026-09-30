@@ -2,6 +2,17 @@
 # Equivale aos cabeçalhos de firebase.json (que só valem no Firebase Hosting).
 
 Options -Indexes
+AddDefaultCharset UTF-8
+
+# Páginas que não devem aparecer em buscadores (reforça as metatags, vale até para quem não lê o HTML)
+<IfModule mod_headers.c>
+  <FilesMatch "^(dashboard|locaflow)\.html$">
+    Header set X-Robots-Tag "noindex, nofollow, noarchive"
+  </FilesMatch>
+  <FilesMatch "^login\.html$">
+    Header set X-Robots-Tag "noindex, follow"
+  </FilesMatch>
+</IfModule>
 
 <IfModule mod_headers.c>
   Header always set X-Content-Type-Options "nosniff"
