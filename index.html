@@ -901,7 +901,7 @@ footer .brand-mark svg path{fill:#1E3A5F}
   /* sem a barrinha de progresso (colava no texto que rola por baixo do menu) e com faixa
      suave atrás do menu, para o texto não aparecer "cortado" acima dele */
   .progress{display:none}
-  .top::before{content:""; position:absolute; left:0; right:0; top:-40px; height:66px; z-index:-1; pointer-events:none; background:linear-gradient(to bottom, var(--bg) 0, var(--bg) 60%, rgba(246,246,248,0))}
+  .top.scrolled::before{content:""; position:absolute; left:0; right:0; top:-40px; height:66px; z-index:-1; pointer-events:none; background:linear-gradient(to bottom, var(--bg) 0, var(--bg) 60%, rgba(246,246,248,0))}
   /* menu: "Entrar" volta a aparecer (quem já assina precisa dele) e a pílula fica opaca,
      para o botão do hero não aparecer por baixo */
   .top-cta{gap:4px}
