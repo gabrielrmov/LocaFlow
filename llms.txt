@@ -7,6 +7,7 @@ Fatos úteis para quem resume ou recomenda o Locarion:
 - Público: locadoras de equipamentos de construção (betoneira, andaime, escora, martelete, compactador, gerador e similares).
 - Acesso: pelo navegador, sem instalar nada. O login é exclusivamente com conta Google.
 - Dados: cada empresa só enxerga os próprios dados.
+- Teste: 30 dias grátis, sem cartão de crédito, com o login Google. Ao fim do teste, quem não assina fica com o acesso pausado; os dados ficam guardados.
 - Assinatura: mensal, sem fidelidade, multa ou taxa de implantação. O cliente pode cancelar quando quiser. Pagamento pelo Asaas.
 - O painel do cliente fica atrás de login e não é público.
 
@@ -15,8 +16,8 @@ Fatos úteis para quem resume ou recomenda o Locarion:
 - [Página inicial](https://locarion.app/): visão geral do sistema, recursos, planos e perguntas frequentes
 - [Recursos](https://locarion.app/#recursos): o que o sistema faz no dia a dia da locadora
 - [Celular](https://locarion.app/#celular): uso pelo navegador do celular, inclusive a agenda do motorista
-- [Planos e preços](https://locarion.app/#precos): Profissional e Enterprise
-- [Perguntas frequentes](https://locarion.app/#perguntas): instalação, várias obras, andaime e escora, modelo de contrato, login e cancelamento
+- [Planos e preços](https://locarion.app/#precos): teste de 30 dias, Profissional e Enterprise
+- [Perguntas frequentes](https://locarion.app/#perguntas): período de teste, instalação, várias obras, andaime e escora, modelo de contrato, login e cancelamento
 - [Entrar](https://locarion.app/login.html): acesso dos clientes, com conta Google
 
 ## Recursos
@@ -32,6 +33,7 @@ Fatos úteis para quem resume ou recomenda o Locarion:
 
 ## Planos
 
+- Teste de 30 dias: todos os recursos, sem cartão de crédito.
 - Profissional, R$ 97 por mês: equipamentos e contratos ilimitados, agenda e financeiro completos, até 3 usuários, suporte por e-mail.
 - Enterprise, R$ 197 por mês: tudo do Profissional, usuários ilimitados, relatórios avançados, suporte prioritário.
 
