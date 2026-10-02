@@ -4,6 +4,15 @@
 Options -Indexes
 AddDefaultCharset UTF-8
 
+# Páginas HTML sempre revalidam: sem isso o navegador e o CDN da Hostinger guardam versões velhas
+# (o site novo demorava a aparecer e o login/painel antigos continuavam sendo servidos).
+# Imagens e arquivos estáticos continuam em cache normalmente.
+<IfModule mod_headers.c>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
 # Páginas que não devem aparecer em buscadores (reforça as metatags, vale até para quem não lê o HTML)
 <IfModule mod_headers.c>
   <FilesMatch "^(dashboard|locaflow)\.html$">
