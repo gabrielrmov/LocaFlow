@@ -92,8 +92,7 @@ p.sub{color:var(--ink-2); font-size:14.5px; margin:0 0 26px}
 
   <div class="error" id="error-box"></div>
 
-  <p class="hint" id="trial-hint">Novo por aqui? <a href="login.html?trial=1">Teste 30 dias, sem cartão</a></p>
-  <p class="hint">Já quer assinar? <a href="index.html#precos">Veja os planos</a></p>
+  <p class="hint">Ainda não assinou? <a href="index.html#precos">Veja os planos</a></p>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -108,18 +107,9 @@ p.sub{color:var(--ink-2); font-size:14.5px; margin:0 0 26px}
    Asaas realmente confirmou o pagamento (via webhook). */
 const params = new URLSearchParams(window.location.search);
 const checkoutToken = params.get("checkout_token");
-const wantsTrial = params.get("trial") === "1" && !params.get("checkout_token");
-const BTN_LABEL = wantsTrial ? "Começar teste com Google" : "Entrar com Google";
 const plan = params.get("plan");
 const functionsRegion = firebase.app().functions("southamerica-east1");
 
-if(wantsTrial || checkoutToken) document.getElementById("trial-hint").style.display = "none";
-if(wantsTrial){
-  const banner = document.getElementById("plan-banner");
-  banner.style.display = "block";
-  banner.textContent = "Teste grátis por 30 dias, sem cartão. Entre com o Google para começar.";
-  document.getElementById("google-btn-label").textContent = BTN_LABEL;
-}
 if(checkoutToken){
   const banner = document.getElementById("plan-banner");
   banner.style.display = "block";
@@ -130,13 +120,6 @@ function showError(msg){
   const box = document.getElementById("error-box");
   box.textContent = msg;
   box.classList.add("show");
-}
-
-/* Abre o teste de 30 dias no servidor. Se falhar, o painel mostra a tela
-   "Comece seu teste" com o mesmo botão, então não trava o login. */
-async function startTrialSafe(){
-  try{ await functionsRegion.httpsCallable("startTrial")(); }
-  catch(err){ console.error(err); }
 }
 
 async function upsertProfile(user){
@@ -151,7 +134,7 @@ async function upsertProfile(user){
 
 function setLoading(isLoading){
   document.getElementById("google-btn").disabled = isLoading;
-  document.getElementById("google-btn-label").textContent = isLoading ? "Entrando..." : BTN_LABEL;
+  document.getElementById("google-btn-label").textContent = isLoading ? "Entrando..." : "Entrar com Google";
   document.getElementById("google-spinner").classList.toggle("show", isLoading);
 }
 
@@ -173,7 +156,6 @@ document.getElementById("google-btn").addEventListener("click", async () => {
       }
     }
 
-    if(wantsTrial) await startTrialSafe();
     window.location.href = "dashboard.html";
   }catch(err){
     setLoading(false);
@@ -184,9 +166,8 @@ document.getElementById("google-btn").addEventListener("click", async () => {
 
 /* Se já estiver logado e não vier de um checkout fresco, manda direto pro dashboard
    (o próprio dashboard confere se a assinatura está ativa). */
-auth.onAuthStateChanged(async (user) => {
+auth.onAuthStateChanged((user) => {
   if(user && !checkoutToken){
-    if(wantsTrial) await startTrialSafe();
     window.location.href = "dashboard.html";
   }
 });

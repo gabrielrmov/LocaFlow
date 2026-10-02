@@ -13,17 +13,10 @@ service cloud.firestore {
       return ['email', 'name', 'photoURL', 'updatedAt'];
     }
 
-    // Acesso de escrita: assinatura ativa, conta admin, ou teste de 30 dias ainda
-    // dentro do prazo. A data de fim (trialEndsAt) só é gravada pelas Cloud
-    // Functions e é comparada com o relógio do servidor (request.time), então
-    // não dá para estender o teste mudando a hora do aparelho. Sem trialEndsAt,
-    // o teste não vale.
+    // Assinatura ativa (ou conta admin) no documento users/{uid}.
     function hasAccess(uid) {
       let u = get(/databases/$(database)/documents/users/$(uid)).data;
-      return u.get('subscriptionStatus', '') == 'active'
-        || u.get('isAdmin', false) == true
-        || (u.get('subscriptionStatus', '') == 'trialing'
-            && u.get('trialEndsAt', request.time) > request.time);
+      return u.get('subscriptionStatus', '') == 'active' || u.get('isAdmin', false) == true;
     }
 
     // O usuário lê o próprio perfil e só edita os campos de identificação.
