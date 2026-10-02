@@ -766,6 +766,7 @@ body:has(.modal-backdrop){overflow:hidden}
 }
 
 .paper-wrap{background:var(--surface-2,#e9e9ee); padding:16px; border-radius:var(--radius-md,10px); max-height:60vh; overflow:auto}
+.paper.paper-doc{white-space:normal; padding:28px 32px; font-family:Arial,Helvetica,sans-serif}
 .paper{background:#fff; color:#111; max-width:794px; margin:0 auto; padding:48px 56px; box-shadow:0 1px 6px rgba(0,0,0,.2); font:13px/1.6 Georgia,"Times New Roman",serif; white-space:pre-wrap; word-wrap:break-word}
 @media (max-width:640px){.paper{padding:24px 20px}}
 .field-error{margin:8px 0 0; color:var(--critical); font-size:13px}
@@ -2107,15 +2108,86 @@ function fillContractTemplate(template, c){
   for(const [k,v] of Object.entries(map)) out = out.split(k).join(v);
   return out;
 }
-/* Impressão: monta uma página A4 num iframe oculto (sem popup) e abre a janela de impressão,
+/* Contrato impresso no formato de quadros (A: contratantes, B: objetos e prazos, C: totais).
+   Só mostra os campos que existem no cadastro — nada é inventado. */
+const CONTRACT_DOC_CSS = `
+.ctdoc{font:10.5pt/1.35 Arial,Helvetica,sans-serif;color:#000}
+.ctdoc *{box-sizing:border-box}
+.ctdoc .ct-head{display:flex;justify-content:space-between;align-items:flex-start;border:1.5px solid #000;padding:8px 10px;margin-bottom:10px}
+.ctdoc .ct-head h1{font-size:13pt;margin:0;flex:1;text-align:center;letter-spacing:.02em}
+.ctdoc .ct-head .ct-when{font-size:9pt;text-align:right;white-space:nowrap}
+.ctdoc .ct-q{border:1px solid #000;margin-bottom:10px;break-inside:avoid}
+.ctdoc .ct-q>h2{margin:0;padding:3px 8px;font-size:10.5pt;background:#777;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.ctdoc .ct-sec{padding:5px 8px;border-top:1px solid #000}
+.ctdoc .ct-sec:first-of-type{border-top:0}
+.ctdoc .ct-sec h3{margin:0 0 3px;font-size:10pt}
+.ctdoc .ct-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 16px}
+.ctdoc .ct-f b{margin-right:4px}
+.ctdoc .ct-full{grid-column:1/-1}
+.ctdoc table{width:100%;border-collapse:collapse;font-size:9pt}
+.ctdoc table{table-layout:fixed;min-width:0!important}
+.ctdoc th{text-transform:none;letter-spacing:0;font-size:8pt;font-weight:700;white-space:normal;word-break:break-word;background:#777;color:#fff;padding:3px 4px;border:1px solid #000;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.ctdoc td{padding:3px 4px;border:1px solid #000;text-align:center;font-size:8.5pt;white-space:normal;word-break:break-word;background:#fff;color:#000}
+.ctdoc td.l{text-align:left}
+.ctdoc .ct-tot{padding:5px 8px}
+.ctdoc .ct-sign{display:flex;gap:40px;margin-top:46px;break-inside:avoid}
+.ctdoc .ct-sign div{flex:1;border-top:1px solid #000;padding-top:4px;text-align:center;font-size:9.5pt}
+.ctdoc .ct-date{text-align:center;margin-top:18px;font-size:9.5pt}
+.ctdoc .ct-clauses{white-space:pre-wrap;font-size:9.5pt;line-height:1.45;margin-top:18px;page-break-before:always}
+`;
+function contractDocHtml(c, withClauses){
+  const E = escapeHtml, co = STATE.company || {};
+  const cl = c ? byId(STATE.clients, c.clientId) : null;
+  const row = (label, v, full)=> v ? `<div class="ct-f${full?" ct-full":""}"><b>${label}</b>${E(v)}</div>` : "";
+  const now = new Date();
+  const qty = {}; (c?.equipmentIds||[]).forEach(id=>{ qty[id]=(qty[id]||0)+1; });
+  const itemDates = c?.itemDates || {};
+  const lines = Object.keys(qty).map(id=>byId(STATE.equipment,id)).filter(Boolean).map(e=>{
+    const ov = itemDates[e.id], n = qty[e.id], ind = Number(e.indemnityValue)||0;
+    return { n, name:e.name, code:e.code||"", unit:ind, total:ind*n, start:ov?.start||c.startDate, end:ov?.end||c.endDate };
+  });
+  const totInd = lines.reduce((a,l)=>a+l.total,0);
+  const rent = Number(c?.value)||0, freight = Number(c?.freight)||0;
+  const money = (v)=> v ? fmtMoney(v) : "—";
+  const billing = cl ? (cl.billingSameAsMain===false && cl.billingAddress ? cl.billingAddress : cl.address) : "";
+  const longDate = now.toLocaleDateString("pt-BR",{day:"numeric",month:"long",year:"numeric"}).toUpperCase();
+  const clauses = withClauses ? (()=>{
+    const t = fillContractTemplate(STATE.company.contractTemplate || DEFAULT_CONTRACT_TEMPLATE, c);
+    const m = t.search(/cl[áa]usulas?\s+(contratuais|1)/i);
+    return m>=0 ? t.slice(m).trim() : "";
+  })() : "";
+  return `<div class="ctdoc">
+    <div class="ct-head"><h1>CONTRATO DE LOCAÇÃO DE BENS MÓVEIS Nº: ${E(c?.code||"")}</h1><div class="ct-when">Data: ${now.toLocaleDateString("pt-BR")}<br>Hora: ${now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</div></div>
+    <div class="ct-q"><h2>Quadro "A" - Contratantes</h2>
+      <div class="ct-sec"><h3>Locadora</h3><div class="ct-grid">${row("Nome:",co.name,1)}${row("Endereço:",co.address,1)}${row("CNPJ:",co.cnpj)}${row("Telefone:",co.phone)}</div></div>
+      <div class="ct-sec"><h3>Locatário</h3><div class="ct-grid">${row("Nome:",cl?.name,1)}${row("CPF/CNPJ:",cl?.document)}${row("RG/IE:",cl?.ie)}${row("Endereço:",cl?.address,1)}${row("CEP:",cl?.cep)}${row("Telefone:",cl?.phone)}${row("E-mail:",cl?.email,1)}</div></div>
+      <div class="ct-sec"><div class="ct-grid">${row("Local da entrega:",c?.location,1)}${row("Endereço para cobrança:",billing,1)}</div></div>
+    </div>
+    <div class="ct-q"><h2>Quadro "B" - Objetos do Contrato, Prazos das Locações e Preços</h2>
+      <table><thead><tr><th style="width:7%">Qtde</th><th style="width:26%">Descrição</th><th style="width:13%">Patrimônio</th><th>Vlr. unit. indenização</th><th>Vlr. total indenização</th><th>Início</th><th>Término</th></tr></thead><tbody>
+      ${lines.length ? lines.map(l=>`<tr><td>${l.n}</td><td class="l">${E(l.name)}</td><td>${E(l.code)}</td><td>${money(l.unit)}</td><td>${money(l.total)}</td><td>${fmtDate(l.start)}</td><td>${fmtDate(l.end)}</td></tr>`).join("") : `<tr><td colspan="7">Nenhum item</td></tr>`}
+      </tbody></table>
+    </div>
+    <div class="ct-q"><h2>Quadro "C" - Totais</h2><div class="ct-tot">
+      <div><b>TOTAL DAS LOCAÇÕES:</b> ${fmtMoney(rent)}</div>
+      ${freight?`<div><b>FRETE:</b> ${fmtMoney(freight)}</div>`:""}
+      <div><b>TOTAL DAS INDENIZAÇÕES:</b> ${fmtMoney(totInd)}</div>
+      <div><b>TOTAL GERAL:</b> ${fmtMoney(rent+freight)}</div></div></div>
+    ${c?.notes?`<div class="ct-q"><h2>Observação(ões)</h2><div class="ct-tot">${E(c.notes)}</div></div>`:""}
+    <div class="ct-date">${E(longDate)}</div>
+    <div class="ct-sign"><div><b>LOCADORA</b><br>${E(co.name||"")}</div><div><b>LOCATÁRIO</b><br>${E(cl?.name||"")}${cl?.document?`<br>CPF/CNPJ: ${E(cl.document)}`:""}</div></div>
+    ${clauses?`<div class="ct-clauses">${E(clauses)}</div>`:""}
+  </div>`;
+}
+/* Impressão: monta a página A4 num iframe oculto (sem popup) e abre a janela de impressão,
    que também permite "Salvar como PDF". */
-function printContractText(text, title){
+function printHtmlDoc(html, title){
   const f = document.createElement("iframe");
   f.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0";
   document.body.appendChild(f);
   const d = f.contentDocument;
   d.open();
-  d.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>@page{size:A4;margin:20mm}body{margin:0;font:12pt/1.5 Georgia,"Times New Roman",serif;color:#000}.doc{white-space:pre-wrap;word-wrap:break-word}</style></head><body><div class="doc">${escapeHtml(text)}</div></body></html>`);
+  d.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>@page{size:A4;margin:14mm}body{margin:0}${CONTRACT_DOC_CSS}</style></head><body>${html}</body></html>`);
   d.close();
   setTimeout(()=>{ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(e){ toast("Não foi possível abrir a impressão.","err"); } setTimeout(()=>f.remove(), 60000); }, 250);
 }
@@ -2124,15 +2196,19 @@ function contractDocModal(id){
   const template = STATE.company.contractTemplate || DEFAULT_CONTRACT_TEMPLATE;
   const text = fillContractTemplate(template, c);
   openModal(`Contrato ${c?.code||""}`, `
-    <p class="hint" style="margin-bottom:10px">Gerado a partir do modelo em Configurações → Contrato, preenchido com os dados desta locação.</p>
-    <div class="paper-wrap"><div class="paper" id="doc-contract-text">${escapeHtml(text)}</div></div>
+    <style>${CONTRACT_DOC_CSS}</style>
+    <p class="hint" style="margin-bottom:10px">É assim que o contrato sai no papel. Os campos vêm do cadastro da empresa, do cliente, do equipamento e do contrato; o que estiver vazio não aparece.</p>
+    <label style="display:flex;align-items:center;gap:7px;font-size:13px;margin-bottom:10px"><input type="checkbox" id="doc-clauses" checked> Incluir as cláusulas do modelo (Configurações → Contrato) em uma segunda página</label>
+    <div class="paper-wrap"><div class="paper paper-doc" id="doc-contract-text">${contractDocHtml(c,true)}</div></div>
   `, `<button class="btn btn-secondary" data-action="close-modal">Fechar</button><button class="btn btn-secondary" id="copy-contract-doc">Copiar texto</button><button class="btn btn-primary" id="print-contract-doc">Imprimir / salvar PDF</button><button class="btn btn-secondary" id="download-contract-doc">Baixar .txt</button>`,
   { large:true, onMount(){
+      const withClauses = ()=> $("#doc-clauses").checked;
+      $("#doc-clauses").addEventListener("change", ()=>{ $("#doc-contract-text").innerHTML = contractDocHtml(c, withClauses()); });
       $("#copy-contract-doc").addEventListener("click", ()=>{
         if(navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(()=>toast("Texto copiado.","ok")).catch(()=>toast("Não foi possível copiar.","err"));
-        else toast("Copie o texto selecionando-o no campo.","err");
+        else toast("Não foi possível copiar neste navegador.","err");
       });
-      $("#print-contract-doc").addEventListener("click", ()=> printContractText(text, `Contrato ${c?.code||""}`));
+      $("#print-contract-doc").addEventListener("click", ()=> printHtmlDoc(contractDocHtml(c, withClauses()), `Contrato ${c?.code||""}`));
       $("#download-contract-doc").addEventListener("click", ()=>{
         try{
           downloadBlob(`contrato-${c?.code||"locarion"}.txt`, new Blob([text],{type:"text/plain;charset=utf-8"}));
