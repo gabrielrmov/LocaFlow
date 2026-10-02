@@ -1041,10 +1041,24 @@ function waPhone(cl, prefer){
   return (d.length>=12 && d.length<=15) ? d : null;
 }
 function waFirstName(cl){ return String(cl?.name||"").trim().split(/\s+/)[0] || ""; }
-function openWhatsApp(cl, msg, prefer){
+/* WhatsApp automático (WA-AKG): se a empresa configurou, envia direto pelo servidor dela;
+   senão cai no wa.me. O estado é carregado no boot para o window.open continuar síncrono. */
+let WA_GW = { configured:false };
+function waFn(name){ return firebase.app().functions("southamerica-east1").httpsCallable(name); }
+async function waGatewayLoad(){
+  try{ const r = await waFn("getWhatsAppGateway")(); WA_GW = (r.data && r.data.configured) ? r.data : { configured:false }; }
+  catch(e){ WA_GW = { configured:false }; }
+  return WA_GW;
+}
+async function openWhatsApp(cl, msg, prefer){
   const phone = waPhone(cl, prefer);
-  if(!phone){ toast("Este cliente não tem telefone ou WhatsApp válido. Cadastre no perfil do cliente.","err"); return; }
+  if(!phone){ toast("Este cliente não tem telefone ou WhatsApp válido. Cadastre no perfil do cliente.","err"); return false; }
+  if(WA_GW.configured){
+    try{ await waFn("sendWhatsApp")({ phone, text:msg }); toast("Mensagem enviada no WhatsApp.","ok"); return true; }
+    catch(err){ toast((err && err.message) || "Não foi possível enviar agora.","err"); return false; }
+  }
   window.open("https://wa.me/"+phone+"?text="+encodeURIComponent(msg), "_blank", "noopener,noreferrer");
+  return true;
 }
 function waCompany(){ return STATE.company.name || "Locarion"; }
 function waPaymentMessage(p, cl){
@@ -2322,8 +2336,9 @@ function renderAvisos(){
       <label class="hint" style="margin-left:auto;display:flex;align-items:center;gap:6px">Avisar com antecedência de
         <select class="select" id="av-lead" style="width:auto">${[1,2,3,5,7].map(n=>`<option value="${n}" ${n===store.lead?"selected":""}>${n} dia${n>1?"s":""}</option>`).join("")}</select></label>
     </div>
+    <div id="wa-card"></div>
     <div id="push-card"></div>
-    <p class="hint" style="margin:10px 0 14px">${all.length ? `${pending} de ${all.length} ainda sem aviso hoje. ` : ""}O botão abre o WhatsApp com a mensagem pronta; você só aperta enviar. O envio é um por vez, e quem já foi avisado hoje fica marcado neste navegador.</p>
+    <p class="hint" style="margin:10px 0 14px">${all.length ? `${pending} de ${all.length} ainda sem aviso hoje. ` : ""}${WA_GW.configured ? "O botão envia a mensagem direto pelo seu WhatsApp conectado." : "O botão abre o WhatsApp com a mensagem pronta; você só aperta enviar."} O envio é um por vez, e quem já foi avisado hoje fica marcado neste navegador.</p>
     <div id="av-list">${list.length ? list.map(x=>{
       const cl = byId(STATE.clients,x.clientId), done = !!store.sent[`${todayISO()}|${x.key}`], phone = waPhone(cl, x.prefer);
       return `<div class="card card-pad" style="display:flex;gap:12px;align-items:center;margin-bottom:8px;flex-wrap:wrap;${done?"opacity:.6":""}">
@@ -2337,17 +2352,55 @@ function renderAvisos(){
           ${phone ? `<button class="btn ${done?"btn-secondary":"btn-primary"} btn-sm" data-av-send="${escapeHtml(x.key)}">${done?"Avisado ✓ · reenviar":"Avisar no WhatsApp"}</button>` : `<span class="hint">Sem WhatsApp cadastrado</span><button class="btn btn-secondary btn-sm" data-av-client="${cl.id}">Cadastrar</button>`}
         </div></div>`;
     }).join("") : emptyState("Nada para avisar agora","Quando houver contratos para devolver ou faturas vencendo ou atrasadas, eles aparecem aqui.")}</div>`;
+  renderWaCard();
   renderPushCard();
   $all("#av-tabs button").forEach(b=> b.addEventListener("click", ()=>{ f.kind=b.dataset.k; renderAvisos(); }));
   $("#av-lead").addEventListener("change", e=>{ const o = avisosStore(); o.lead = Number(e.target.value)||3; avisosSave(o); renderAvisos(); });
   const byKey = (k)=> all.find(x=>x.key===k);
   $all("[data-av-open]").forEach(b=> b.addEventListener("click", ()=>{ const x=byKey(b.dataset.avOpen); if(x) x.open(); }));
   $all("[data-av-client]").forEach(b=> b.addEventListener("click", ()=> clientFormModal(b.dataset.avClient)));
-  $all("[data-av-send]").forEach(b=> b.addEventListener("click", ()=>{
+  $all("[data-av-send]").forEach(b=> b.addEventListener("click", async ()=>{
     const x = byKey(b.dataset.avSend); if(!x) return;
-    openWhatsApp(byId(STATE.clients,x.clientId), x.msg, x.prefer);
+    b.disabled = true;
+    const ok = await openWhatsApp(byId(STATE.clients,x.clientId), x.msg, x.prefer);
+    if(!ok){ b.disabled = false; return; }
     const o = avisosStore(); o.sent[`${todayISO()}|${x.key}`] = 1; avisosSave(o); renderAvisos();
   }));
+}
+/* ---- Configuração do WhatsApp automático (WA-AKG) ---- */
+function renderWaCard(){
+  const el = $("#wa-card"); if(!el) return;
+  const box = (inner)=>{ el.innerHTML = `<div class="card card-pad" style="margin:10px 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap">${inner}</div>`; };
+  if(WA_GW.configured){
+    box(`<div style="flex:1;min-width:220px"><div class="cell-title">WhatsApp automático ativo ✓</div><div class="cell-sub">Sessão <strong>${escapeHtml(WA_GW.sessionId)}</strong> em ${escapeHtml(WA_GW.url)}. Os avisos saem direto, sem abrir o WhatsApp.</div></div>
+      <button class="btn btn-secondary btn-sm" id="wa-edit">Alterar</button><button class="btn btn-secondary btn-sm" id="wa-off">Desligar</button>`);
+    $("#wa-edit").addEventListener("click", waConfigModal);
+    $("#wa-off").addEventListener("click", async (e)=>{
+      e.target.disabled = true;
+      try{ await waFn("saveWhatsAppGateway")({ remove:true }); WA_GW = { configured:false }; toast("WhatsApp automático desligado.","ok"); renderAvisos(); }
+      catch(err){ toast("Não foi possível desligar agora.","err"); e.target.disabled = false; }
+    });
+    return;
+  }
+  box(`<div style="flex:1;min-width:220px"><div class="cell-title">Enviar avisos automaticamente pelo WhatsApp</div><div class="cell-sub">Conecte o seu servidor WA-AKG e os avisos passam a sair direto, sem você abrir o WhatsApp. Sem isso, o botão continua abrindo a conversa com a mensagem pronta.</div></div>
+    <button class="btn btn-primary btn-sm" id="wa-config">Conectar</button>`);
+  $("#wa-config").addEventListener("click", waConfigModal);
+}
+function waConfigModal(){
+  openModal("WhatsApp automático (WA-AKG)", `
+    <div class="field"><label>Endereço do servidor (https)</label><input class="input" id="wa-url" value="${escapeHtml(WA_GW.url||"")}" placeholder="https://wa.suaempresa.com.br"></div>
+    <div class="field"><label>Nome da sessão</label><input class="input" id="wa-session" value="${escapeHtml(WA_GW.sessionId||"")}" placeholder="ex: locadora"></div>
+    <div class="field"><label>Chave de API</label><input class="input" id="wa-key" type="password" autocomplete="off" placeholder="${WA_GW.configured?"Deixe vazio para manter a atual":"Cole a chave do WA-AKG"}"></div>
+    <p class="hint">A chave fica guardada no servidor do Locarion e nunca volta para o navegador. A sessão precisa estar conectada (QR code lido) no WA-AKG.</p>
+    <p class="field-error" id="wa-err" hidden></p>`,
+    `<button class="btn btn-secondary" data-action="close-modal">Cancelar</button><button class="btn btn-primary" id="wa-save">Salvar</button>`);
+  $("#wa-save").addEventListener("click", async (e)=>{
+    e.target.disabled = true; $("#wa-err").hidden = true;
+    try{
+      await waFn("saveWhatsAppGateway")({ url:$("#wa-url").value.trim(), sessionId:$("#wa-session").value.trim(), apiKey:$("#wa-key").value.trim() });
+      await waGatewayLoad(); closeModal(); toast("WhatsApp automático conectado.","ok"); renderAvisos();
+    }catch(err){ const m=$("#wa-err"); m.textContent = (err && err.message) || "Não foi possível salvar."; m.hidden = false; e.target.disabled = false; }
+  });
 }
 /* ---- Notificações no celular (Web Push via Firebase Cloud Messaging) ----
    Cada aparelho que ativa vira um documento em companies/{uid}/devices; uma Cloud Function
@@ -4003,6 +4056,7 @@ function showApp(){
 
 async function boot(user){
   companyRef = db.collection("companies").doc(user.uid);
+  waGatewayLoad().then(()=>{ if($("#wa-card")) renderAvisos(); });
 
   /* chip do usuário + logout */
   $("#user-name").textContent = user.displayName || user.email || "Minha conta";

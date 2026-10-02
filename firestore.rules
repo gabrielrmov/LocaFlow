@@ -58,6 +58,11 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Chave de API do WhatsApp automático (WA-AKG). Só Functions.
+    match /waGateways/{uid} {
+      allow read, write: if false;
+    }
+
     // Controle de frequência de chamadas (createAsaasCheckout). Só Functions.
     match /rateLimits/{id} {
       allow read, write: if false;

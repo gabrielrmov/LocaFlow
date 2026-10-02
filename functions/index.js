@@ -566,3 +566,119 @@ exports.sendTestPush = onCall(
     return { ok: true, devices: docs.length, sent };
   }
 );
+
+/* -------------------------------------------------------------------------
+   WhatsApp automático (WA-AKG) — cada empresa liga o próprio servidor WA-AKG
+   (URL + chave de API + nome da sessão). Os dados ficam em waGateways/{uid},
+   que só as Functions leem: a chave nunca volta para o navegador.
+   ------------------------------------------------------------------------- */
+const dns = require("dns").promises;
+const net = require("net");
+
+function isPrivateIp(ip) {
+  if (net.isIPv6(ip)) {
+    const v = ip.toLowerCase();
+    if (v.startsWith("::ffff:")) return isPrivateIp(v.slice(7));
+    return v === "::1" || v === "::" || v.startsWith("fc") || v.startsWith("fd") || v.startsWith("fe80");
+  }
+  const [a, b] = ip.split(".").map(Number);
+  return a === 10 || a === 127 || a === 0 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127);
+}
+
+/* Evita que alguém aponte o "servidor WhatsApp" para a rede interna do Google (SSRF). */
+async function assertPublicHttps(rawUrl) {
+  let u;
+  try { u = new URL(rawUrl); } catch (e) { throw new HttpsError("invalid-argument", "URL inválida."); }
+  if (u.protocol !== "https:") throw new HttpsError("invalid-argument", "Use o endereço com https://.");
+  if (u.username || u.password) throw new HttpsError("invalid-argument", "URL inválida.");
+  const host = u.hostname.replace(/^\[|\]$/g, "");
+  if (host === "localhost" || host.endsWith(".local") || host.endsWith(".internal")) {
+    throw new HttpsError("invalid-argument", "Informe o endereço público do servidor.");
+  }
+  const addrs = net.isIP(host) ? [{ address: host }] : await dns.lookup(host, { all: true }).catch(() => []);
+  if (!addrs.length || addrs.some((a) => isPrivateIp(a.address))) {
+    throw new HttpsError("invalid-argument", "Não foi possível alcançar esse endereço publicamente.");
+  }
+  return u.origin;
+}
+
+async function requireAccess(request) {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Faça login.");
+  const user = await db.collection("users").doc(request.auth.uid).get();
+  if (!hasAccess(user.exists ? user.data() : null, Date.now())) {
+    throw new HttpsError("permission-denied", "Assinatura inativa.");
+  }
+}
+
+exports.getWhatsAppGateway = onCall(
+  { region: "southamerica-east1", maxInstances: 5 },
+  async (request) => {
+    if (!request.auth) throw new HttpsError("unauthenticated", "Faça login.");
+    const snap = await db.collection("waGateways").doc(request.auth.uid).get();
+    if (!snap.exists) return { configured: false };
+    const d = snap.data();
+    return { configured: true, url: d.url, sessionId: d.sessionId };
+  }
+);
+
+exports.saveWhatsAppGateway = onCall(
+  { region: "southamerica-east1", maxInstances: 5 },
+  async (request) => {
+    await requireAccess(request);
+    await enforceRateLimit(request, `wasave:${request.auth.uid}`, 20, 60 * 60 * 1000);
+    const ref = db.collection("waGateways").doc(request.auth.uid);
+    if (request.data && request.data.remove === true) {
+      await ref.delete();
+      return { ok: true, configured: false };
+    }
+    const sessionId = String((request.data && request.data.sessionId) || "").trim();
+    const apiKey = String((request.data && request.data.apiKey) || "").trim();
+    if (!/^[A-Za-z0-9_-]{1,64}$/.test(sessionId)) {
+      throw new HttpsError("invalid-argument", "Nome da sessão inválido (letras, números, - e _).");
+    }
+    const origin = await assertPublicHttps(String((request.data && request.data.url) || "").trim());
+    const prev = await ref.get();
+    const key = apiKey || (prev.exists ? prev.data().apiKey : "");
+    if (!key) throw new HttpsError("invalid-argument", "Informe a chave de API.");
+    await ref.set({ url: origin, sessionId, apiKey: key, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+    return { ok: true, configured: true, url: origin, sessionId };
+  }
+);
+
+exports.sendWhatsApp = onCall(
+  { region: "southamerica-east1", maxInstances: 10, timeoutSeconds: 30 },
+  async (request) => {
+    await requireAccess(request);
+    await enforceRateLimit(request, `wasend:${request.auth.uid}`, 120, 60 * 60 * 1000);
+    const phone = String((request.data && request.data.phone) || "").replace(/\D/g, "");
+    const text = String((request.data && request.data.text) || "").trim();
+    if (phone.length < 12 || phone.length > 15) throw new HttpsError("invalid-argument", "Telefone inválido.");
+    if (!text || text.length > 4000) throw new HttpsError("invalid-argument", "Mensagem inválida.");
+    const snap = await db.collection("waGateways").doc(request.auth.uid).get();
+    if (!snap.exists) throw new HttpsError("failed-precondition", "WhatsApp automático não configurado.");
+    const { url, sessionId, apiKey } = snap.data();
+    await assertPublicHttps(url);
+    const jid = encodeURIComponent(`${phone}@s.whatsapp.net`);
+    let res;
+    try {
+      res = await fetch(`${url}/api/messages/${encodeURIComponent(sessionId)}/${jid}/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-API-Key": apiKey },
+        body: JSON.stringify({ message: { text } }),
+        redirect: "error",
+        signal: AbortSignal.timeout(20000),
+      });
+    } catch (e) {
+      logger.warn("sendWhatsApp: falha de rede", e && e.message);
+      throw new HttpsError("unavailable", "Não foi possível falar com o servidor do WhatsApp.");
+    }
+    if (!res.ok) {
+      logger.warn("sendWhatsApp: gateway respondeu", res.status);
+      const msg = res.status === 401 || res.status === 403 ? "Chave de API recusada pelo servidor."
+        : res.status === 404 || res.status === 503 ? "Sessão do WhatsApp desconectada ou não encontrada."
+        : "O servidor do WhatsApp recusou o envio.";
+      throw new HttpsError("failed-precondition", msg);
+    }
+    return { ok: true };
+  }
+);
