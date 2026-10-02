@@ -18,7 +18,9 @@
 
 const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const logger = require("firebase-functions/logger");
+const { summarize, messageFor, hasAccess } = require("./avisos");
 const crypto = require("crypto");
 const admin = require("firebase-admin");
 
@@ -486,5 +488,81 @@ exports.confirmSubscription = onCall(
     });
 
     return { ok: true, plan: result.plan };
+  }
+);
+
+/* -------------------------------------------------------------------------
+   Notificações no celular (Firebase Cloud Messaging / Web Push).
+   Os aparelhos ficam em companies/{uid}/devices/{id} (gravados pelo próprio
+   painel quando a pessoa toca em "Ativar notificações").
+   ------------------------------------------------------------------------- */
+const PUSH_LINK = `${SITE_URL}/dashboard.html#/avisos`;
+const DEAD_TOKEN = new Set(["messaging/registration-token-not-registered", "messaging/invalid-registration-token"]);
+
+async function pushToDevices(deviceDocs, title, body) {
+  if (!deviceDocs.length) return 0;
+  const tokens = deviceDocs.map((d) => d.data().token).filter(Boolean);
+  if (!tokens.length) return 0;
+  const res = await admin.messaging().sendEachForMulticast({
+    tokens,
+    notification: { title, body },
+    webpush: {
+      headers: { Urgency: "normal", TTL: "43200" },
+      notification: { icon: `${SITE_URL}/assets/icon-192.png`, badge: `${SITE_URL}/assets/icon-192.png`, tag: "locarion-avisos" },
+      fcmOptions: { link: PUSH_LINK },
+    },
+  });
+  const dead = [];
+  res.responses.forEach((r, i) => {
+    if (!r.success && r.error && DEAD_TOKEN.has(r.error.code)) dead.push(deviceDocs.find((d) => d.data().token === tokens[i]));
+  });
+  await Promise.all(dead.filter(Boolean).map((d) => d.ref.delete()));
+  return res.successCount;
+}
+
+/* Todo dia às 8h (horário de Brasília): quem tem aparelho cadastrado e algo a avisar recebe o resumo. */
+exports.sendDailyAvisos = onSchedule(
+  { schedule: "0 8 * * *", timeZone: "America/Sao_Paulo", region: "southamerica-east1", maxInstances: 1, timeoutSeconds: 300 },
+  async () => {
+    const today = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+    const devices = await db.collectionGroup("devices").get();
+    const byCompany = new Map();
+    for (const d of devices.docs) {
+      const uid = d.ref.parent.parent && d.ref.parent.parent.id;
+      if (!uid) continue;
+      if (!byCompany.has(uid)) byCompany.set(uid, []);
+      byCompany.get(uid).push(d);
+    }
+    let sent = 0;
+    for (const [uid, docs] of byCompany) {
+      try {
+        const user = await db.collection("users").doc(uid).get();
+        if (!hasAccess(user.exists ? user.data() : null, Date.now())) continue;
+        const co = db.collection("companies").doc(uid);
+        const [cs, ps, cl] = await Promise.all([co.collection("contracts").get(), co.collection("payments").get(), co.collection("clients").get()]);
+        const s = summarize(
+          { contracts: cs.docs.map((x) => x.data()), payments: ps.docs.map((x) => x.data()), clientIds: cl.docs.map((x) => x.id) },
+          today
+        );
+        if (!s.total) continue;
+        const m = messageFor(s);
+        sent += await pushToDevices(docs, m.title, m.body);
+      } catch (err) {
+        logger.error("sendDailyAvisos falhou para uma empresa", { uid, error: String(err && err.message) });
+      }
+    }
+    logger.info("sendDailyAvisos concluído", { empresas: byCompany.size, enviadas: sent });
+  }
+);
+
+/* Botão "Enviar notificação de teste" do painel: manda só para os aparelhos de quem pediu. */
+exports.sendTestPush = onCall(
+  { region: "southamerica-east1", maxInstances: 5 },
+  async (request) => {
+    if (!request.auth) throw new HttpsError("unauthenticated", "Faça login.");
+    await enforceRateLimit(request, `testpush:${request.auth.uid}`, 10, 60 * 60 * 1000);
+    const docs = (await db.collection("companies").doc(request.auth.uid).collection("devices").get()).docs;
+    const sent = await pushToDevices(docs, "Locarion: teste", "As notificações estão funcionando neste aparelho.");
+    return { ok: true, devices: docs.length, sent };
   }
 );
