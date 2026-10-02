@@ -1888,8 +1888,11 @@ function contractFormModal(id, presetStatus, cloneFrom){
     <input type="date" class="input item-date-end" data-eq="${eqId}" value="${ov?.end||""}" style="font-size:12px;padding:5px 8px">
   </div>`; };
   const defaultStatus = c?.status || presetStatus || "ativo";
+  let suggestedCode = c?.code || "";
+  if(!c){ let n = STATE.contracts.length+1; const used = new Set(STATE.contracts.map(x=>String(x.code||"").toUpperCase())); while(used.has("LF-"+String(n).padStart(4,"0"))) n++; suggestedCode = "LF-"+String(n).padStart(4,"0"); }
   openModal(c?`Contrato ${c.code}`:(cloneFrom?`Novo contrato (a partir de ${escapeHtml(cloneFrom.code||"")})`:(presetStatus==="orcamento"?"Novo orçamento":"Novo contrato")), `
     ${cloneFrom? `<p class="hint" style="margin:-2px 0 10px">Duplicado do contrato ${escapeHtml(cloneFrom.code||"")}. Revise cliente, itens e datas antes de criar.</p>` : ""}
+    <div class="field"><label>Número do contrato</label><input class="input" id="f-code" maxlength="40" value="${escapeHtml(suggestedCode)}" placeholder="Ex: 00009"></div>
     <div class="field-row">
       <div class="field"><label>Cliente</label><select class="select" id="f-client">${STATE.clients.map(cl=>`<option value="${cl.id}" ${pre?.clientId===cl.id?"selected":""}>${escapeHtml(cl.name)}</option>`).join("") || '<option value="">Cadastre um cliente primeiro</option>'}</select></div>
       <div class="field"><label>Status</label><select class="select" id="f-status">
@@ -2010,6 +2013,9 @@ function contractFormModal(id, presetStatus, cloneFrom){
       $("#save-contract").addEventListener("click", async ()=>{
         const clientId = $("#f-client").value;
         if(!clientId){ toast("Selecione um cliente.","err"); return; }
+        const code = $("#f-code").value.trim();
+        if(!code){ toast("Informe o número do contrato.","err"); return; }
+        if(STATE.contracts.some(x=>x.id!==c?.id && String(x.code||"").trim().toUpperCase()===code.toUpperCase())){ toast("Já existe outro contrato com esse número.","err"); return; }
         const qtyIds = [];
         $all("#f-equip .qty-input").forEach(i=>{ const qty=Math.max(Number(i.value)||0,0); for(let n=0;n<qty;n++) qtyIds.push(i.dataset.eq); });
         const equipmentIds = [...$all("#f-equip input[type=checkbox]:checked").map(i=>i.value), ...qtyIds, ...($("#f-serv")?$all("#f-serv input:checked").map(i=>i.value):[])];
@@ -2024,8 +2030,7 @@ function contractFormModal(id, presetStatus, cloneFrom){
         });
         const status = $("#f-status").value;
         const freight = $("#f-freight-on").checked ? (Number($("#f-freight").value)||0) : null;
-        const data = { clientId, equipmentIds, itemDates:newItemDates, startDate:start, endDate:end, value:Number($("#f-value").value)||0, freight, location:$("#f-loc").value.trim(), notes:$("#f-notes").value.trim(), status, signed:$("#f-signed").checked };
-        if(!c) data.code = "LF-"+String(STATE.contracts.length+1).padStart(4,"0");
+        const data = { code, clientId, equipmentIds, itemDates:newItemDates, startDate:start, endDate:end, value:Number($("#f-value").value)||0, freight, location:$("#f-loc").value.trim(), notes:$("#f-notes").value.trim(), status, signed:$("#f-signed").checked };
         if(status!=="cancelado" && c?.returnedDate) data.returnedDate = c.returnedDate;
         await saveDoc("contracts", c?.id, data);
         await syncEquipmentStatusForContract({...(c||{}), ...data, id:c?.id});
