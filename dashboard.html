@@ -834,6 +834,7 @@ body:has(.modal-backdrop){overflow:hidden}
         <button class="nav-item" data-nav="contratos"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/><path d="M9 13h6M9 17h6M9 9h1"/></svg>Contratos<span class="count" id="nav-count-contratos">0</span></button>
         <button class="nav-item" data-nav="orcamentos"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Orçamentos<span class="count" id="nav-count-orcamentos">0</span></button>
         <button class="nav-item" data-nav="agenda"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg>Agenda</button>
+        <button class="nav-item" data-nav="avisos"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>Avisos<span class="count" id="avisos-badge" hidden></span></button>
         <button class="nav-item" data-nav="manutencao"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4a4 4 0 0 0-4.9 3.9c0 .5.1 1 .3 1.4L3 12.7V16h3.3l3.4-3.4c.4.2.9.3 1.4.3A4 4 0 0 0 15 8.9L11 4Z"/><circle cx="17.5" cy="17.5" r="3.5"/></svg>Manutenção<span class="count" id="nav-count-manutencao">0</span></button>
       </div>
       <div>
@@ -1342,7 +1343,7 @@ function chartLegend(items){
 }
 
 /* ---------------- router ---------------- */
-const NAV_TITLES = { dashboard:"Dashboard", historico:"Histórico", equipamentos:"Equipamentos", disponiveis:"Disponíveis", localizar:"Localizar equipamentos", contratos:"Contratos", orcamentos:"Orçamentos", agenda:"Agenda", manutencao:"Manutenção", financeiro:"Financeiro", receitas:"Receitas", contaspr:"Contas a pagar e receber", clientes:"Clientes", relatorios:"Relatórios", integracoes:"Integrações", juridico:"Jurídico", config:"Configurações", admin:"Clientes Locarion" };
+const NAV_TITLES = { dashboard:"Dashboard", historico:"Histórico", equipamentos:"Equipamentos", disponiveis:"Disponíveis", localizar:"Localizar equipamentos", contratos:"Contratos", orcamentos:"Orçamentos", agenda:"Agenda", avisos:"Avisos de hoje", manutencao:"Manutenção", financeiro:"Financeiro", receitas:"Receitas", contaspr:"Contas a pagar e receber", clientes:"Clientes", relatorios:"Relatórios", integracoes:"Integrações", juridico:"Jurídico", config:"Configurações", admin:"Clientes Locarion" };
 let IS_ADMIN = false;
 let ADMIN_USERS = [];
 let ADMIN_LOADED = false;
@@ -1360,7 +1361,7 @@ function renderRoute(){
   $("#tab-more").classList.toggle("active", !tabRoutes.includes(route));
   $("#page-title").textContent = NAV_TITLES[route];
   closeSidebarMobile();
-  const renderers = { dashboard:renderDashboard, historico:renderHistorico, equipamentos:renderEquipamentos, disponiveis:renderDisponiveis, localizar:renderLocalizar, contratos:renderContratos, orcamentos:renderOrcamentos, agenda:renderAgenda, manutencao:renderManutencao, financeiro:renderFinanceiro, receitas:renderReceitas, contaspr:renderContasPR, clientes:renderClientes, relatorios:renderRelatorios, integracoes:renderIntegracoes, juridico:renderJuridico, config:renderConfig, admin:renderAdmin };
+  const renderers = { dashboard:renderDashboard, historico:renderHistorico, equipamentos:renderEquipamentos, disponiveis:renderDisponiveis, localizar:renderLocalizar, contratos:renderContratos, orcamentos:renderOrcamentos, agenda:renderAgenda, avisos:renderAvisos, manutencao:renderManutencao, financeiro:renderFinanceiro, receitas:renderReceitas, contaspr:renderContasPR, clientes:renderClientes, relatorios:renderRelatorios, integracoes:renderIntegracoes, juridico:renderJuridico, config:renderConfig, admin:renderAdmin };
   (renderers[route]||renderDashboard)();
   updateNavCounts();
 }
@@ -1374,6 +1375,7 @@ function updateNavCounts(){
   $("#nav-count-manutencao").textContent = mtPend;
   const orcEl = $("#nav-count-orcamentos"); if(orcEl) orcEl.textContent = orc;
   updateAlertsBadge();
+  updateAvisosBadge();
 }
 function setTopbarActions(html){ $("#topbar-actions").innerHTML = html; }
 function closeSidebarMobile(){ $("#sidebar").classList.remove("open"); $("#backdrop").classList.remove("open"); }
@@ -2276,6 +2278,84 @@ function contractDocModal(id){
         }catch(err){ toast("Não foi possível baixar agora.","err"); }
       });
   }});
+}
+
+/* ======================= AVISOS DE HOJE =======================
+   Lista o que precisa ser avisado aos clientes (devolução, retirada, fatura a vencer e atrasada).
+   O envio é manual: o botão abre o WhatsApp com a mensagem pronta. Quem já foi avisado hoje fica marcado
+   (guardado só neste navegador). */
+const AVISOS_KEY = "locarion.avisos.v1";
+function avisosStore(){
+  try{ const o = JSON.parse(localStorage.getItem(AVISOS_KEY)||"{}"); const t = todayISO(); return { lead:Number(o.lead)||3, sent: Object.fromEntries(Object.entries(o.sent||{}).filter(([k])=>k.startsWith(t))) }; }
+  catch(e){ return { lead:3, sent:{} }; }
+}
+function avisosSave(o){ try{ localStorage.setItem(AVISOS_KEY, JSON.stringify(o)); }catch(e){} }
+function avisosItems(lead){
+  const today = todayISO(), out = [];
+  const when = (d)=> d===0 ? "hoje" : d===1 ? "amanhã" : d>1 ? `em ${d} dias` : d===-1 ? "ontem" : `há ${-d} dias`;
+  for(const c of STATE.contracts){
+    const st = contractComputedStatus(c), cl = byId(STATE.clients,c.clientId); if(!cl) continue;
+    const eq = equipmentNamesSummary(c.equipmentIds);
+    if(st==="atrasado"){ const d = daysBetween(today,c.endDate); out.push({ key:`c|${c.id}|dev`, kind:"contrato", sev:0, days:d, clientId:cl.id, title:`Devolução atrasada — contrato ${c.code}`, sub:`${eq?eq+" · ":""}era para ${fmtDate(c.endDate)} (${when(d)})`, msg:waContractMessage(c,cl), open:()=>contractFormModal(c.id) }); }
+    else if(st==="vencendo_hoje" || st==="ativo"){ const d = daysBetween(today,c.endDate); if(d<=lead) out.push({ key:`c|${c.id}|dev`, kind:"contrato", sev:d===0?1:2, days:d, clientId:cl.id, title:`Devolução ${when(d)} — contrato ${c.code}`, sub:`${eq?eq+" · ":""}prevista para ${fmtDate(c.endDate)}`, msg:waContractMessage(c,cl), open:()=>contractFormModal(c.id) }); }
+    else if(st==="agendado"){ const d = daysBetween(today,c.startDate); if(d<=Math.min(lead,2)) out.push({ key:`c|${c.id}|ret`, kind:"contrato", sev:3, days:d, clientId:cl.id, title:`Retirada ${when(d)} — contrato ${c.code}`, sub:`${eq?eq+" · ":""}início em ${fmtDate(c.startDate)}`, msg:waContractMessage(c,cl), open:()=>contractFormModal(c.id) }); }
+  }
+  for(const p of STATE.payments){
+    const ps = paymentComputedStatus(p), cl = byId(STATE.clients,p.clientId); if(ps==="pago" || !cl || !(Number(p.amount)>0)) continue;
+    const d = daysBetween(today,p.dueDate);
+    if(ps==="atrasado") out.push({ key:`p|${p.id}`, kind:"fatura", sev:0, days:d, clientId:cl.id, title:`Fatura atrasada — ${fmtMoney(p.amount)}`, sub:`${p.description?p.description+" · ":""}venceu em ${fmtDate(p.dueDate)} (${when(d)})`, msg:waPaymentMessage(p,cl), prefer:"billing", open:()=>paymentFormModal(p.id) });
+    else if(d<=lead) out.push({ key:`p|${p.id}`, kind:"fatura", sev:d===0?1:2, days:d, clientId:cl.id, title:`Fatura vence ${when(d)} — ${fmtMoney(p.amount)}`, sub:`${p.description?p.description+" · ":""}vencimento ${fmtDate(p.dueDate)}`, msg:waPaymentMessage(p,cl), prefer:"billing", open:()=>paymentFormModal(p.id) });
+  }
+  return out.sort((a,b)=> a.sev-b.sev || (a.sev===0 ? a.days-b.days : a.days-b.days));
+}
+function renderAvisos(){
+  setTopbarActions("");
+  const view = $("#view");
+  if(!allLoaded()){ view.innerHTML = loadingView(); return; }
+  const store = avisosStore(), f = FILTERS.avisos || (FILTERS.avisos = { kind:"todos" });
+  const all = avisosItems(store.lead);
+  const list = all.filter(x=> f.kind==="todos" || x.kind===f.kind);
+  const pending = all.filter(x=>!store.sent[`${todayISO()}|${x.key}`]).length;
+  const sevCls = ["st-critical","st-warning","st-warning","st-accent"];
+  view.innerHTML = `
+    <div class="filters-row" style="align-items:center;flex-wrap:wrap;gap:10px">
+      <div class="pill-tabs" id="av-tabs" style="margin:0">
+        <button data-k="todos" class="${f.kind==='todos'?'active':''}">Todos (${all.length})</button>
+        <button data-k="contrato" class="${f.kind==='contrato'?'active':''}">Contratos (${all.filter(x=>x.kind==='contrato').length})</button>
+        <button data-k="fatura" class="${f.kind==='fatura'?'active':''}">Faturas (${all.filter(x=>x.kind==='fatura').length})</button>
+      </div>
+      <label class="hint" style="margin-left:auto;display:flex;align-items:center;gap:6px">Avisar com antecedência de
+        <select class="select" id="av-lead" style="width:auto">${[1,2,3,5,7].map(n=>`<option value="${n}" ${n===store.lead?"selected":""}>${n} dia${n>1?"s":""}</option>`).join("")}</select></label>
+    </div>
+    <p class="hint" style="margin:10px 0 14px">${all.length ? `${pending} de ${all.length} ainda sem aviso hoje. ` : ""}O botão abre o WhatsApp com a mensagem pronta; você só aperta enviar. O envio é um por vez, e quem já foi avisado hoje fica marcado neste navegador.</p>
+    <div id="av-list">${list.length ? list.map(x=>{
+      const cl = byId(STATE.clients,x.clientId), done = !!store.sent[`${todayISO()}|${x.key}`], phone = waPhone(cl, x.prefer);
+      return `<div class="card card-pad" style="display:flex;gap:12px;align-items:center;margin-bottom:8px;flex-wrap:wrap;${done?"opacity:.6":""}">
+        <div style="flex:1;min-width:220px">
+          <div class="cell-title"><span class="badge ${sevCls[x.sev]}"><span class="dot"></span>${x.kind==="contrato"?"Contrato":"Fatura"}</span> ${escapeHtml(cl.name)}</div>
+          <div style="margin-top:4px">${escapeHtml(x.title)}</div>
+          <div class="cell-sub">${escapeHtml(x.sub)}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-secondary btn-sm" data-av-open="${escapeHtml(x.key)}">Abrir</button>
+          ${phone ? `<button class="btn ${done?"btn-secondary":"btn-primary"} btn-sm" data-av-send="${escapeHtml(x.key)}">${done?"Avisado ✓ · reenviar":"Avisar no WhatsApp"}</button>` : `<span class="hint">Sem WhatsApp cadastrado</span><button class="btn btn-secondary btn-sm" data-av-client="${cl.id}">Cadastrar</button>`}
+        </div></div>`;
+    }).join("") : emptyState("Nada para avisar agora","Quando houver contratos para devolver ou faturas vencendo ou atrasadas, eles aparecem aqui.")}</div>`;
+  $all("#av-tabs button").forEach(b=> b.addEventListener("click", ()=>{ f.kind=b.dataset.k; renderAvisos(); }));
+  $("#av-lead").addEventListener("change", e=>{ const o = avisosStore(); o.lead = Number(e.target.value)||3; avisosSave(o); renderAvisos(); });
+  const byKey = (k)=> all.find(x=>x.key===k);
+  $all("[data-av-open]").forEach(b=> b.addEventListener("click", ()=>{ const x=byKey(b.dataset.avOpen); if(x) x.open(); }));
+  $all("[data-av-client]").forEach(b=> b.addEventListener("click", ()=> clientFormModal(b.dataset.avClient)));
+  $all("[data-av-send]").forEach(b=> b.addEventListener("click", ()=>{
+    const x = byKey(b.dataset.avSend); if(!x) return;
+    openWhatsApp(byId(STATE.clients,x.clientId), x.msg, x.prefer);
+    const o = avisosStore(); o.sent[`${todayISO()}|${x.key}`] = 1; avisosSave(o); renderAvisos();
+  }));
+}
+function updateAvisosBadge(){
+  const el = $("#avisos-badge"); if(!el || !allLoaded()) return;
+  const st = avisosStore(), n = avisosItems(st.lead).filter(x=>!st.sent[`${todayISO()}|${x.key}`] && waPhone(byId(STATE.clients,x.clientId),x.prefer)).length;
+  el.textContent = n>99?"99+":String(n); el.hidden = !n;
 }
 
 /* ======================= AGENDA ======================= */
