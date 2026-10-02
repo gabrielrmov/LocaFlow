@@ -765,6 +765,20 @@ body:has(.modal-backdrop){overflow:hidden}
   #cfg-save{margin-top:14px}
 }
 
+/* teste de 30 dias: faixa com os dias que restam e tela de acesso bloqueado */
+.trial-bar{display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:4px 12px; padding:9px 16px; font-size:13px; line-height:1.4; text-align:center; background:var(--accent-soft); color:var(--accent-soft-ink); border-bottom:1px solid var(--border)}
+.trial-bar[hidden]{display:none}
+.trial-bar.warn{background:var(--warning-bg); color:var(--warning)}
+.trial-bar a{font-weight:700; color:inherit; text-decoration:underline; text-underline-offset:2px}
+.gate{position:fixed; inset:0; z-index:300; display:flex; align-items:center; justify-content:center; padding:20px; background:var(--bg); overflow-y:auto}
+.gate[hidden]{display:none}
+.gate-card{width:100%; max-width:440px; padding:28px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-md)}
+.gate-card h1{margin:0 0 8px; font-family:var(--font-display); font-size:22px; line-height:1.2}
+.gate-card p{margin:0 0 18px; color:var(--ink-2); font-size:14.5px; line-height:1.55}
+.gate-actions{display:flex; flex-direction:column; gap:10px}
+.gate-actions .btn{width:100%; text-decoration:none}
+.gate-error{margin:12px 0 0; color:var(--critical); font-size:13px}
+
 /* barra de navegação inferior (só no celular): os 4 destinos mais usados + menu */
 .tabbar{display:none}
 @media (max-width:860px){
@@ -852,6 +866,7 @@ body:has(.modal-backdrop){overflow:hidden}
   <div class="backdrop" id="backdrop"></div>
 
   <div class="main">
+    <div class="trial-bar" id="trial-bar" hidden></div>
     <header class="topbar">
       <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menu"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
       <h1 id="page-title">Dashboard</h1>
@@ -860,6 +875,15 @@ body:has(.modal-backdrop){overflow:hidden}
       <div class="topbar-actions" id="topbar-actions"></div>
     </header>
     <main class="view" id="view"></main>
+  </div>
+</div>
+
+<div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gate-title" hidden>
+  <div class="gate-card">
+    <h1 id="gate-title"></h1>
+    <p id="gate-text"></p>
+    <div class="gate-actions" id="gate-actions"></div>
+    <p class="gate-error" id="gate-error" hidden></p>
   </div>
 </div>
 
@@ -2727,6 +2751,7 @@ function renderRelatorios(){
 const ADMIN_PLAN_LABEL = { profissional:"Profissional", enterprise:"Enterprise" };
 const ADMIN_STATUS_META = {
   active:{label:"Ativa",cls:"st-good"},
+  trialing:{label:"Em teste",cls:"st-accent"},
   inactive:{label:"Inativa",cls:"st-neutral"},
   canceled:{label:"Cancelada",cls:"st-critical"},
 };
@@ -2759,7 +2784,7 @@ function renderAdmin(){
       <td><div class="name-cell"><div class="avatar">${initials(u.name||u.email||"?")}</div><div style="min-width:0"><div class="cell-title">${escapeHtml(u.name||"—")}${u.isAdmin?' <span class="badge st-accent" style="margin-left:6px"><span class="dot"></span>Admin</span>':""}</div><div class="cell-sub">${escapeHtml(u.email||"")}</div></div></div></td>
       <td><select class="select admin-plan-select">${planOpts}</select></td>
       <td><select class="select admin-status-select">${statusOpts}</select></td>
-      <td><span class="badge ${meta.cls}"><span class="dot"></span>${meta.label}</span></td>
+      <td><span class="badge ${meta.cls}"><span class="dot"></span>${u.subscriptionStatus==="trialing" && u.trialEndsAt ? "Em teste até "+fmtDate(new Date(u.trialEndsAt).toISOString().slice(0,10)) : meta.label}</span></td>
       <td class="row-actions"><button class="btn btn-primary btn-sm" data-action="admin-save-user" data-id="${u.id}">Salvar</button></td>
     </tr>`;
   }).join("");
@@ -3471,7 +3496,13 @@ function subscribeCollection(key){
     ()=>{ LOADED[key]=true; rerenderCurrent(); }
   );
 }
+let TRIAL = null; /* {days, ends} enquanto o teste de 30 dias está valendo */
 function updatePlanLabel(){
+  if(TRIAL){
+    const chip = document.querySelector(".plan-chip span");
+    if(chip) chip.innerHTML = `Teste grátis · <b>${TRIAL.days} ${TRIAL.days===1?"dia":"dias"}</b>`;
+    return;
+  }
   const map={profissional:"Profissional",enterprise:"Enterprise"};
   const el = $("#plan-label"); if(el) el.textContent = map[STATE.company.plan]||"Profissional";
 }
@@ -3692,18 +3723,70 @@ function labelTables(root){
   if(tb){ addEventListener("scroll", ()=>{ tb.classList.toggle("scrolled", window.pageYOffset > 4); }, { passive: true }); }
 })();
 
-/* Só entra se: (1) autenticado no Firebase, (2) documento users/{uid} tem
-   assinatura ativa OU é uma conta admin (isAdmin:true, que sempre tem acesso
-   liberado, independente de pagamento). Caso contrário, volta pro login/planos. */
+/* Só entra se: (1) autenticado no Firebase e (2) o documento users/{uid} dá acesso:
+   assinatura ativa, conta admin ou teste de 30 dias ainda dentro do prazo. As Cloud
+   Functions e as regras do Firestore conferem o mesmo no servidor; esta checagem é só
+   para mostrar a tela certa. Sem acesso, aparece uma tela explicando o que fazer. */
+const DAY_MS = 86400000;
+function accessState(data){
+  if(!data) return {kind:"none"};
+  if(data.isAdmin === true) return {kind:"admin"};
+  const st = data.subscriptionStatus;
+  if(st === "active") return {kind:"active"};
+  const ends = data.trialEndsAt && data.trialEndsAt.toMillis ? data.trialEndsAt.toMillis() : 0;
+  if(st === "trialing") return ends > Date.now() ? {kind:"trial", ends, days:Math.max(1, Math.ceil((ends - Date.now())/DAY_MS))} : {kind:"expired"};
+  if(st === "canceled" || st === "inactive") return {kind:"inactive"};
+  return {kind:"none"};
+}
+function showGate(kind){
+  const T = {
+    none:{ title:"Comece seu teste de 30 dias", text:"Sem cartão. Você usa todos os recursos por 30 dias e só assina se gostar.", primary:"Começar teste grátis", start:true },
+    expired:{ title:"Seu teste de 30 dias terminou", text:"Seus dados continuam guardados. Assine um plano para voltar de onde parou.", primary:"Ver planos e assinar" },
+    inactive:{ title:"Sua assinatura está inativa", text:"Escolha um plano para voltar ao painel. Seus dados continuam guardados.", primary:"Ver planos" },
+  }[kind] || {};
+  $("#auth-gate").hidden = true; /* tira o círculo de carregamento; o painel (#app) segue escondido */
+  $("#gate-title").textContent = T.title;
+  $("#gate-text").textContent = T.text;
+  const box = $("#gate-actions"); box.innerHTML = "";
+  const err = $("#gate-error"); err.hidden = true;
+  const add = (el)=>box.appendChild(el);
+  const mk = (tag, cls, label)=>{ const e=document.createElement(tag); e.className="btn "+cls; e.textContent=label; return e; };
+  if(T.start){
+    const b = mk("button","btn-primary",T.primary);
+    b.addEventListener("click", async ()=>{
+      b.disabled = true; b.textContent = "Abrindo seu teste...";
+      try{
+        await firebase.app().functions("southamerica-east1").httpsCallable("startTrial")();
+        location.reload();
+      }catch(e){
+        console.error(e); b.disabled = false; b.textContent = T.primary;
+        err.textContent = "Não foi possível iniciar o teste agora. Tente de novo em instantes."; err.hidden = false;
+      }
+    });
+    add(b);
+    const a = mk("a","btn-secondary","Ver planos"); a.href = "index.html#precos"; add(a);
+  }else{
+    const a = mk("a","btn-primary",T.primary); a.href = "index.html#precos"; add(a);
+  }
+  const out = mk("button","btn-ghost","Sair"); out.addEventListener("click", logout); add(out);
+  $("#gate").hidden = false;
+}
+function showTrialBar(t){
+  TRIAL = t;
+  const bar = $("#trial-bar");
+  bar.classList.toggle("warn", t.days <= 7);
+  const fim = t.days === 1 ? "Resta 1 dia" : `Restam ${t.days} dias`;
+  bar.innerHTML = `<span>Teste grátis: <b>${fim}</b></span><a href="index.html#precos">Ver planos</a>`;
+  bar.hidden = false;
+}
 requireAuth(async (user) => {
   try{
     const userDoc = await db.collection("users").doc(user.uid).get();
     const data = userDoc.exists ? userDoc.data() : null;
     IS_ADMIN = !!(data && data.isAdmin === true);
-    if(!data || (data.subscriptionStatus !== "active" && !IS_ADMIN)){
-      window.location.href = "index.html#precos";
-      return;
-    }
+    const acc = accessState(data);
+    if(acc.kind === "none" || acc.kind === "expired" || acc.kind === "inactive"){ showGate(acc.kind); return; }
+    if(acc.kind === "trial") showTrialBar(acc);
     boot(user);
   }catch(err){
     window.location.href = "login.html";

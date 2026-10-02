@@ -312,7 +312,9 @@ async function assertIsAdmin(request) {
 }
 
 const VALID_PLANS = ["profissional", "enterprise"];
-const VALID_STATUSES = ["active", "inactive", "canceled"];
+const VALID_STATUSES = ["active", "trialing", "inactive", "canceled"];
+const TRIAL_DAYS = 30;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 /* -------------------------------------------------------------------------
    adminListUsers — lista todas as contas (clientes) cadastradas no Locarion,
@@ -331,6 +333,7 @@ exports.adminListUsers = onCall(
         name: d.name || null,
         plan: d.plan || null,
         subscriptionStatus: d.subscriptionStatus || null,
+        trialEndsAt: d.trialEndsAt && d.trialEndsAt.toMillis ? d.trialEndsAt.toMillis() : null,
         isAdmin: d.isAdmin === true,
       };
     });
@@ -349,7 +352,7 @@ exports.adminSetUserAccess = onCall(
   async (request) => {
     await assertIsAdmin(request);
 
-    const { targetUid, plan, subscriptionStatus } = request.data || {};
+    const { targetUid, plan, subscriptionStatus, trialDays } = request.data || {};
     if (typeof targetUid !== "string" || !targetUid || targetUid.length > 128 || targetUid.includes("/")) {
       throw new HttpsError("invalid-argument", "Cliente não informado.");
     }
@@ -362,8 +365,70 @@ exports.adminSetUserAccess = onCall(
     if (plan) update.plan = plan;
     if (subscriptionStatus) update.subscriptionStatus = subscriptionStatus;
 
-    await db.collection("users").doc(targetUid).set(update, { merge: true });
+    const userRef = db.collection("users").doc(targetUid);
+    if (subscriptionStatus === "trialing") {
+      // "Em teste" precisa de data de fim; sem ela as regras do Firestore bloqueiam a escrita.
+      const days = Number.isInteger(trialDays) ? trialDays : TRIAL_DAYS;
+      if (days < 1 || days > 365) throw new HttpsError("invalid-argument", "Dias de teste inválidos.");
+      update.trialEndsAt = admin.firestore.Timestamp.fromMillis(Date.now() + days * DAY_MS);
+      const cur = await userRef.get();
+      if (!cur.exists || !cur.data().trialStartedAt) update.trialStartedAt = admin.firestore.FieldValue.serverTimestamp();
+    }
+
+    await userRef.set(update, { merge: true });
     return { ok: true };
+  }
+);
+
+/* -------------------------------------------------------------------------
+   startTrial — abre o teste de 30 dias, sem cartão. É a ÚNICA forma de um
+   cliente ganhar acesso de teste: o navegador não consegue gravar status nem
+   datas no próprio perfil (regras do Firestore), então a data de fim é sempre
+   decidida aqui, no servidor. Um teste por conta Google; quem já assinou antes
+   (ativo, cancelado ou inativo) não ganha novo teste.
+   ------------------------------------------------------------------------- */
+exports.startTrial = onCall(
+  { region: "southamerica-east1", maxInstances: 10 },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Faça login antes de iniciar o teste.");
+    }
+    await enforceRateLimit(request, `trial:${request.auth.uid}`, 5, 60 * 60 * 1000);
+
+    const userRef = db.collection("users").doc(request.auth.uid);
+    const result = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(userRef);
+      const d = snap.exists ? snap.data() : {};
+
+      if (d.isAdmin === true) return { state: "admin" };
+      if (d.subscriptionStatus === "active") return { state: "active" };
+
+      if (d.trialStartedAt || d.subscriptionStatus === "trialing") {
+        const ends = d.trialEndsAt && d.trialEndsAt.toMillis ? d.trialEndsAt.toMillis() : 0;
+        return { state: ends > Date.now() ? "trialing" : "expired", trialEndsAt: ends };
+      }
+      if (d.subscriptionStatus === "canceled" || d.subscriptionStatus === "inactive") {
+        return { state: "blocked" };
+      }
+
+      const endsAt = admin.firestore.Timestamp.fromMillis(Date.now() + TRIAL_DAYS * DAY_MS);
+      tx.set(
+        userRef,
+        {
+          subscriptionStatus: "trialing",
+          plan: "profissional",
+          trialStartedAt: admin.firestore.FieldValue.serverTimestamp(),
+          trialEndsAt: endsAt,
+          email: request.auth.token.email || null,
+          name: request.auth.token.name || null,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+      return { state: "trialing", started: true, trialEndsAt: endsAt.toMillis() };
+    });
+
+    return { ok: true, ...result };
   }
 );
 
