@@ -44,7 +44,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-functions-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script>
-const BUILD = "diag-2026-10-02-1";
+const BUILD = "diag-2026-10-02-2";
 const REPORT = [];
 const esc = (s)=>String(s==null?"":s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function row(dl, k, v, cls){ dl.insertAdjacentHTML("beforeend", `<dt>${esc(k)}</dt><dd class="${cls||""}">${esc(v)}</dd>`); REPORT.push(`${k}: ${v}`); }
@@ -120,7 +120,7 @@ async function showAccount(user){
     const acc = readError ? null : accessState(data);
     if(acc){ const [cls, txt] = VERDICT[acc.kind]; verdict.innerHTML = `<span class="${cls}">${esc(txt)}</span>`; REPORT.push("Resultado: "+txt); }
     else { verdict.innerHTML = '<span class="bad">Não foi possível ler o perfil. O painel manda de volta para o login.</span>'; REPORT.push("Resultado: leitura do perfil falhou ("+readError+")"); }
-    btn("Abrir o painel", ()=>{ location.href = "dashboard.html"; }, "primary");
+    btn("Abrir o painel", ()=>{ location.href = "dashboard.html?v=20261002"; }, "primary");
     btn("Sair e trocar de conta", async ()=>{ await auth.signOut(); location.reload(); });
   }
   btn("Copiar resultado", async ()=>{
