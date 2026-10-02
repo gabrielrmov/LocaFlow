@@ -765,6 +765,9 @@ body:has(.modal-backdrop){overflow:hidden}
   #cfg-save{margin-top:14px}
 }
 
+.paper-wrap{background:var(--surface-2,#e9e9ee); padding:16px; border-radius:var(--radius-md,10px); max-height:60vh; overflow:auto}
+.paper{background:#fff; color:#111; max-width:794px; margin:0 auto; padding:48px 56px; box-shadow:0 1px 6px rgba(0,0,0,.2); font:13px/1.6 Georgia,"Times New Roman",serif; white-space:pre-wrap; word-wrap:break-word}
+@media (max-width:640px){.paper{padding:24px 20px}}
 .field-error{margin:8px 0 0; color:var(--critical); font-size:13px}
 .field-error[hidden]{display:none}
 
@@ -2104,19 +2107,32 @@ function fillContractTemplate(template, c){
   for(const [k,v] of Object.entries(map)) out = out.split(k).join(v);
   return out;
 }
+/* Impressão: monta uma página A4 num iframe oculto (sem popup) e abre a janela de impressão,
+   que também permite "Salvar como PDF". */
+function printContractText(text, title){
+  const f = document.createElement("iframe");
+  f.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0";
+  document.body.appendChild(f);
+  const d = f.contentDocument;
+  d.open();
+  d.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>@page{size:A4;margin:20mm}body{margin:0;font:12pt/1.5 Georgia,"Times New Roman",serif;color:#000}.doc{white-space:pre-wrap;word-wrap:break-word}</style></head><body><div class="doc">${escapeHtml(text)}</div></body></html>`);
+  d.close();
+  setTimeout(()=>{ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(e){ toast("Não foi possível abrir a impressão.","err"); } setTimeout(()=>f.remove(), 60000); }, 250);
+}
 function contractDocModal(id){
   const c = byId(STATE.contracts, id);
   const template = STATE.company.contractTemplate || DEFAULT_CONTRACT_TEMPLATE;
   const text = fillContractTemplate(template, c);
   openModal(`Contrato ${c?.code||""}`, `
     <p class="hint" style="margin-bottom:10px">Gerado a partir do modelo em Configurações → Contrato, preenchido com os dados desta locação.</p>
-    <textarea class="textarea" id="doc-contract-text" readonly style="min-height:420px;font-family:'IBM Plex Sans',monospace;font-size:12px;line-height:1.55">${escapeHtml(text)}</textarea>
-  `, `<button class="btn btn-secondary" data-action="close-modal">Fechar</button><button class="btn btn-secondary" id="copy-contract-doc">Copiar texto</button><button class="btn btn-primary" id="download-contract-doc">Baixar .txt</button>`,
+    <div class="paper-wrap"><div class="paper" id="doc-contract-text">${escapeHtml(text)}</div></div>
+  `, `<button class="btn btn-secondary" data-action="close-modal">Fechar</button><button class="btn btn-secondary" id="copy-contract-doc">Copiar texto</button><button class="btn btn-primary" id="print-contract-doc">Imprimir / salvar PDF</button><button class="btn btn-secondary" id="download-contract-doc">Baixar .txt</button>`,
   { large:true, onMount(){
       $("#copy-contract-doc").addEventListener("click", ()=>{
         if(navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(()=>toast("Texto copiado.","ok")).catch(()=>toast("Não foi possível copiar.","err"));
         else toast("Copie o texto selecionando-o no campo.","err");
       });
+      $("#print-contract-doc").addEventListener("click", ()=> printContractText(text, `Contrato ${c?.code||""}`));
       $("#download-contract-doc").addEventListener("click", ()=>{
         try{
           downloadBlob(`contrato-${c?.code||"locarion"}.txt`, new Blob([text],{type:"text/plain;charset=utf-8"}));
