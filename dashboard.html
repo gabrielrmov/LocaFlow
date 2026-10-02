@@ -1003,7 +1003,7 @@ function escapeHtml(s){ return String(s==null?"":s).replace(/[&<>"']/g, c=>({"&"
 function initials(name){ if(!name) return "?"; const p=name.trim().split(/\s+/); return ((p[0]?.[0]||"")+(p.length>1?p[p.length-1][0]:"")).toUpperCase(); }
 function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
 function maskCep(v){ return (v||"").replace(/\D/g,"").slice(0,8).replace(/^(\d{5})(\d)/,"$1-$2"); }
-async function lookupCep(cepInputEl, addressInputEl, hintEl){
+async function lookupCep(cepInputEl, addressInputEl, hintEl, extra){
   const digits = (cepInputEl.value||"").replace(/\D/g,"");
   if(digits.length !== 8){ if(hintEl) hintEl.textContent = digits.length ? "CEP incompleto." : ""; return; }
   if(hintEl) hintEl.textContent = "Buscando endereço…";
@@ -1016,6 +1016,7 @@ async function lookupCep(cepInputEl, addressInputEl, hintEl){
     if(data.erro){ if(hintEl) hintEl.textContent = "CEP não encontrado — preencha manualmente."; return; }
     const parts = [data.logradouro, data.bairro, data.localidade && data.uf ? `${data.localidade}/${data.uf}` : (data.localidade||data.uf||"")].filter(Boolean);
     if(addressInputEl && parts.length) addressInputEl.value = parts.join(", ");
+    if(extra){ if(extra.bairro) extra.bairro.value = data.bairro||""; if(extra.cidade) extra.cidade.value = data.localidade||""; if(extra.uf) extra.uf.value = data.uf||""; }
     if(hintEl) hintEl.textContent = "Endereço preenchido — complete o número/complemento se necessário.";
   }catch(err){
     if(hintEl) hintEl.textContent = "Não foi possível buscar o CEP agora — preencha manualmente.";
@@ -2121,8 +2122,9 @@ const CONTRACT_DOC_CSS = `
 .ctdoc .ct-r{display:grid;grid-template-columns:auto 1fr;gap:0 6px;padding:2px 8px}
 .ctdoc .ct-r+.ct-r{padding-top:0}
 .ctdoc .ct-r b{white-space:nowrap}
-.ctdoc .ct-r2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;padding:0 8px}
-.ctdoc .ct-r2>div{display:grid;grid-template-columns:auto 1fr;gap:0 6px}
+.ctdoc .ct-r3{display:grid;grid-template-columns:1.25fr 1.15fr .9fr;gap:0 12px;padding:1px 8px}
+.ctdoc .ct-r3>div{display:grid;grid-template-columns:auto 1fr;gap:0 5px;min-width:0}
+.ctdoc .ct-r3 span,.ctdoc .ct-r span{word-break:break-word}
 .ctdoc .ct-sep{border-top:1px solid #000;margin:3px 0}
 .ctdoc table{width:100%;border-collapse:collapse;font-size:8pt;table-layout:fixed;min-width:0!important}
 .ctdoc th{text-transform:none;letter-spacing:0;font-size:7.5pt;font-weight:700;white-space:normal;word-break:break-word;background:#6b6b6b;color:#fff;padding:2px 3px;border:1px solid #000;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -2156,7 +2158,24 @@ function contractDocHtml(c, withClauses){
   const E = escapeHtml, co = STATE.company || {};
   const cl = c ? byId(STATE.clients, c.clientId) : null;
   const r1 = (label, v)=> v ? `<div class="ct-r"><b>${label}</b><span>${E(v)}</span></div>` : "";
-  const r2 = (l1, v1, l2, v2)=> (v1||v2) ? `<div class="ct-r2"><div>${v1?`<b>${l1}</b><span>${E(v1)}</span>`:""}</div><div>${v2?`<b>${l2}</b><span>${E(v2)}</span>`:""}</div></div>` : "";
+  /* linha de três colunas como no contrato do Locagestor: o rótulo aparece sempre, mesmo sem valor */
+  const r3 = (a, b, c3)=> `<div class="ct-r3">${[a,b,c3].map(x=> x ? `<div><b>${x[0]}</b><span>${E(x[1]||"")}</span></div>` : "<div></div>").join("")}</div>`;
+  /* cadastros antigos têm só "Rua, Bairro, Cidade/UF" num campo: separa para preencher bairro, cidade e estado */
+  const splitAddr = (o)=>{
+    const out = { street:o?.address||"", bairro:o?.bairro||"", cidade:o?.cidade||"", uf:o?.uf||"" };
+    if(!o?.bairro && !o?.cidade && !o?.uf){
+      const parts = String(o?.address||"").split(",").map(x=>x.trim()).filter(Boolean);
+      const m = parts.length ? parts[parts.length-1].match(/^(.+?)\s*\/\s*([A-Za-z]{2})$/) : null;
+      if(m){
+        const dash = m[1].split(/\s+-\s+/); /* "100 - Centro - Goiânia/GO" */
+        out.cidade = dash.pop().trim(); out.uf = m[2].toUpperCase(); parts.pop();
+        if(dash.length>=2){ out.bairro = dash.pop(); parts.push(dash.join(" - ")); }
+        else if(parts.length>=2) out.bairro = parts.pop();
+        out.street = parts.join(", ");
+      }
+    }
+    return out;
+  };
   const now = new Date();
   const qty = {}; (c?.equipmentIds||[]).forEach(id=>{ qty[id]=(qty[id]||0)+1; });
   const itemDates = c?.itemDates || {};
@@ -2179,6 +2198,7 @@ function contractDocHtml(c, withClauses){
   const sumRent = lines.reduce((a,l)=>a+l.rent,0);
   const perLine = lines.length>0 && Math.abs(sumRent-rent)<0.01;
   const money = (v)=> v ? fmtMoney(v) : "—";
+  const ca = splitAddr(co), la = splitAddr(cl);
   const billing = cl ? (cl.billingSameAsMain===false && cl.billingAddress ? cl.billingAddress : cl.address) : "";
   const longDate = now.toLocaleDateString("pt-BR",{day:"numeric",month:"long",year:"numeric"}).toUpperCase();
   const clauses = withClauses ? (()=>{
@@ -2190,11 +2210,19 @@ function contractDocHtml(c, withClauses){
   return `<div class="ctdoc">
     <div class="ct-head"><h1>CONTRATO DE LOCAÇÃO DE BENS MÓVEIS Nº: ${E(c?.code||"")}</h1><div class="ct-when">Data: ${now.toLocaleDateString("pt-BR")}<br>Hora: ${now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</div></div>
     <div class="ct-q"><h2>Quadro "A" - Contratantes</h2>
-      ${r1("Locadora:",co.name)}${r1("Endereço:",co.address)}${r2("CNPJ:",co.cnpj,"Telefones:",co.phone)}
+      ${r3(["Locadora:",co.name],["Endereço:",ca.street],["Bairro:",ca.bairro])}
+      ${r3(["Cidade:",ca.cidade],["Estado:",ca.uf],["CEP:",co.cep])}
+      ${r3(["Insc. Est.:",co.ie],["Telefones:",co.phone],["CNPJ:",co.cnpj])}
+      ${r3(["Site:",co.site],["E-mail:",co.email],null)}
       <div class="ct-sep"></div>
-      ${r1("Locatário:",cl?.name)}${r2("CPF/CNPJ:",cl?.document,"RG/IE:",cl?.ie)}${r1("Endereço:",cl?.address)}${r2("CEP:",cl?.cep,"Telefone:",cl?.phone)}${r1("E-mail:",cl?.email)}
+      ${r3(["Locatário:",cl?.name],["Nome Fantasia:",cl?.tradeName],["E-mail:",cl?.email])}
+      ${r3(["Endereço:",la.street],["Bairro:",la.bairro],["CEP:",cl?.cep])}
+      ${r3(["Cidade:",la.cidade],["Estado:",la.uf],["RG/IE:",cl?.ie])}
+      ${r3(["Telefone:",cl?.phone],["CPF/CNPJ:",cl?.document],null)}
       <div class="ct-sep"></div>
-      ${r1("Local da Entrega:",c?.location)}${r1("Endereço para cobrança:",billing)}
+      ${r1("Responsável Legal ou Corresponsável:",cl?.legalContact)}
+      ${r1("Local da Entrega:",c?.location)}
+      <div class="ct-r" style="display:block"><b>Endereço para cobrança:</b><div style="text-align:center">${E(billing||"")}</div></div>
     </div>
     <div class="ct-q"><h2>Quadro "B" - Objetos do Contrato, Prazos das Locações e Preços</h2>
       <table><thead><tr><th style="width:5%">Qtde</th><th style="width:17%">Descrição</th><th style="width:9%">Patrimônio</th><th style="width:9%">Vlr. unit. indenização</th><th style="width:9%">Vlr. total indenização</th><th style="width:8%">Tipo de locação</th><th style="width:7%">Qtde período</th><th style="width:9%">Início do período</th><th style="width:9%">Término do período</th><th style="width:9%">Valor unit. locação</th><th style="width:9%">Valor da locação</th></tr></thead><tbody>
@@ -2726,6 +2754,10 @@ function clientFormModal(id){
     </div>
     <div class="field"><label>Nome / Razão social</label><input class="input" id="f-name" value="${escapeHtml(c?.name||"")}"></div>
     <div class="field-row">
+      <div class="field"><label>Nome fantasia</label><input class="input" id="f-trade" value="${escapeHtml(c?.tradeName||"")}" placeholder="Opcional"></div>
+      <div class="field"><label>Responsável legal / contato</label><input class="input" id="f-legal" value="${escapeHtml(c?.legalContact||"")}" placeholder="Opcional"></div>
+    </div>
+    <div class="field-row">
       <div class="field"><label>CPF / CNPJ</label><input class="input" id="f-doc" value="${escapeHtml(c?.document||"")}"></div>
       <div class="field"><label>Inscrição Estadual</label><input class="input" id="f-ie" value="${escapeHtml(c?.ie||"")}" placeholder="Opcional"></div>
     </div>
@@ -2749,6 +2781,11 @@ function clientFormModal(id){
       <div class="field" style="flex:1"><label>Endereço principal</label><input class="input" id="f-address" value="${escapeHtml(c?.address||"")}" placeholder="Preenchido automaticamente pelo CEP, ou digite"></div>
     </div>
     <p class="hint" id="f-cep-hint" style="margin-top:-8px"></p>
+    <div class="field-row">
+      <div class="field"><label>Bairro</label><input class="input" id="f-bairro" value="${escapeHtml(c?.bairro||"")}"></div>
+      <div class="field"><label>Cidade</label><input class="input" id="f-cidade" value="${escapeHtml(c?.cidade||"")}"></div>
+      <div class="field" style="flex:0 0 80px"><label>UF</label><input class="input" id="f-uf" maxlength="2" value="${escapeHtml(c?.uf||"")}" style="text-transform:uppercase"></div>
+    </div>
     <div class="field">
       <label style="display:flex;align-items:center;gap:7px;font-weight:500"><input type="checkbox" id="f-bill-same" ${c?.billingSameAsMain!==false?"checked":""}> Endereço de cobrança é o mesmo que o principal</label>
     </div>
@@ -2771,7 +2808,7 @@ function clientFormModal(id){
       let selType = c?.type || "PF";
       $all("#f-type button").forEach(b=> b.addEventListener("click", ()=>{ selType=b.dataset.type; $all("#f-type button").forEach(x=>x.classList.toggle("active", x===b)); }));
       $("#f-cep").addEventListener("input", e=>{ e.target.value = maskCep(e.target.value); });
-      $("#f-cep").addEventListener("blur", ()=> lookupCep($("#f-cep"), $("#f-address"), $("#f-cep-hint")));
+      $("#f-cep").addEventListener("blur", ()=> lookupCep($("#f-cep"), $("#f-address"), $("#f-cep-hint"), {bairro:$("#f-bairro"), cidade:$("#f-cidade"), uf:$("#f-uf")}));
       function toggleBillWrap(){ $("#f-bill-wrap").style.display = $("#f-bill-same").checked ? "none" : "block"; }
       $("#f-bill-same").addEventListener("change", toggleBillWrap);
       toggleBillWrap();
@@ -2796,7 +2833,7 @@ function clientFormModal(id){
         if(!name){ toast("Informe o nome do cliente.","err"); return; }
         const deliveryLocations = locs.map(l=>({...l, label:(l.label||"").trim(), address:(l.address||"").trim()})).filter(l=>l.address);
         const billSame = $("#f-bill-same").checked;
-        const data = { name, type:selType, status:$("#f-status").value, document:$("#f-doc").value.trim(), ie:$("#f-ie").value.trim(), phone:$("#f-phone").value.trim(), whatsapp:$("#f-whatsapp").value.trim(), email:$("#f-email").value.trim(), creditLimit:$("#f-credit").value?Number($("#f-credit").value):null, origin:$("#f-origin").value, externalSeller:$("#f-seller").value.trim(), cep:$("#f-cep").value.trim(), address:$("#f-address").value.trim(), billingSameAsMain:billSame, billingAddress:billSame?"":$("#f-bill-address").value.trim(), billingContact:billSame?"":$("#f-bill-contact").value.trim(), billingEmail:billSame?"":$("#f-bill-email").value.trim(), billingPhone:billSame?"":$("#f-bill-phone").value.trim(), deliveryLocations, notes:$("#f-notes").value.trim() };
+        const data = { name, tradeName:$("#f-trade").value.trim(), legalContact:$("#f-legal").value.trim(), bairro:$("#f-bairro").value.trim(), cidade:$("#f-cidade").value.trim(), uf:$("#f-uf").value.trim().toUpperCase(), type:selType, status:$("#f-status").value, document:$("#f-doc").value.trim(), ie:$("#f-ie").value.trim(), phone:$("#f-phone").value.trim(), whatsapp:$("#f-whatsapp").value.trim(), email:$("#f-email").value.trim(), creditLimit:$("#f-credit").value?Number($("#f-credit").value):null, origin:$("#f-origin").value, externalSeller:$("#f-seller").value.trim(), cep:$("#f-cep").value.trim(), address:$("#f-address").value.trim(), billingSameAsMain:billSame, billingAddress:billSame?"":$("#f-bill-address").value.trim(), billingContact:billSame?"":$("#f-bill-contact").value.trim(), billingEmail:billSame?"":$("#f-bill-email").value.trim(), billingPhone:billSame?"":$("#f-bill-phone").value.trim(), deliveryLocations, notes:$("#f-notes").value.trim() };
         await saveDoc("clients", c?.id, data);
         closeModal(); toast(c?"Cliente atualizado.":"Cliente cadastrado.","ok");
       });
@@ -3040,6 +3077,15 @@ function renderConfigGeralBody(){
           <div class="field"><label>Endereço</label><input class="input" id="cfg-address" value="${escapeHtml(co.address||"")}"></div>
         </div>
         <p class="hint" id="cfg-cep-hint" style="margin-top:-8px"></p>
+        <div class="field-row">
+          <div class="field"><label>Bairro</label><input class="input" id="cfg-bairro" value="${escapeHtml(co.bairro||"")}"></div>
+          <div class="field"><label>Cidade</label><input class="input" id="cfg-cidade" value="${escapeHtml(co.cidade||"")}"></div>
+          <div class="field" style="flex:0 0 80px"><label>UF</label><input class="input" id="cfg-uf" maxlength="2" value="${escapeHtml(co.uf||"")}" style="text-transform:uppercase"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Inscrição Estadual</label><input class="input" id="cfg-ie" value="${escapeHtml(co.ie||"")}" placeholder="ISENTO ou número"></div>
+          <div class="field"><label>Site</label><input class="input" id="cfg-site" value="${escapeHtml(co.site||"")}" placeholder="Opcional"></div>
+        </div>
         <div style="height:6px"></div>
         <button class="btn btn-primary btn-sm" id="cfg-save">Salvar</button>
       </div>
@@ -3087,13 +3133,13 @@ function renderConfigGeralBody(){
     </div>
   `;
   $("#cfg-cep").addEventListener("input", e=>{ e.target.value = maskCep(e.target.value); });
-  $("#cfg-cep").addEventListener("blur", ()=> lookupCep($("#cfg-cep"), $("#cfg-address"), $("#cfg-cep-hint")));
+  $("#cfg-cep").addEventListener("blur", ()=> lookupCep($("#cfg-cep"), $("#cfg-address"), $("#cfg-cep-hint"), {bairro:$("#cfg-bairro"), cidade:$("#cfg-cidade"), uf:$("#cfg-uf")}));
   $("#cfg-support-copy").addEventListener("click", async ()=>{
     try{ await navigator.clipboard.writeText($("#cfg-support-code").textContent); toast("Código copiado.","ok"); }
     catch(e){ toast("Não foi possível copiar.","err"); }
   });
   $("#cfg-save").addEventListener("click", async ()=>{
-    await saveCompany({ name:$("#cfg-name").value.trim(), cnpj:$("#cfg-cnpj").value.trim(), phone:$("#cfg-phone").value.trim(), email:$("#cfg-email").value.trim(), cep:$("#cfg-cep").value.trim(), address:$("#cfg-address").value.trim(), lateFeePercent:$("#cfg-latefee").value?Number($("#cfg-latefee").value):null });
+    await saveCompany({ name:$("#cfg-name").value.trim(), cnpj:$("#cfg-cnpj").value.trim(), phone:$("#cfg-phone").value.trim(), email:$("#cfg-email").value.trim(), cep:$("#cfg-cep").value.trim(), address:$("#cfg-address").value.trim(), bairro:$("#cfg-bairro").value.trim(), cidade:$("#cfg-cidade").value.trim(), uf:$("#cfg-uf").value.trim().toUpperCase(), ie:$("#cfg-ie").value.trim(), site:$("#cfg-site").value.trim(), lateFeePercent:$("#cfg-latefee").value?Number($("#cfg-latefee").value):null });
     toast("Dados salvos.","ok");
   });
   $all("#theme-toggle-2 button").forEach(b=>{ b.classList.toggle("active", document.documentElement.getAttribute("data-theme")===b.dataset.themeOpt || (!document.documentElement.getAttribute("data-theme") && b.dataset.themeOpt==="system")); b.addEventListener("click", ()=>applyTheme(b.dataset.themeOpt)); });
