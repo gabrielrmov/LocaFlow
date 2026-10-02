@@ -2327,6 +2327,7 @@ function renderFinanceiro(){
       ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`
       : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l18 18"/><path d="M10.6 5.2A10.6 10.6 0 0 1 12 5c6.5 0 10 7 10 7a13.4 13.4 0 0 1-3.4 4.2M6.6 6.6C3.5 8.5 2 12 2 12s3.5 7 10 7c1.3 0 2.5-.2 3.6-.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>`}
     </button>
+    ${f.tab==='despesas'?'':`<button class="btn btn-secondary" data-action="import-payments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 0L8 7m4-4 4 4"/><path d="M4 19h16"/></svg>Importar</button>`}
     <button class="btn btn-secondary" data-action="export-csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 19h16"/></svg>Exportar CSV</button>
     <button class="btn btn-primary" data-action="${f.tab==='despesas'?'new-expense':'new-payment'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>${f.tab==='despesas'?'Nova despesa':'Nova fatura'}</button>
   `);
@@ -3532,6 +3533,68 @@ async function saveDoc(collection, id, data){
     else await companyRef.collection(collection).add(data);
   }catch(err){ toast("Não foi possível salvar essa alteração.","err"); }
 }
+/* Importação de faturas por planilha (migração de outro sistema). O leitor fica em
+   import-faturas.js e só é baixado quando a pessoa clica em "Importar". */
+function loadImporter(){
+  if(window.FaturasImport) return Promise.resolve();
+  return new Promise((ok, fail)=>{ const s=document.createElement("script"); s.src="import-faturas.js?v=20261003"; s.onload=ok; s.onerror=()=>fail(new Error("load")); document.head.appendChild(s); });
+}
+function importPaymentsModal(){
+  const REASONS = { ok:"Será importada", duplicada:"Já existe", ignorada:"Ignorada", erro:"Com problema" };
+  openModal("Importar faturas", `
+    <p class="hint" style="margin-bottom:12px">Envie uma planilha <strong>.xlsx</strong> ou <strong>.csv</strong> com as colunas: Nº fatura, Nº contrato, cliente, descrição, emissão, vencimento, valor, status, data do pagamento e forma de pagamento. Os clientes (e contratos) precisam já estar cadastrados. Faturas com número que já existe aqui são ignoradas. Nada é gravado antes de você confirmar.</p>
+    <div class="field"><input class="input" type="file" id="imp-file" accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></div>
+    <div id="imp-out"></div>
+  `, `<button class="btn btn-secondary" data-action="close-modal">Fechar</button><button class="btn btn-primary" id="imp-go" disabled>Importar</button>`,
+  { large:true, onMount(){
+      let plan = null;
+      const out = $("#imp-out"), go = $("#imp-go");
+      $("#imp-file").addEventListener("change", async (e)=>{
+        const file = e.target.files[0]; plan = null; go.disabled = true; if(!file) return;
+        out.innerHTML = '<p class="hint">Lendo a planilha…</p>';
+        try{
+          if(file.size > 8*1024*1024) throw new Error("big");
+          await loadImporter();
+          const rows = await window.FaturasImport.readFile(file);
+          const res = window.FaturasImport.analyze(rows, { clients:STATE.clients, contracts:STATE.contracts, payments:STATE.payments, today:todayISO() });
+          if(res.error){ out.innerHTML = `<p class="field-error">${escapeHtml(res.error)}</p>`; return; }
+          plan = res;
+          const bad = res.rows.filter(r=>r.result!=="ok");
+          const sum = res.rows.filter(r=>r.result==="ok").reduce((s,r)=>s+r.data.amount,0);
+          out.innerHTML = `
+            <div class="kpi-grid" style="margin:8px 0 12px">
+              <div class="kpi"><div class="kpi-top"><span class="kpi-label">Serão importadas</span></div><div class="kpi-value tabular">${res.ok}</div><div class="kpi-sub">${fmtMoney(sum)}</div></div>
+              <div class="kpi"><div class="kpi-top"><span class="kpi-label">Já existiam</span></div><div class="kpi-value tabular">${res.duplicada}</div></div>
+              <div class="kpi"><div class="kpi-top"><span class="kpi-label">Ignoradas</span></div><div class="kpi-value tabular">${res.ignorada}</div><div class="kpi-sub">canceladas ou valor zero</div></div>
+              <div class="kpi"><div class="kpi-top"><span class="kpi-label">Com problema</span></div><div class="kpi-value tabular" style="color:${res.erro?'var(--critical)':'inherit'}">${res.erro}</div><div class="kpi-sub">cliente não encontrado etc.</div></div>
+            </div>
+            ${bad.length ? `<div class="table-wrap" style="max-height:240px;overflow:auto"><table class="table"><thead><tr><th>Linha</th><th>Fatura</th><th>Cliente</th><th>Motivo</th></tr></thead><tbody>${bad.slice(0,200).map(r=>`<tr><td>${r.line}</td><td>${escapeHtml(r.number||"—")}</td><td>${escapeHtml(r.clientText||"—")}</td><td>${escapeHtml(r.reason)}</td></tr>`).join("")}</tbody></table></div>${bad.length>200?`<p class="hint">Mostrando as 200 primeiras de ${bad.length}.</p>`:""}` : ""}
+            ${res.ok ? "" : '<p class="field-error">Nenhuma fatura nova para importar.</p>'}`;
+          go.textContent = res.ok ? `Importar ${res.ok} fatura${res.ok>1?"s":""}` : "Importar"; go.disabled = !res.ok;
+        }catch(err){
+          out.innerHTML = `<p class="field-error">${err && err.message==="big" ? "Arquivo grande demais (máximo 8 MB)." : "Não consegui ler esse arquivo. Use .xlsx ou .csv."}</p>`;
+        }
+      });
+      go.addEventListener("click", async ()=>{
+        if(!plan || !companyRef) return;
+        go.disabled = true;
+        const items = plan.rows.filter(r=>r.result==="ok").map(r=>r.data);
+        try{
+          for(let i=0;i<items.length;i+=400){
+            go.textContent = `Gravando ${Math.min(i+400,items.length)} de ${items.length}…`;
+            const batch = companyRef.firestore.batch();
+            items.slice(i,i+400).forEach(d=>batch.set(companyRef.collection("payments").doc(), d));
+            await batch.commit();
+          }
+          closeModal(); toast(`${items.length} fatura${items.length>1?"s importadas":" importada"}.`,"ok");
+        }catch(err){
+          go.disabled = false; go.textContent = "Tentar de novo";
+          out.insertAdjacentHTML("beforeend", '<p class="field-error">Não foi possível gravar tudo. Confira em Faturas o que entrou; o que já tem número cadastrado será ignorado ao tentar de novo.</p>');
+        }
+      });
+  }});
+}
+
 async function deleteDoc(collection, id){
   if(!companyRef) return;
   try{ await companyRef.collection(collection).doc(id).delete(); }
@@ -3589,6 +3652,7 @@ function handleAction(action, id){
     case "delete-expense": confirmDialog("Excluir esta despesa?", ()=>deleteDoc("expenses",id).then(()=>toast("Despesa excluída.","ok"))); break;
     case "pay-expense": payExpense(id); break;
     case "export-csv": exportFinanceCSV(); break;
+    case "import-payments": importPaymentsModal(); break;
     case "new-client": clientFormModal(); break;
     case "edit-client": closeModal(); clientFormModal(id); break;
     case "delete-client": confirmDialog("Excluir este cliente? Contratos e faturas vinculados permanecem no histórico.", ()=>deleteDoc("clients",id).then(()=>toast("Cliente excluído.","ok"))); break;
