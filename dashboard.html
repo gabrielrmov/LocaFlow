@@ -765,6 +765,9 @@ body:has(.modal-backdrop){overflow:hidden}
   #cfg-save{margin-top:14px}
 }
 
+.field-error{margin:8px 0 0; color:var(--critical); font-size:13px}
+.field-error[hidden]{display:none}
+
 /* teste de 30 dias: faixa com os dias que restam e tela de acesso bloqueado */
 .trial-bar{display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:4px 12px; padding:9px 16px; font-size:13px; line-height:1.4; text-align:center; background:var(--accent-soft); color:var(--accent-soft-ink); border-bottom:1px solid var(--border)}
 .trial-bar[hidden]{display:none}
@@ -2379,7 +2382,7 @@ function renderPayTable(){
         <td class="cell-sub">${escapeHtml(p.description||"")}</td>
         <td class="tabular">${fmtDate(p.dueDate)}</td>
         <td><span class="tag">${PAYMENT_METHODS[p.method]||p.method}</span></td>
-        <td><span class="badge ${meta.cls}"><span class="dot"></span>${meta.label}</span></td>
+        <td><span class="badge ${meta.cls}"><span class="dot"></span>${meta.label}</span>${done && p.paidDate ? `<div class="cell-sub" style="margin-top:3px">em ${fmtDate(p.paidDate)}</div>` : ""}</td>
         <td class="num tabular">${fmtMoney(p.amount)}</td>
         <td><div class="row-actions">
           ${!done? `<button class="icon-btn" title="Cobrar no WhatsApp" data-action="wa-payment" data-id="${p.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.7-5.5A8.4 8.4 0 1 1 21 11.5z"/></svg></button><button class="icon-btn" title="Marcar como pago" data-action="pay-payment" data-id="${p.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></button>` : ""}
@@ -2389,6 +2392,35 @@ function renderPayTable(){
       </tr>`; }).join("")}
   </tbody></table></div>`;
 }
+/* Datas de pagamento: o campo é `paidDate` (AAAA-MM-DD). Receita do mês, relatórios,
+   fluxo de caixa e agenda já leem esse campo, então uma data antiga cai no mês certo. */
+function validPaidDate(v){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(v||"")) return "Informe a data do pagamento.";
+  const [y,m,d] = v.split("-").map(Number); const t = new Date(y, m-1, d);
+  if(t.getFullYear()!==y || t.getMonth()!==m-1 || t.getDate()!==d || y < 2000) return "Data inválida.";
+  if(v > todayISO()) return "A data do pagamento não pode ser no futuro.";
+  return "";
+}
+function methodOptionsHtml(selected){ return Object.entries(PAYMENT_METHODS).map(([k,v])=>`<option value="${k}" ${selected===k?"selected":""}>${v}</option>`).join(""); }
+
+/* Pequena janela "Confirmar pagamento": data preenchida com hoje, mas editável. */
+function payDateDialog(o){
+  openModal(o.title, `
+    <p class="hint" style="margin-bottom:12px">${escapeHtml(o.text||"")}</p>
+    <div class="field"><label>Data do pagamento</label><input class="input" type="date" id="pd-date" max="${todayISO()}" value="${escapeHtml(o.defaultDate||todayISO())}"></div>
+    ${o.withMethod ? `<div class="field"><label>Forma de pagamento</label><select class="select" id="pd-method">${methodOptionsHtml(o.method)}</select></div>` : ""}
+    <p class="field-error" id="pd-err" hidden></p>
+  `, `<button class="btn btn-secondary" data-action="close-modal">Cancelar</button><button class="btn btn-primary" id="pd-ok">Confirmar pagamento</button>`,
+  { onMount(){
+      $("#pd-ok").addEventListener("click", async ()=>{
+        const date = $("#pd-date").value; const err = validPaidDate(date);
+        if(err){ const e = $("#pd-err"); e.textContent = err; e.hidden = false; return; }
+        await o.onConfirm(date, o.withMethod ? $("#pd-method").value : null);
+        closeModal();
+      });
+  }});
+}
+
 function paymentFormModal(id){
   const p = id ? byId(STATE.payments,id) : null;
   openModal(p?"Editar fatura":"Nova fatura", `
@@ -2399,20 +2431,36 @@ function paymentFormModal(id){
     <div class="field"><label>Descrição</label><input class="input" id="f-desc" value="${escapeHtml(p?.description||"")}" placeholder="Ex: Locação betoneira — 15 dias"></div>
     <div class="field-row">
       <div class="field"><label>Valor (R$)</label><input class="input" type="number" min="0" step="0.01" id="f-amount" value="${p?.amount??""}"></div>
+      <div class="field"><label>Forma de pagamento</label><select class="select" id="f-method">${methodOptionsHtml(p?.method)}</select></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Emissão</label><input class="input" type="date" id="f-issue" value="${escapeHtml(p?.issueDate||todayISO())}"></div>
       <div class="field"><label>Vencimento</label><input class="input" type="date" id="f-due" value="${p?.dueDate||todayISO()}"></div>
     </div>
-    <div class="field"><label>Forma de pagamento</label><select class="select" id="f-method">${Object.entries(PAYMENT_METHODS).map(([k,v])=>`<option value="${k}" ${p?.method===k?"selected":""}>${v}</option>`).join("")}</select></div>
+    <div class="field"><label style="display:flex;align-items:center;gap:7px;font-weight:500"><input type="checkbox" id="f-paid" ${p?.paidDate?"checked":""}> Esta fatura já foi paga</label></div>
+    <div class="field" id="f-paid-wrap" ${p?.paidDate?"":"hidden"}><label>Data do pagamento</label><input class="input" type="date" id="f-paiddate" max="${todayISO()}" value="${escapeHtml(p?.paidDate||todayISO())}"></div>
+    <p class="field-error" id="f-err" hidden></p>
   `, `<button class="btn btn-secondary" data-action="close-modal">Cancelar</button><button class="btn btn-primary" id="save-payment">${p?"Salvar":"Registrar"}</button>`,
   { onMount(){
+      const showErr = (m)=>{ const e = $("#f-err"); e.textContent = m; e.hidden = !m; };
+      $("#f-paid").addEventListener("change", ()=>{ $("#f-paid-wrap").hidden = !$("#f-paid").checked; showErr(""); });
       $("#save-payment").addEventListener("click", async ()=>{
-        const data = { clientId:$("#f-client").value, contractId:$("#f-contract").value||null, description:$("#f-desc").value.trim(), amount:Number($("#f-amount").value)||0, dueDate:$("#f-due").value, method:$("#f-method").value };
-        if(p?.paidDate) data.paidDate = p.paidDate;
+        const paid = $("#f-paid").checked, paidDate = paid ? $("#f-paiddate").value : null;
+        const due = $("#f-due").value;
+        if(!$("#f-client").value){ showErr("Escolha o cliente."); return; }
+        if(!due){ showErr("Informe o vencimento."); return; }
+        if(paid){ const err = validPaidDate(paidDate); if(err){ showErr(err); return; } }
+        const data = { clientId:$("#f-client").value, contractId:$("#f-contract").value||null, description:$("#f-desc").value.trim(), amount:Number($("#f-amount").value)||0, dueDate:due, issueDate:$("#f-issue").value||null, method:$("#f-method").value, paidDate };
         await saveDoc("payments", p?.id, data);
         closeModal(); toast(p?"Fatura atualizada.":"Fatura registrada.","ok");
       });
   }});
 }
-function payPayment(id){ saveDoc("payments", id, {paidDate:todayISO()}).then(()=>toast("Pagamento confirmado.","ok")); }
+function payPayment(id){
+  const p = byId(STATE.payments,id); if(!p) return;
+  payDateDialog({ title:"Confirmar pagamento", text:`${clientName(p.clientId)} · ${fmtMoney(p.amount)} · vence em ${fmtDate(p.dueDate)}`, withMethod:true, method:p.method,
+    onConfirm: async (date, method)=>{ await saveDoc("payments", id, {paidDate:date, method}); toast("Pagamento confirmado.","ok"); } });
+}
 
 function expenseRowsHtml(list){
   if(!list.length) return `<p class="hint" style="padding:8px 0">Nenhuma despesa aqui.</p>`;
@@ -2477,11 +2525,15 @@ function expenseFormModal(id){
       });
   }});
 }
-function payExpense(id){ saveDoc("expenses", id, {paidDate:todayISO()}).then(()=>toast("Despesa marcada como paga.","ok")); }
+function payExpense(id){
+  const e = byId(STATE.expenses,id); if(!e) return;
+  payDateDialog({ title:"Confirmar pagamento da despesa", text:`${e.description} · ${fmtMoney(e.amount)}`,
+    onConfirm: async (date)=>{ await saveDoc("expenses", id, {paidDate:date}); toast("Despesa marcada como paga.","ok"); } });
+}
 
 function exportFinanceCSV(){
-  const rows = [["Cliente","Descrição","Vencimento","Forma de pagamento","Status","Valor"]];
-  STATE.payments.forEach(p=> rows.push([clientName(p.clientId), p.description||"", p.dueDate, PAYMENT_METHODS[p.method]||p.method, paymentStatusMeta(paymentComputedStatus(p)).label, (p.amount||0).toFixed(2).replace(".",",")]));
+  const rows = [["Cliente","Descrição","Emissão","Vencimento","Data do pagamento","Forma de pagamento","Status","Valor"]];
+  STATE.payments.forEach(p=> rows.push([clientName(p.clientId), p.description||"", p.issueDate||"", p.dueDate, p.paidDate||"", PAYMENT_METHODS[p.method]||p.method, paymentStatusMeta(paymentComputedStatus(p)).label, (p.amount||0).toFixed(2).replace(".",",")]));
   const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(";")).join("\r\n");
   try{
     downloadBlob(`locarion-financeiro-${todayISO()}.csv`, new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"}));
