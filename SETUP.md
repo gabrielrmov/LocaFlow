@@ -95,3 +95,13 @@ Alternativas: Vercel ou Netlify (arraste a pasta no painel deles) ou GitHub Page
 5. Clique em "Entrar com Google" → a assinatura é confirmada no servidor e o `dashboard.html` abre liberado.
 6. Teste o botão de sair (ícone ao lado do seu nome, no rodapé do menu lateral).
 7. Pra depurar problemas no checkout ou no webhook, veja os logs em **Firebase Console** → **Functions** → **Registros**.
+
+## 6. WhatsApp automático (opcional, WA-AKG)
+
+Por padrão, o botão "Avisar no WhatsApp" abre a conversa com a mensagem pronta (wa.me). Para enviar direto, a empresa conecta um servidor [WA-AKG](https://github.com/mrifqidaffaaditya/WA-AKG) próprio:
+
+1. Hospede o WA-AKG num servidor com Node, MySQL e **https** (precisa de processo contínuo e disco persistente; hospedagem estática não serve). Crie uma sessão, leia o QR code e gere uma chave de API no painel dele.
+2. No Locarion: **Avisos → Conectar** em "Enviar avisos automaticamente pelo WhatsApp", e informe o endereço https, o nome da sessão e a chave.
+3. Publique as novas Functions e regras: `firebase deploy --only functions,firestore:rules`.
+
+A chave fica na coleção `waGateways/{uid}`, que só as Cloud Functions acessam (regra `allow read, write: if false`), e nunca volta para o navegador.
