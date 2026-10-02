@@ -1,0 +1,70 @@
+# WA-AKG para uma VM pequena (1 GB de RAM): MariaDB enxuto + app + Caddy (HTTPS automático).
+# Só o Caddy fica exposto (portas 80/443); banco e app ficam na rede interna.
+services:
+  db:
+    image: mariadb:10.11
+    container_name: wa-akg-db
+    restart: always
+    command: >
+      --innodb-buffer-pool-size=64M --performance-schema=OFF
+      --max-connections=40 --key-buffer-size=8M
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MARIADB_DATABASE: wa_akg
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+    container_name: wa-akg-app
+    restart: always
+    environment:
+      DATABASE_URL: mysql://root:${DB_PASSWORD}@db:3306/wa_akg
+      AUTH_SECRET: ${AUTH_SECRET}
+      BASE_URL: https://${WA_DOMAIN}
+      NEXTAUTH_URL: https://${WA_DOMAIN}
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+      NEXT_PUBLIC_APP_URL: https://${WA_DOMAIN}
+      NEXT_PUBLIC_API_URL: https://${WA_DOMAIN}/api
+      BAILEYS_LOG_LEVEL: error
+      NEXT_PUBLIC_SWAGGER_ENABLED: "false"
+      TZ: America/Sao_Paulo
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      NODE_OPTIONS: --max-old-space-size=384
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - app_data:/app/data
+      - uploads_data:/app/uploads
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: wa-akg-caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      WA_DOMAIN: ${WA_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on:
+      - app
+
+volumes:
+  mysql_data:
+  app_data:
+  uploads_data:
+  caddy_data:
