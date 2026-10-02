@@ -2137,7 +2137,6 @@ const CONTRACT_DOC_CSS = `
 .ctdoc .ct-date{margin-top:14px;font-size:9pt}
 .ctdoc .ct-sign{display:flex;gap:40px;margin-top:42px;break-inside:avoid}
 .ctdoc .ct-sign div{flex:1;border-top:1px solid #000;padding-top:3px;text-align:center;font-size:8.5pt}
-.ctdoc .ct-clauses{white-space:pre-wrap;font-size:9.5pt;line-height:1.45;margin-top:18px;page-break-before:always}
 `;
 /* Valor por extenso em reais ("Trezentos e Quarenta Reais"). */
 function moneyInWords(v){
@@ -2156,7 +2155,7 @@ function moneyInWords(v){
   if(cents) parts.push(cap(words(cents))+(cents===1?" Centavo":" Centavos"));
   return parts.join(" e ");
 }
-function contractDocHtml(c, withClauses){
+function contractDocHtml(c){
   const E = escapeHtml, co = STATE.company || {};
   const cl = c ? byId(STATE.clients, c.clientId) : null;
   const r1 = (label, v)=> v ? `<div class="ct-r"><b>${label}</b><span>${E(v)}</span></div>` : "";
@@ -2203,11 +2202,6 @@ function contractDocHtml(c, withClauses){
   const ca = splitAddr(co), la = splitAddr(cl);
   const billing = cl ? (cl.billingSameAsMain===false && cl.billingAddress ? cl.billingAddress : cl.address) : "";
   const longDate = now.toLocaleDateString("pt-BR",{day:"numeric",month:"long",year:"numeric"}).toUpperCase();
-  const clauses = withClauses ? (()=>{
-    const t = fillContractTemplate(STATE.company.contractTemplate || DEFAULT_CONTRACT_TEMPLATE, c);
-    const m = t.search(/cl[áa]usulas?\s+(contratuais|1)/i);
-    return m>=0 ? t.slice(m).trim() : "";
-  })() : "";
   const words = (v)=>{ const w = moneyInWords(v); return w ? ` <i>(${w})</i>` : ""; };
   return `<div class="ctdoc">
     <div class="ct-head"><h1>CONTRATO DE LOCAÇÃO DE BENS MÓVEIS Nº: ${E(c?.code||"")}</h1><div class="ct-when">Data: ${now.toLocaleDateString("pt-BR")}<br>Hora: ${now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</div></div>
@@ -2238,7 +2232,6 @@ function contractDocHtml(c, withClauses){
       <div><b>TOTAL GERAL:</b> ${fmtMoney(rent+freight)}${words(rent+freight)}</div></div></div>
     ${c?.notes?`<div class="ct-q"><h2>Observação(ões)</h2><div class="ct-tot">${E(c.notes)}</div></div>`:""}
     <div class="ct-sign"><div><b>LOCADORA</b><br>${E(co.name||"")}<br>${E(longDate)}</div><div><b>LOCATÁRIO</b><br>NOME: ${E(cl?.name||"")}${cl?.ie?`<br>RG: ${E(cl.ie)}`:""}${cl?.phone?`&nbsp; FONE: ${E(cl.phone)}`:""}</div></div>
-    ${clauses?`<div class="ct-clauses">${E(clauses)}</div>`:""}
   </div>`;
 }
 /* Impressão: monta a página A4 num iframe oculto (sem popup) e abre a janela de impressão,
@@ -2260,17 +2253,14 @@ function contractDocModal(id){
   openModal(`Contrato ${c?.code||""}`, `
     <style>${CONTRACT_DOC_CSS}</style>
     <p class="hint" style="margin-bottom:10px">É assim que o contrato sai no papel. Os campos vêm do cadastro da empresa, do cliente, do equipamento e do contrato; o que estiver vazio não aparece.</p>
-    <label style="display:flex;align-items:center;gap:7px;font-size:13px;margin-bottom:10px"><input type="checkbox" id="doc-clauses" checked> Incluir as cláusulas do modelo (Configurações → Contrato) em uma segunda página</label>
-    <div class="paper-wrap"><div class="paper paper-doc" id="doc-contract-text">${contractDocHtml(c,true)}</div></div>
+    <div class="paper-wrap"><div class="paper paper-doc" id="doc-contract-text">${contractDocHtml(c)}</div></div>
   `, `<button class="btn btn-secondary" data-action="close-modal">Fechar</button><button class="btn btn-secondary" id="copy-contract-doc">Copiar texto</button><button class="btn btn-primary" id="print-contract-doc">Imprimir / salvar PDF</button><button class="btn btn-secondary" id="download-contract-doc">Baixar .txt</button>`,
   { large:true, onMount(){
-      const withClauses = ()=> $("#doc-clauses").checked;
-      $("#doc-clauses").addEventListener("change", ()=>{ $("#doc-contract-text").innerHTML = contractDocHtml(c, withClauses()); });
       $("#copy-contract-doc").addEventListener("click", ()=>{
         if(navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(()=>toast("Texto copiado.","ok")).catch(()=>toast("Não foi possível copiar.","err"));
         else toast("Não foi possível copiar neste navegador.","err");
       });
-      $("#print-contract-doc").addEventListener("click", ()=> printHtmlDoc(contractDocHtml(c, withClauses()), `Contrato ${c?.code||""}`));
+      $("#print-contract-doc").addEventListener("click", ()=> printHtmlDoc(contractDocHtml(c), `Contrato ${c?.code||""}`));
       $("#download-contract-doc").addEventListener("click", ()=>{
         try{
           downloadBlob(`contrato-${c?.code||"locarion"}.txt`, new Blob([text],{type:"text/plain;charset=utf-8"}));
