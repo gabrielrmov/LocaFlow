@@ -29,7 +29,7 @@ const googleProvider = new firebase.auth.GoogleAuthProvider();
 function requireAuth(onReady) {
   auth.onAuthStateChanged((user) => {
     if (!user) {
-      window.location.href = "login.html";
+      window.location.href = "login.html?v=20261002";
       return;
     }
     onReady(user);
@@ -38,6 +38,6 @@ function requireAuth(onReady) {
 
 function logout() {
   auth.signOut().then(() => {
-    window.location.href = "login.html";
+    window.location.href = "login.html?v=20261002";
   });
 }

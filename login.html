@@ -100,7 +100,7 @@ p.sub{color:var(--ink-2); font-size:14.5px; margin:0 0 26px}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-functions-compat.js"></script>
-<script src="firebase-config.js"></script>
+<script src="firebase-config.js?v=20261002"></script>
 <script>
 /* checkout_token vem da Cloud Function createAsaasCheckout (ver index.html).
    Nunca confiamos direto nesse parâmetro: a assinatura só é ativada depois
@@ -174,7 +174,7 @@ document.getElementById("google-btn").addEventListener("click", async () => {
     }
 
     if(wantsTrial) await startTrialSafe();
-    window.location.href = "dashboard.html";
+    window.location.href = "dashboard.html?v=20261002";
   }catch(err){
     setLoading(false);
     if(err.code === "auth/popup-closed-by-user") return;
@@ -187,7 +187,7 @@ document.getElementById("google-btn").addEventListener("click", async () => {
 auth.onAuthStateChanged(async (user) => {
   if(user && !checkoutToken){
     if(wantsTrial) await startTrialSafe();
-    window.location.href = "dashboard.html";
+    window.location.href = "dashboard.html?v=20261002";
   }
 });
 </script>

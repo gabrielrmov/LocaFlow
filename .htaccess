@@ -15,7 +15,7 @@ AddDefaultCharset UTF-8
 
 # Páginas que não devem aparecer em buscadores (reforça as metatags, vale até para quem não lê o HTML)
 <IfModule mod_headers.c>
-  <FilesMatch "^(dashboard|locaflow)\.html$">
+  <FilesMatch "^(dashboard|locaflow|diagnostico)\.html$">
     Header set X-Robots-Tag "noindex, nofollow, noarchive"
   </FilesMatch>
   <FilesMatch "^login\.html$">

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<title>Diagnóstico | Locarion</title>
+<style>
+  :root{color-scheme:light dark; --bg:#F4F4F7; --card:#fff; --ink:#15191E; --ink2:#5B6068; --line:#DADCE2; --ok:#0F7A33; --bad:#B42318; --warn:#8A5A05; --accent:#FF3D00}
+  @media (prefers-color-scheme:dark){:root{--bg:#0B0D12; --card:#12151C; --ink:#EEF0F4; --ink2:#9AA1AC; --line:#262B35; --ok:#4ADE80; --bad:#F87171; --warn:#F5B84A}}
+  *{box-sizing:border-box}
+  body{margin:0; padding:16px; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+  main{max-width:640px; margin:0 auto}
+  h1{font-size:20px; margin:8px 0 4px}
+  p.sub{margin:0 0 16px; color:var(--ink2); font-size:14px}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:12px}
+  .card h2{font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink2); margin:0 0 8px}
+  dl{margin:0; display:grid; grid-template-columns:minmax(0,40%) minmax(0,1fr); gap:6px 12px; font-size:14px}
+  dt{color:var(--ink2)} dd{margin:0; word-break:break-word}
+  .ok{color:var(--ok); font-weight:600} .bad{color:var(--bad); font-weight:600} .warn{color:var(--warn); font-weight:600}
+  .actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px}
+  button,a.btn{min-height:44px; padding:0 16px; border-radius:10px; border:1px solid var(--line); background:var(--card); color:var(--ink); font:600 14px system-ui; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center}
+  button.primary{background:var(--accent); border-color:var(--accent); color:#fff}
+  .verdict{font-size:16px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Diagnóstico do acesso</h1>
+  <p class="sub">Esta página só mostra informações. Não altera nada na sua conta.</p>
+
+  <div class="card"><h2>O que o site está entregando</h2><dl id="versions"><dt>Carregando…</dt><dd></dd></dl></div>
+  <div class="card"><h2>Sua conta</h2><dl id="account"><dt>Carregando…</dt><dd></dd></dl></div>
+  <div class="card"><h2>Resultado</h2><div id="verdict" class="verdict">Carregando…</div></div>
+
+  <div class="actions" id="actions"></div>
+  <p class="sub" style="margin-top:14px" id="copied"></p>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-functions-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+const BUILD = "diag-2026-10-02-1";
+const REPORT = [];
+const esc = (s)=>String(s==null?"":s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function row(dl, k, v, cls){ dl.insertAdjacentHTML("beforeend", `<dt>${esc(k)}</dt><dd class="${cls||""}">${esc(v)}</dd>`); REPORT.push(`${k}: ${v}`); }
+function reset(dl){ dl.innerHTML = ""; }
+
+/* Mesma regra do painel (dashboard.html) para decidir o que mostrar. */
+function accessState(data){
+  if(!data) return {kind:"none"};
+  if(data.isAdmin === true) return {kind:"admin"};
+  const st = data.subscriptionStatus;
+  if(st === "active") return {kind:"active"};
+  const ends = data.trialEndsAt && data.trialEndsAt.toMillis ? data.trialEndsAt.toMillis() : 0;
+  if(st === "trialing") return ends > Date.now() ? {kind:"trial", ends} : {kind:"expired"};
+  if(st === "canceled" || st === "inactive") return {kind:"inactive"};
+  return {kind:"none"};
+}
+const VERDICT = {
+  admin:["ok","Conta ADMIN: o painel deve abrir normalmente."],
+  active:["ok","Assinatura ativa: o painel deve abrir normalmente."],
+  trial:["ok","Em teste dentro do prazo: o painel deve abrir com a faixa de dias restantes."],
+  none:["warn","Sem plano e sem teste: o painel mostra a tela \"Comece seu teste de 30 dias\"."],
+  expired:["warn","Teste vencido: o painel mostra \"Seu teste de 30 dias terminou\"."],
+  inactive:["warn","Assinatura inativa ou cancelada: o painel mostra \"Sua assinatura está inativa\"."],
+};
+
+async function marker(file, isNew, isOld){
+  const get = async (url)=>{ try{ const r = await fetch(url, {cache:"no-store"}); const t = await r.text(); return {status:r.status, new:isNew(t), old:isOld(t), lm:r.headers.get("last-modified")||"—", age:r.headers.get("age")}; }catch(e){ return {error:String(e)}; } };
+  const plain = await get(file);
+  const fresh = await get(`${file}?diag=${Date.now()}`);
+  return {plain, fresh};
+}
+const label = (r)=> r.error ? "erro: "+r.error : (r.new ? "NOVO" : (r.old ? "ANTIGO" : "indefinido")) + ` (HTTP ${r.status}, modificado ${r.lm}${r.age?`, ${r.age}s no cache`:""})`;
+
+async function showVersions(){
+  const dl = document.getElementById("versions"); reset(dl);
+  row(dl, "Esta página", BUILD);
+  row(dl, "Endereço", location.href);
+  row(dl, "Hora do aparelho", new Date().toISOString());
+  const checks = [
+    ["Painel (dashboard.html)", "dashboard.html", t=>t.includes("startTrial"), t=>t.includes('window.location.href = "index.html#precos"')],
+    ["Login (login.html)", "login.html", t=>t.includes("trial-hint"), t=>!t.includes("trial-hint")],
+    ["Landing (index.html)", "index.html", t=>t.includes("login.html?trial=1"), t=>!t.includes("login.html?trial=1")],
+  ];
+  for(const [name,file,n,o] of checks){
+    const m = await marker(file, n, o);
+    row(dl, name+" · endereço normal", label(m.plain), m.plain.new ? "ok" : "bad");
+    row(dl, name+" · cópia nova (?diag)", label(m.fresh), m.fresh.new ? "ok" : "bad");
+  }
+}
+
+async function showAccount(user){
+  const dl = document.getElementById("account"); reset(dl);
+  const verdict = document.getElementById("verdict"); const actions = document.getElementById("actions"); actions.innerHTML = "";
+  const btn = (txt, fn, cls)=>{ const b=document.createElement("button"); b.textContent=txt; if(cls) b.className=cls; b.addEventListener("click", fn); actions.appendChild(b); return b; };
+  if(!user){
+    row(dl, "Login", "Ninguém está logado neste navegador", "warn");
+    verdict.innerHTML = '<span class="warn">Sem login. Entre com a conta que você quer testar.</span>';
+    btn("Entrar com Google", async ()=>{ try{ await auth.signInWithPopup(googleProvider); }catch(e){ row(document.getElementById("account"), "Erro no login", e.code||e.message, "bad"); } }, "primary");
+  }else{
+    row(dl, "E-mail", user.email || "—");
+    row(dl, "uid", user.uid);
+    let data = null, readError = null;
+    try{ const snap = await db.collection("users").doc(user.uid).get(); data = snap.exists ? snap.data() : null; if(!snap.exists) row(dl, "Documento de perfil", "NÃO EXISTE (conta sem perfil)", "warn"); }
+    catch(e){ readError = e.code || e.message; row(dl, "Leitura do perfil", "FALHOU: "+readError, "bad"); }
+    if(data){
+      row(dl, "isAdmin", String(data.isAdmin === true), data.isAdmin === true ? "ok" : "");
+      row(dl, "Status da assinatura", data.subscriptionStatus || "(vazio)");
+      row(dl, "Plano", data.plan || "(vazio)");
+      const t = data.trialEndsAt && data.trialEndsAt.toMillis ? new Date(data.trialEndsAt.toMillis()).toISOString() : "(sem data)";
+      row(dl, "Fim do teste", t);
+      row(dl, "Campos do perfil", Object.keys(data).sort().join(", "));
+    }
+    const acc = readError ? null : accessState(data);
+    if(acc){ const [cls, txt] = VERDICT[acc.kind]; verdict.innerHTML = `<span class="${cls}">${esc(txt)}</span>`; REPORT.push("Resultado: "+txt); }
+    else { verdict.innerHTML = '<span class="bad">Não foi possível ler o perfil. O painel manda de volta para o login.</span>'; REPORT.push("Resultado: leitura do perfil falhou ("+readError+")"); }
+    btn("Abrir o painel", ()=>{ location.href = "dashboard.html"; }, "primary");
+    btn("Sair e trocar de conta", async ()=>{ await auth.signOut(); location.reload(); });
+  }
+  btn("Copiar resultado", async ()=>{
+    const text = "Diagnóstico Locarion\n" + REPORT.join("\n");
+    try{ await navigator.clipboard.writeText(text); document.getElementById("copied").textContent = "Copiado. Cole na conversa."; }
+    catch(e){ document.getElementById("copied").textContent = "Não consegui copiar. Tire um print desta tela."; }
+  });
+}
+
+showVersions().finally(()=>{ auth.onAuthStateChanged(showAccount); });
+</script>
+</body>
+</html>

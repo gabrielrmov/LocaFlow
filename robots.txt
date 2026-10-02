@@ -6,6 +6,7 @@
 User-agent: *
 Disallow: /dashboard.html
 Disallow: /locaflow.html
+Disallow: /diagnostico.html
 Allow: /
 
 Sitemap: https://locarion.app/sitemap.xml
