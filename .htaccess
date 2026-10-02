@@ -13,6 +13,14 @@ AddDefaultCharset UTF-8
   </FilesMatch>
 </IfModule>
 
+# Service worker das notificações e manifesto do aplicativo: sempre a versão mais nova
+<IfModule mod_headers.c>
+  <FilesMatch "^(firebase-messaging-sw\.js|manifest\.webmanifest)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>
+AddType application/manifest+json .webmanifest
+
 # Páginas que não devem aparecer em buscadores (reforça as metatags, vale até para quem não lê o HTML)
 <IfModule mod_headers.c>
   <FilesMatch "^(dashboard|locaflow|diagnostico)\.html$">

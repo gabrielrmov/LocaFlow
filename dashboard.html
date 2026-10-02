@@ -7,6 +7,10 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <meta name="theme-color" content="#1E3A5F">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Locarion">
 <title>Painel | Locarion</title>
 <meta name="description" content="Painel do cliente Locarion. Área restrita, acessível somente com login.">
 <meta name="robots" content="noindex, nofollow, noarchive">
@@ -910,7 +914,8 @@ body:has(.modal-backdrop){overflow:hidden}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-functions-compat.js"></script>
-<script src="firebase-config.js?v=20261002"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script>
+<script src="firebase-config.js?v=20261003"></script>
 <script>
 /* =========================================================================
    Locarion — protótipo funcional
@@ -2317,6 +2322,7 @@ function renderAvisos(){
       <label class="hint" style="margin-left:auto;display:flex;align-items:center;gap:6px">Avisar com antecedência de
         <select class="select" id="av-lead" style="width:auto">${[1,2,3,5,7].map(n=>`<option value="${n}" ${n===store.lead?"selected":""}>${n} dia${n>1?"s":""}</option>`).join("")}</select></label>
     </div>
+    <div id="push-card"></div>
     <p class="hint" style="margin:10px 0 14px">${all.length ? `${pending} de ${all.length} ainda sem aviso hoje. ` : ""}O botão abre o WhatsApp com a mensagem pronta; você só aperta enviar. O envio é um por vez, e quem já foi avisado hoje fica marcado neste navegador.</p>
     <div id="av-list">${list.length ? list.map(x=>{
       const cl = byId(STATE.clients,x.clientId), done = !!store.sent[`${todayISO()}|${x.key}`], phone = waPhone(cl, x.prefer);
@@ -2331,6 +2337,7 @@ function renderAvisos(){
           ${phone ? `<button class="btn ${done?"btn-secondary":"btn-primary"} btn-sm" data-av-send="${escapeHtml(x.key)}">${done?"Avisado ✓ · reenviar":"Avisar no WhatsApp"}</button>` : `<span class="hint">Sem WhatsApp cadastrado</span><button class="btn btn-secondary btn-sm" data-av-client="${cl.id}">Cadastrar</button>`}
         </div></div>`;
     }).join("") : emptyState("Nada para avisar agora","Quando houver contratos para devolver ou faturas vencendo ou atrasadas, eles aparecem aqui.")}</div>`;
+  renderPushCard();
   $all("#av-tabs button").forEach(b=> b.addEventListener("click", ()=>{ f.kind=b.dataset.k; renderAvisos(); }));
   $("#av-lead").addEventListener("change", e=>{ const o = avisosStore(); o.lead = Number(e.target.value)||3; avisosSave(o); renderAvisos(); });
   const byKey = (k)=> all.find(x=>x.key===k);
@@ -2341,6 +2348,71 @@ function renderAvisos(){
     openWhatsApp(byId(STATE.clients,x.clientId), x.msg, x.prefer);
     const o = avisosStore(); o.sent[`${todayISO()}|${x.key}`] = 1; avisosSave(o); renderAvisos();
   }));
+}
+/* ---- Notificações no celular (Web Push via Firebase Cloud Messaging) ----
+   Cada aparelho que ativa vira um documento em companies/{uid}/devices; uma Cloud Function
+   manda o resumo de "Avisos de hoje" todo dia de manhã. */
+const PUSH_TOKEN_KEY = "locarion.push.token";
+function pushIsIOS(){ return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1); }
+function pushIsStandalone(){ return window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true; }
+function pushSupported(){ try{ return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window && firebase.messaging && firebase.messaging.isSupported(); }catch(e){ return false; } }
+async function pushDeviceId(token){
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
+  return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("").slice(0,40);
+}
+async function pushEnable(){
+  if(!FCM_VAPID_KEY) throw new Error("vapid");
+  const perm = await Notification.requestPermission();
+  if(perm !== "granted") throw new Error("denied");
+  const reg = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+  await navigator.serviceWorker.ready;
+  const token = await firebase.messaging().getToken({ vapidKey:FCM_VAPID_KEY, serviceWorkerRegistration:reg });
+  if(!token) throw new Error("token");
+  await companyRef.collection("devices").doc(await pushDeviceId(token)).set({ token, userAgent:navigator.userAgent.slice(0,160), createdAt:firebase.firestore.FieldValue.serverTimestamp() });
+  try{ localStorage.setItem(PUSH_TOKEN_KEY, token); }catch(e){}
+}
+async function pushDisable(){
+  let token = null; try{ token = localStorage.getItem(PUSH_TOKEN_KEY); }catch(e){}
+  try{ await firebase.messaging().deleteToken(); }catch(e){}
+  if(token){ try{ await companyRef.collection("devices").doc(await pushDeviceId(token)).delete(); }catch(e){} }
+  try{ localStorage.removeItem(PUSH_TOKEN_KEY); }catch(e){}
+}
+function renderPushCard(){
+  const el = $("#push-card"); if(!el) return;
+  const box = (inner)=>{ el.innerHTML = `<div class="card card-pad" style="margin:10px 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap">${inner}</div>`; };
+  let on = false; try{ on = !!localStorage.getItem(PUSH_TOKEN_KEY) && Notification.permission==="granted"; }catch(e){}
+  if(pushIsIOS() && !pushIsStandalone()){
+    box(`<div style="flex:1;min-width:220px"><div class="cell-title">Notificações no celular</div><div class="cell-sub">No iPhone, primeiro instale o Locarion: toque em <strong>Compartilhar</strong> (quadrado com seta) e depois em <strong>Adicionar à Tela de Início</strong>. Abra pelo ícone novo e ative aqui.</div></div>`); return;
+  }
+  if(!pushSupported()){
+    box(`<div style="flex:1;min-width:220px"><div class="cell-title">Notificações no celular</div><div class="cell-sub">Este navegador não aceita notificações. Use o Chrome (Android) ou instale o Locarion na Tela de Início (iPhone).</div></div>`); return;
+  }
+  if(on){
+    box(`<div style="flex:1;min-width:220px"><div class="cell-title">Notificações ativas neste aparelho ✓</div><div class="cell-sub">Todo dia às 8h você recebe o resumo dos avisos, quando houver algo a fazer.</div></div>
+      <button class="btn btn-secondary btn-sm" id="push-test">Enviar teste</button><button class="btn btn-secondary btn-sm" id="push-off">Desativar</button>`);
+    $("#push-test").addEventListener("click", async (e)=>{
+      e.target.disabled = true;
+      try{ const r = await firebase.app().functions("southamerica-east1").httpsCallable("sendTestPush")(); toast(r.data && r.data.sent ? "Teste enviado. Deve chegar em instantes." : "Nenhum aparelho recebeu. Desative e ative de novo.", r.data && r.data.sent ? "ok":"err"); }
+      catch(err){ toast("Não foi possível enviar o teste agora.","err"); }
+      e.target.disabled = false;
+    });
+    $("#push-off").addEventListener("click", async ()=>{ await pushDisable(); toast("Notificações desativadas neste aparelho.","ok"); renderPushCard(); });
+    return;
+  }
+  const denied = (()=>{ try{ return Notification.permission==="denied"; }catch(e){ return false; } })();
+  box(`<div style="flex:1;min-width:220px"><div class="cell-title">Receber os avisos como notificação no celular</div><div class="cell-sub">${denied ? "As notificações estão bloqueadas neste navegador. Libere nas configurações do site e tente de novo." : "Todo dia às 8h, um resumo: devoluções, retiradas e faturas a vencer ou atrasadas. Você pode desativar quando quiser."}</div><p class="field-error" id="push-err" hidden></p></div>
+    <button class="btn btn-primary btn-sm" id="push-on" ${denied?"disabled":""}>Ativar notificações</button>`);
+  $("#push-on").addEventListener("click", async (e)=>{
+    e.target.disabled = true;
+    try{ await pushEnable(); toast("Notificações ativadas neste aparelho.","ok"); renderPushCard(); }
+    catch(err){
+      const m = err && err.message==="vapid" ? "Falta terminar a configuração das notificações no servidor. Avise o suporte."
+        : err && err.message==="denied" ? "Você não permitiu as notificações. Libere nas configurações do navegador."
+        : "Não foi possível ativar agora. Tente de novo.";
+      const box2 = $("#push-err"); if(box2){ box2.textContent = m; box2.hidden = false; }
+      e.target.disabled = false;
+    }
+  });
 }
 function updateAvisosBadge(){
   const el = $("#avisos-badge"); if(!el || !allLoaded()) return;

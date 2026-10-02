@@ -17,6 +17,11 @@ const firebaseConfig = {
   appId: "1:116758780408:web:14fd89fb422ee141135e0d",
 };
 
+/* Chave pública de Web Push (Firebase → Configurações do projeto → Cloud Messaging →
+   Certificados push da Web → "Gerar par de chaves"). Não é segredo. Enquanto estiver vazia,
+   o botão "Ativar notificações" do painel avisa que ainda falta configurar. */
+const FCM_VAPID_KEY = "";
+
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
