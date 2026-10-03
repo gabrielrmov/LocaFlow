@@ -645,6 +645,37 @@ exports.saveWhatsAppGateway = onCall(
   }
 );
 
+/* Números do Brasil: contas de DDD 31 em diante costumam existir no WhatsApp sem o 9 extra, e
+   uma mensagem para o formato errado é aceita pelo servidor mas nunca entregue. Pergunta ao
+   WA-AKG qual variante existe (com e sem o 9) e usa o JID que ele devolver. Se a checagem não
+   estiver disponível, cai no número como foi cadastrado. */
+async function resolveWhatsAppJid(url, sessionId, apiKey, phone) {
+  const fallback = `${phone}@s.whatsapp.net`;
+  const candidates = [phone];
+  const m = phone.match(/^55(\d{2})(9?)(\d{8})$/);
+  if (m) candidates.push(m[2] ? `55${m[1]}${m[3]}` : `55${m[1]}9${m[3]}`);
+  try {
+    const res = await fetch(`${url}/api/chat/${encodeURIComponent(sessionId)}/check`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-API-Key": apiKey },
+      body: JSON.stringify({ numbers: candidates }),
+      redirect: "error",
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok) return fallback;
+    const json = await res.json();
+    const results = (json && ((json.data && json.data.results) || json.results)) || [];
+    for (const c of candidates) {
+      const hit = results.find((r) => r.number === c && r.exists && r.jid);
+      if (hit) return hit.jid;
+    }
+    return results.length ? null : fallback;
+  } catch (e) {
+    logger.warn("resolveWhatsAppJid: checagem indisponível", e && e.message);
+    return fallback;
+  }
+}
+
 exports.sendWhatsApp = onCall(
   { region: "southamerica-east1", maxInstances: 10, timeoutSeconds: 30 },
   async (request) => {
@@ -658,7 +689,9 @@ exports.sendWhatsApp = onCall(
     if (!snap.exists) throw new HttpsError("failed-precondition", "WhatsApp automático não configurado.");
     const { url, sessionId, apiKey } = snap.data();
     await assertPublicHttps(url);
-    const jid = encodeURIComponent(`${phone}@s.whatsapp.net`);
+    const rawJid = await resolveWhatsAppJid(url, sessionId, apiKey, phone);
+    if (!rawJid) throw new HttpsError("failed-precondition", "Este número não tem WhatsApp. Confira o telefone do cliente.");
+    const jid = encodeURIComponent(rawJid);
     let res;
     try {
       res = await fetch(`${url}/api/messages/${encodeURIComponent(sessionId)}/${jid}/send`, {
