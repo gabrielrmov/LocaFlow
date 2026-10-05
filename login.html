@@ -92,7 +92,7 @@ p.sub{color:var(--ink-2); font-size:14.5px; margin:0 0 26px}
 
   <div class="error" id="error-box"></div>
 
-  <p class="hint" id="trial-hint">Novo por aqui? <a href="login.html?trial=1">Teste 30 dias, sem cartão</a></p>
+  <p class="hint" id="trial-hint">Novo por aqui? <a href="login.html?trial=1">Teste 15 dias, sem cartão</a></p>
   <p class="hint">Já quer assinar? <a href="index.html#precos">Veja os planos</a></p>
 </div>
 
@@ -117,7 +117,7 @@ if(wantsTrial || checkoutToken) document.getElementById("trial-hint").style.disp
 if(wantsTrial){
   const banner = document.getElementById("plan-banner");
   banner.style.display = "block";
-  banner.textContent = "Teste grátis por 30 dias, sem cartão. Entre com o Google para começar.";
+  banner.textContent = "Teste grátis por 15 dias, sem cartão. Entre com o Google para começar.";
   document.getElementById("google-btn-label").textContent = BTN_LABEL;
 }
 if(checkoutToken){
@@ -132,7 +132,7 @@ function showError(msg){
   box.classList.add("show");
 }
 
-/* Abre o teste de 30 dias no servidor. Se falhar, o painel mostra a tela
+/* Abre o teste de 15 dias no servidor. Se falhar, o painel mostra a tela
    "Comece seu teste" com o mesmo botão, então não trava o login. */
 async function startTrialSafe(){
   try{ await functionsRegion.httpsCallable("startTrial")(); }

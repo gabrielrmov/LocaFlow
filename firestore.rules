@@ -13,7 +13,7 @@ service cloud.firestore {
       return ['email', 'name', 'photoURL', 'updatedAt'];
     }
 
-    // Acesso de escrita: assinatura ativa, conta admin, ou teste de 30 dias ainda
+    // Acesso de escrita: assinatura ativa, conta admin, ou teste de 15 dias ainda
     // dentro do prazo. A data de fim (trialEndsAt) só é gravada pelas Cloud
     // Functions e é comparada com o relógio do servidor (request.time), então
     // não dá para estender o teste mudando a hora do aparelho. Sem trialEndsAt,

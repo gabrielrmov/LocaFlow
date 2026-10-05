@@ -325,7 +325,7 @@ async function assertIsAdmin(request) {
 
 const VALID_PLANS = ["locarion", "profissional", "enterprise"]; // os dois últimos são planos antigos, até a migração
 const VALID_STATUSES = ["active", "trialing", "inactive", "canceled"];
-const TRIAL_DAYS = 30;
+const TRIAL_DAYS = 15;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /* -------------------------------------------------------------------------
@@ -393,7 +393,7 @@ exports.adminSetUserAccess = onCall(
 );
 
 /* -------------------------------------------------------------------------
-   startTrial — abre o teste de 30 dias, sem cartão. É a ÚNICA forma de um
+   startTrial — abre o teste de 15 dias, sem cartão. É a ÚNICA forma de um
    cliente ganhar acesso de teste: o navegador não consegue gravar status nem
    datas no próprio perfil (regras do Firestore), então a data de fim é sempre
    decidida aqui, no servidor. Um teste por conta Google; quem já assinou antes

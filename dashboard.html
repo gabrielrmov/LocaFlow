@@ -776,7 +776,7 @@ body:has(.modal-backdrop){overflow:hidden}
 .field-error{margin:8px 0 0; color:var(--critical); font-size:13px}
 .field-error[hidden]{display:none}
 
-/* teste de 30 dias: faixa com os dias que restam e tela de acesso bloqueado */
+/* teste de 15 dias: faixa com os dias que restam e tela de acesso bloqueado */
 .trial-bar{display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:4px 12px; padding:9px 16px; font-size:13px; line-height:1.4; text-align:center; background:var(--accent-soft); color:var(--accent-soft-ink); border-bottom:1px solid var(--border)}
 .trial-bar[hidden]{display:none}
 .trial-bar.warn{background:var(--warning-bg); color:var(--warning)}
@@ -3976,7 +3976,7 @@ function subscribeCollection(key){
     ()=>{ LOADED[key]=true; rerenderCurrent(); }
   );
 }
-let TRIAL = null; /* {days, ends} enquanto o teste de 30 dias está valendo */
+let TRIAL = null; /* {days, ends} enquanto o teste de 15 dias está valendo */
 function updatePlanLabel(){
   if(TRIAL){
     const chip = document.querySelector(".plan-chip span");
@@ -4204,7 +4204,7 @@ function labelTables(root){
 })();
 
 /* Só entra se: (1) autenticado no Firebase e (2) o documento users/{uid} dá acesso:
-   assinatura ativa, conta admin ou teste de 30 dias ainda dentro do prazo. As Cloud
+   assinatura ativa, conta admin ou teste de 15 dias ainda dentro do prazo. As Cloud
    Functions e as regras do Firestore conferem o mesmo no servidor; esta checagem é só
    para mostrar a tela certa. Sem acesso, aparece uma tela explicando o que fazer. */
 const DAY_MS = 86400000;
@@ -4220,8 +4220,8 @@ function accessState(data){
 }
 function showGate(kind){
   const T = {
-    none:{ title:"Comece seu teste de 30 dias", text:"Sem cartão. Você usa todos os recursos por 30 dias e só assina se gostar.", primary:"Começar teste grátis", start:true },
-    expired:{ title:"Seu teste de 30 dias terminou", text:"Seus dados continuam guardados. Assine um plano para voltar de onde parou.", primary:"Ver planos e assinar" },
+    none:{ title:"Comece seu teste de 15 dias", text:"Sem cartão. Você usa todos os recursos por 15 dias e só assina se gostar.", primary:"Começar teste grátis", start:true },
+    expired:{ title:"Seu teste de 15 dias terminou", text:"Seus dados continuam guardados. Assine um plano para voltar de onde parou.", primary:"Ver planos e assinar" },
     inactive:{ title:"Sua assinatura está inativa", text:"Escolha um plano para voltar ao painel. Seus dados continuam guardados.", primary:"Ver planos" },
   }[kind] || {};
   $("#auth-gate").hidden = true; /* tira o círculo de carregamento; o painel (#app) segue escondido */
