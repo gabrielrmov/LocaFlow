@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#FFFFFF">
 <script>document.documentElement.classList.add("js")</script>
 <title>Locarion · Sistema para locadora de equipamentos de obra</title>
-<meta name="description" content="Sistema para locadora de equipamentos de construção: contratos, agenda, estoque, manutenção e financeiro. Teste 30 dias sem cartão. Depois, R$ 97/mês.">
+<meta name="description" content="Sistema para locadora de equipamentos de construção: contratos, agenda, estoque, manutenção e financeiro. Teste 30 dias sem cartão. Depois, R$ 127/mês ou R$ 1.397/ano.">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
 <link rel="canonical" href="https://locarion.app/">
 <link rel="alternate" hreflang="pt-BR" href="https://locarion.app/">
@@ -63,7 +63,7 @@
       "@id": "https://locarion.app/#webpage",
       "url": "https://locarion.app/",
       "name": "Locarion · Sistema para locadora de equipamentos de obra",
-      "description": "Sistema para locadora de equipamentos de construção: contratos, agenda, estoque, manutenção e financeiro. Teste 30 dias sem cartão. Depois, R$ 97/mês.",
+      "description": "Sistema para locadora de equipamentos de construção: contratos, agenda, estoque, manutenção e financeiro. Teste 30 dias sem cartão. Depois, R$ 127/mês ou R$ 1.397/ano.",
       "inLanguage": "pt-BR",
       "isPartOf": {
         "@id": "https://locarion.app/#website"
@@ -124,18 +124,18 @@
         },
         {
           "@type": "Offer",
-          "name": "Profissional",
+          "name": "Locarion mensal",
           "url": "https://locarion.app/#precos",
-          "price": "97.00",
+          "price": "127.00",
           "priceCurrency": "BRL",
           "availability": "https://schema.org/InStock",
           "seller": {
             "@id": "https://locarion.app/#organization"
           },
-          "description": "Equipamentos e contratos ilimitados, agenda e financeiro completos, até 3 usuários e suporte por e-mail.",
+          "description": "Todas as funcionalidades do Locarion, cobrança mensal, sem fidelidade.",
           "priceSpecification": {
             "@type": "UnitPriceSpecification",
-            "price": "97.00",
+            "price": "127.00",
             "priceCurrency": "BRL",
             "billingDuration": 1,
             "billingIncrement": 1,
@@ -144,22 +144,22 @@
         },
         {
           "@type": "Offer",
-          "name": "Enterprise",
+          "name": "Locarion anual",
           "url": "https://locarion.app/#precos",
-          "price": "197.00",
+          "price": "1397.00",
           "priceCurrency": "BRL",
           "availability": "https://schema.org/InStock",
           "seller": {
             "@id": "https://locarion.app/#organization"
           },
-          "description": "Tudo do Profissional, usuários ilimitados, relatórios avançados e suporte prioritário.",
+          "description": "Todas as funcionalidades do Locarion, cobrança anual. Equivale a R$ 116,42 por mês.",
           "priceSpecification": {
             "@type": "UnitPriceSpecification",
-            "price": "197.00",
+            "price": "1397.00",
             "priceCurrency": "BRL",
             "billingDuration": 1,
             "billingIncrement": 1,
-            "unitCode": "MON"
+            "unitCode": "ANN"
           }
         }
       ]
@@ -226,7 +226,7 @@
           "name": "Posso cancelar quando quiser?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Pode. Não tem fidelidade nem multa. A assinatura é mensal."
+            "text": "Pode. Não tem multa. No plano mensal não há fidelidade: a assinatura é renovada todo mês e você cancela quando quiser. No plano anual, o pagamento é feito uma vez por ano e você pode cancelar a renovação antes da próxima cobrança."
           }
         }
       ]
@@ -402,7 +402,7 @@ kbd{font-family:var(--mono); font-size:12px; line-height:1; padding:4px 6px; bor
 .phone-screen img{width:100%; padding-top:30px; background:#F5F6FB}
 
 /* planos */
-.plans{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; max-width:880px; margin-left:auto; margin-right:auto}
+.plans{display:grid; grid-template-columns:minmax(0,1fr); gap:14px; max-width:520px; margin-left:auto; margin-right:auto}
 .plan{position:relative; border-radius:18px; border:1px solid var(--line); background:var(--card); box-shadow:0 1px 2px rgba(16,17,20,.04), 0 20px 44px -28px rgba(16,17,20,.2); padding:30px; display:flex; flex-direction:column}
 .plan.hot{border-color:rgba(240,118,28,.4); box-shadow:0 0 0 1px rgba(240,118,28,.08), 0 30px 70px -32px rgba(240,118,28,.5)}
 .plan-name{font-weight:600; font-size:18px; line-height:1.55; letter-spacing:normal}
@@ -413,6 +413,11 @@ kbd{font-family:var(--mono); font-size:12px; line-height:1; padding:4px 6px; bor
 .plan ul{list-style:none; margin:24px 0 28px; padding:22px 0 0; border-top:1px solid var(--line); flex:1}
 .plan li{display:flex; gap:10px; align-items:flex-start; padding:6px 0; font-size:14.5px; color:#3A3C44}
 .plan li svg{flex:0 0 auto; margin-top:4px; color:var(--orange)}
+.cycle{align-self:flex-start; display:inline-flex; gap:4px; padding:4px; border-radius:999px; background:rgba(255,255,255,.12); margin-top:18px}
+.cycle button{border:0; background:transparent; font:inherit; font-size:14px; font-weight:600; padding:8px 18px; border-radius:999px; color:rgba(255,255,255,.78); cursor:pointer}
+.cycle button.on{background:#fff; color:#101114}
+.cycle button:focus-visible{outline:2px solid var(--orange); outline-offset:2px}
+.plan-eq{color:var(--ink-3); font-size:13.5px; margin:6px 0 0; min-height:20px}
 .plans-note{text-align:center; color:var(--ink-3); font-size:13.5px; margin-top:22px}
 .plans-note a{color:var(--ink); font-weight:600; text-decoration:underline; text-underline-offset:2px}
 
@@ -1156,36 +1161,34 @@ footer .brand-mark svg path{fill:#1E3A5F}
 <section class="sec" id="precos">
   <div class="wrap">
     <div class="sec-head center">
-      <h2 class="rv">Dois planos. <br>Sem fidelidade.</h2>
-      <p class="rv" style="--d:100ms">Comece com 30 dias de teste, sem cartão. Depois, mensal, sem taxa de implantação e sem fidelidade: cancela quando quiser.</p>
+      <h2 class="rv">Um plano. <br>Tudo incluído.</h2>
+      <p class="rv" style="--d:100ms">Comece com 30 dias de teste, sem cartão. Depois, escolha mensal ou anual. Sem taxa de implantação.</p>
     </div>
     <div class="sec-body plans" data-stagger>
-      <div class="plan">
-        <h3 class="plan-name">Profissional</h3>
-        <p class="plan-for">Para a locadora que quer tirar a operação da planilha.</p>
-        <div class="plan-price"><span class="num">R$ 97</span><span class="per">/mês</span></div>
+      <div class="plan hot">
+        <h3 class="plan-name">Locarion</h3>
+        <p class="plan-for">Todas as funcionalidades, para a locadora que quer tirar a operação da planilha.</p>
+        <div class="cycle" role="group" aria-label="Periodicidade da cobrança">
+          <button type="button" class="on" data-cycle="monthly" aria-pressed="true">Mensal</button>
+          <button type="button" data-cycle="yearly" aria-pressed="false">Anual</button>
+        </div>
+        <div class="plan-price"><span class="num" id="price-num">R$ 127</span><span class="per" id="price-per">/mês</span></div>
+        <p class="plan-eq" id="price-eq">Sem fidelidade: cancele quando quiser.</p>
         <ul>
-          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Equipamentos e contratos ilimitados</li>
-          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Agenda e financeiro completos</li>
-          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Até 3 usuários</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Equipamentos, clientes e contratos ilimitados</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Contrato impresso em quadros, pronto para assinar</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Agenda de retiradas e devoluções</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Financeiro completo: faturas, despesas, contas a pagar e a receber</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Importação de faturas por planilha, para migrar de outro sistema</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Avisos de hoje, com mensagem pronta no WhatsApp e notificação no celular</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Controle de manutenção dos equipamentos</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Relatórios de receitas, contratos e equipamentos</li>
           <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Suporte por e-mail</li>
         </ul>
-        <button class="btn btn-dark btn-block" data-plan="profissional" data-price="R$ 97/mês" onclick="openCheckout(this)">Assinar o Profissional</button>
-      </div>
-      <div class="plan hot">
-        <h3 class="plan-name">Enterprise</h3>
-        <p class="plan-for">Para operações maiores, com filiais e muitas obras ao mesmo tempo.</p>
-        <div class="plan-price"><span class="num">R$ 197</span><span class="per">/mês</span></div>
-        <ul>
-          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Tudo do Profissional</li>
-          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Usuários ilimitados</li>
-          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Relatórios avançados</li>
-          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Suporte prioritário</li>
-        </ul>
-        <button class="btn btn-white btn-block" data-plan="enterprise" data-price="R$ 197/mês" onclick="openCheckout(this)">Assinar o Enterprise</button>
+        <button class="btn btn-white btn-block" id="plan-buy" data-plan="locarion" data-cycle="monthly" data-price="R$ 127/mês" onclick="openCheckout(this)">Assinar o Locarion</button>
       </div>
     </div>
-    <p class="plans-note">Quer testar antes? <a href="login.html?trial=1">Comece os 30 dias grátis</a>, sem cartão. O pagamento é pelo Asaas; depois de assinar, você entra com a sua conta Google.</p>
+    <p class="plans-note">Quer testar antes? <a href="login.html?trial=1">Comece os 30 dias grátis</a>, sem cartão. O pagamento é pelo Asaas, com cartão de crédito; depois de assinar, você entra com a sua conta Google.</p>
   </div>
 </section>
 
@@ -1221,7 +1224,7 @@ footer .brand-mark svg path{fill:#1E3A5F}
       </details>
       <details>
         <summary>Posso cancelar quando quiser?</summary>
-        <p>Pode. Não tem fidelidade nem multa. A assinatura é mensal.</p>
+        <p>Pode. Não tem multa. No plano mensal não há fidelidade: a assinatura é renovada todo mês e você cancela quando quiser. No plano anual, o pagamento é feito uma vez por ano e você pode cancelar a renovação antes da próxima cobrança.</p>
       </details>
     </div>
   </div>
@@ -1406,10 +1409,25 @@ document.getElementById("year").textContent = new Date().getFullYear();
    ========================================================================= */
 const functionsRegion = firebase.app().functions("southamerica-east1");
 let selectedPlan = null;
+let selectedCycle = "monthly";
+const CYCLES = {
+  monthly:{num:"R$ 127", per:"/mês", eq:"Sem fidelidade: cancele quando quiser.", label:"R$ 127/mês"},
+  yearly:{num:"R$ 1.397", per:"/ano", eq:"Equivale a R$ 116,42 por mês. Você economiza R$ 127: é um mês grátis.", label:"R$ 1.397/ano"},
+};
+document.querySelectorAll(".cycle button").forEach((b)=>b.addEventListener("click", ()=>{
+  const c = CYCLES[b.dataset.cycle];
+  document.querySelectorAll(".cycle button").forEach((x)=>{ const on = x === b; x.classList.toggle("on", on); x.setAttribute("aria-pressed", on); });
+  document.getElementById("price-num").textContent = c.num;
+  document.getElementById("price-per").textContent = c.per;
+  document.getElementById("price-eq").textContent = c.eq;
+  const buy = document.getElementById("plan-buy");
+  buy.dataset.cycle = b.dataset.cycle; buy.dataset.price = c.label;
+}));
 
 function openCheckout(btn){
   selectedPlan = btn.dataset.plan;
-  document.getElementById("checkout-title").textContent = "Assinar o " + (selectedPlan === "enterprise" ? "Enterprise" : "Profissional") + " · " + btn.dataset.price;
+  selectedCycle = btn.dataset.cycle === "yearly" ? "yearly" : "monthly";
+  document.getElementById("checkout-title").textContent = "Assinar o Locarion · " + btn.dataset.price;
   document.getElementById("checkout-desc").textContent = "Você vai para a página de pagamento do Asaas. Depois de confirmar a assinatura, entre com sua conta Google para acessar o painel.";
   document.getElementById("checkout-confirm").textContent = "Ir para pagamento";
   document.getElementById("checkout-confirm").disabled = false;
@@ -1426,7 +1444,7 @@ document.getElementById("checkout-confirm").addEventListener("click", async () =
   btn.textContent = "Gerando pagamento...";
   try{
     const createAsaasCheckout = functionsRegion.httpsCallable("createAsaasCheckout");
-    const { data } = await createAsaasCheckout({ plan: selectedPlan });
+    const { data } = await createAsaasCheckout({ plan: selectedPlan, cycle: selectedCycle });
     window.location.href = data.url;
   }catch(err){
     console.error(err);

@@ -2,7 +2,7 @@
 
 O sistema tem 3 páginas + Cloud Functions:
 
-- `index.html` — landing page com planos (Profissional e Enterprise)
+- `index.html` — landing page com o plano único (R$ 127/mês ou R$ 1.397/ano)
 - `login.html` — login exclusivo com Google
 - `dashboard.html` — o sistema em si (só abre para quem está logado **e** com assinatura ativa)
 - `functions/` — Cloud Functions que criam o checkout no Asaas e confirmam o pagamento via webhook

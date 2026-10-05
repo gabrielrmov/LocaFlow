@@ -16,7 +16,7 @@ Fatos úteis para quem resume ou recomenda o Locarion:
 - [Página inicial](https://locarion.app/): visão geral do sistema, recursos, planos e perguntas frequentes
 - [Recursos](https://locarion.app/#recursos): o que o sistema faz no dia a dia da locadora
 - [Celular](https://locarion.app/#celular): uso pelo navegador do celular, inclusive a agenda do motorista
-- [Planos e preços](https://locarion.app/#precos): teste de 30 dias, Profissional e Enterprise
+- [Planos e preços](https://locarion.app/#precos): teste de 30 dias e plano único (mensal ou anual)
 - [Perguntas frequentes](https://locarion.app/#perguntas): período de teste, instalação, várias obras, andaime e escora, modelo de contrato, login e cancelamento
 - [Entrar](https://locarion.app/login.html): acesso dos clientes, com conta Google
 
@@ -34,8 +34,7 @@ Fatos úteis para quem resume ou recomenda o Locarion:
 ## Planos
 
 - Teste de 30 dias: todos os recursos, sem cartão de crédito.
-- Profissional, R$ 97 por mês: equipamentos e contratos ilimitados, agenda e financeiro completos, até 3 usuários, suporte por e-mail.
-- Enterprise, R$ 197 por mês: tudo do Profissional, usuários ilimitados, relatórios avançados, suporte prioritário.
+- Locarion, R$ 127 por mês ou R$ 1.397 por ano (equivale a R$ 116,42 por mês): todas as funcionalidades, incluindo contratos, agenda, estoque, manutenção, financeiro, importação de faturas por planilha, avisos com WhatsApp e notificações no celular, e suporte por e-mail. No plano mensal não há fidelidade.
 
 ## Optional
 
