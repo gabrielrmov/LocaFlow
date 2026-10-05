@@ -19,6 +19,15 @@ Layout fiel à referência do Behance (logo e título centralizados, peso leve +
 
 ---
 
+## Post de abertura
+
+### 0. Seg 05/10 · 18:00 · Post único — fixar no topo do perfil
+**Tema:** Apresentação da Locarion (`marketing/posts/00-apresentacao.png`)
+**Legenda:** Prazer, Locarion! Somos um sistema de gestão online feito para locadoras de equipamentos de construção. Em um só lugar: contratos no modelo da sua locadora, agenda de retirada e devolução, estoque por unidade ou por peça, manutenção e financeiro. Funciona no navegador do computador e do celular, sem instalar nada. Plano mensal sem fidelidade. Teste 15 dias grátis, sem cartão: link na bio.
+**Hashtags:** #locarion #locadora #locacaodeequipamentos #construcaocivil #gestao #sistemadegestao
+
+---
+
 ## Semana 1 — Dor: a locadora no improviso
 
 ### 1. Ter 06/10 · 07:30 · Carrossel (C)

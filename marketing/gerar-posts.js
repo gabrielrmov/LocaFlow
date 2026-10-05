@@ -118,6 +118,49 @@ const V = {
   shot: (o) => `<div class="obj" style="height:760px">${blob('#FF9A4A', '#D9620F')}</div>
       <img src="${A(o.img)}" style="position:relative;z-index:2;width:${o.w}px;border-radius:24px;box-shadow:0 30px 80px rgba(0,0,0,.25),0 0 0 1px rgba(127,127,127,.3)">`,
 
+  // apresentação: painel + celular
+  hero: () => `<div style="position:relative;width:960px;height:640px">
+    <div style="position:absolute;left:0;top:30px;width:820px;border-radius:22px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 0 120px rgba(240,118,28,.35),0 50px 100px rgba(0,0,0,.6);transform:perspective(1800px) rotateY(10deg)">
+      <div style="display:flex;gap:9px;padding:14px 18px;background:#14181f"><i style="width:12px;height:12px;border-radius:50%;background:#E5484D"></i><i style="width:12px;height:12px;border-radius:50%;background:#E8A317"></i><i style="width:12px;height:12px;border-radius:50%;background:#2DA44E"></i></div>
+      <img src="${A('painel-escuro.webp')}" style="width:100%;display:block"></div>
+    <div class="phone" style="right:0;bottom:-20px;width:270px;height:470px;border-radius:44px;border-width:8px;transform:rotate(4deg)"><img src="${A('celular-escuro.webp')}"></div></div>`,
+
+  // post único de apresentação
+  intro: () => `<div style="display:flex;flex-direction:column;align-items:center;gap:34px">
+    <div style="zoom:.78">${V.hero()}</div>
+    <div style="display:flex;gap:14px;align-items:center">
+      ${['Navegador e celular', 'Sem instalar', 'Sem fidelidade'].map((t) => `<span style="font-size:22px;padding:12px 22px;border-radius:999px;border:1px solid var(--line);background:var(--card)">${t}</span>`).join('')}
+      <span style="font-size:24px;font-weight:700;color:#fff;background:#F0761C;padding:14px 30px;border-radius:999px;box-shadow:0 10px 40px rgba(240,118,28,.45)">15 dias grátis</span></div></div>`,
+
+  // para quem é
+  equip: () => `<div style="display:flex;flex-wrap:wrap;gap:18px;justify-content:center;width:920px">
+    ${[['Betoneira', 1], ['Andaime', 0], ['Escora', 1], ['Martelete', 0], ['Compactador', 0], ['Gerador', 1], ['Serra mármore', 0], ['Plataforma', 0], ['Furadeira', 1], ['Cortadora de piso', 0]]
+      .map(([t, h], k) => `<div style="font-size:36px;font-weight:600;letter-spacing:-.03em;padding:22px 36px;border-radius:999px;transform:rotate(${[-3, 2, -1, 3, -2, 1, -3, 2, 0, -2][k]}deg);${h ? 'background:var(--orange);color:#fff;box-shadow:0 16px 40px rgba(240,118,28,.4)' : 'background:var(--card);border:1.5px solid var(--line);box-shadow:var(--sh)'}">${t}</div>`).join('')}</div>`,
+
+  // recursos
+  features: () => `<div style="display:grid;grid-template-columns:repeat(3,290px);gap:18px">
+    ${[['Contratos', 'No modelo da sua locadora', '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>'],
+       ['Agenda', 'Retiradas e devoluções', '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>'],
+       ['Estoque', 'Por unidade ou por peça', '<path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/>'],
+       ['Financeiro', 'Quem pagou e quem deve', '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>'],
+       ['Manutenção', 'Corretiva e preventiva', '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/>'],
+       ['Orçamentos', 'Que já reservam o item', '<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>']]
+      .map(([t, d, ic]) => `<div class="card" style="padding:30px;height:250px;display:flex;flex-direction:column;justify-content:space-between">
+        <div style="width:68px;height:68px;border-radius:18px;background:rgba(240,118,28,.14);display:flex;align-items:center;justify-content:center"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#F0761C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ic}</svg></div>
+        <div><div style="font-size:32px;font-weight:700;letter-spacing:-.03em">${t}</div><div style="font-size:21px;color:var(--mut);margin-top:6px;line-height:1.3">${d}</div></div></div>`).join('')}</div>`,
+
+  // computador + celular (claro)
+  devices: () => `<div style="position:relative;width:940px;height:600px">
+    <div class="card" style="position:absolute;left:0;top:0;width:800px;padding:0;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:9px;padding:14px 18px;border-bottom:1px solid var(--line)"><i style="width:12px;height:12px;border-radius:50%;background:#E5484D"></i><i style="width:12px;height:12px;border-radius:50%;background:#E8A317"></i><i style="width:12px;height:12px;border-radius:50%;background:#2DA44E"></i><div style="margin-left:14px;flex:1;background:rgba(127,127,127,.12);border-radius:8px;padding:6px 14px;font-size:18px;font-family:'JetBrains Mono'">locarion.app</div></div>
+      <img src="${A('painel-claro.webp')}" style="width:100%;display:block"></div>
+    <div class="phone" style="right:0;bottom:0;width:250px;height:440px;border-radius:42px;border-width:8px;background:#fff"><img src="${A('celular-claro.webp')}"></div></div>`,
+
+  // 3 passos
+  steps: () => `<div style="display:flex;flex-direction:column;gap:16px;width:860px">
+    ${[['Entre com sua conta Google', 'Sem instalar nada, sem cartão'], ['Cadastre seus equipamentos', 'Por unidade ou por quantidade'], ['Faça o primeiro contrato', 'No modelo da sua locadora']]
+      .map(([t, d], k) => `<div class="card" style="display:flex;align-items:center;gap:28px;padding:26px 32px;text-align:left"><div style="width:72px;height:72px;border-radius:50%;background:var(--orange);color:#fff;font-size:34px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 12px 30px rgba(240,118,28,.45)">${k + 1}</div><div><div style="font-size:34px;font-weight:700;letter-spacing:-.03em">${t}</div><div style="font-size:23px;color:var(--mut);margin-top:4px">${d}</div></div></div>`).join('')}</div>`,
+
   // conversa bagunçada de WhatsApp
   chat: () => `<div style="position:relative;width:900px;height:560px">
     ${[['Tem betoneira pra amanhã?', 0, 0, -3], ['Quando vocês buscam o andaime??', 300, 120, 2], ['Já pagou a fatura de setembro?', 40, 250, -2], ['Cadê o contrato assinado?', 330, 370, 3], ['Alguém anotou a devolução?', 60, 470, -1]]
@@ -291,6 +334,9 @@ function slide(s, i, total) {
 
 const D = 'dark', L = 'light';
 const posts = {
+  '00-apresentacao': [
+    { theme: D, chip: 'Prazer, Locarion', t: 'O sistema da\n_sua locadora._', fs: 100, sub: 'Contratos, agenda, estoque, manutenção\ne financeiro *num lugar só.*', v: 'intro' },
+  ],
   '01-carrossel-caderno': [
     { theme: D, lay: 'bottom', v: 'chat', t: 'Sua locadora ainda\nroda no _WhatsApp?_', sub: 'Menos improviso. *Mais controle.*' },
     { theme: L, lay: 'left', chip: '01 · Estoque', t: 'Alugou o que\n_não tinha_ no pátio?', v: 'stockOut' },
