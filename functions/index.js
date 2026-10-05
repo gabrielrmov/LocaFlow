@@ -34,10 +34,17 @@ const ASAAS_WEBHOOK_TOKEN = defineSecret("ASAAS_WEBHOOK_TOKEN");
 const ASAAS_BASE_URL = "https://api.asaas.com/v3";
 const SITE_URL = process.env.SITE_URL || "https://locarion.app";
 
+/* Plano único: todas as funcionalidades, cobrado por mês ou por ano. */
 const PLANS = {
-  profissional: { name: "Locarion — Profissional", value: 97.0 },
-  enterprise: { name: "Locarion — Enterprise", value: 197.0 },
+  locarion: {
+    name: "Locarion",
+    cycles: {
+      monthly: { value: 127.0, asaasCycle: "MONTHLY", description: "Assinatura mensal do Locarion" },
+      yearly: { value: 1397.0, asaasCycle: "YEARLY", description: "Assinatura anual do Locarion" },
+    },
+  },
 };
+const ASAAS_CYCLE_TO_OURS = { MONTHLY: "monthly", YEARLY: "yearly" };
 
 /* Limita chamadas por IP (createAsaasCheckout é público, antes do login):
    evita que alguém encha o Firestore e o Asaas de checkouts falsos. */
@@ -84,7 +91,9 @@ exports.createAsaasCheckout = onCall(
   async (request) => {
     const plan = request.data && request.data.plan;
     const planInfo = typeof plan === "string" && Object.prototype.hasOwnProperty.call(PLANS, plan) ? PLANS[plan] : null;
-    if (!planInfo) {
+    const cycleKey = request.data && request.data.cycle === "yearly" ? "yearly" : "monthly";
+    const cycleInfo = planInfo ? planInfo.cycles[cycleKey] : null;
+    if (!planInfo || !cycleInfo) {
       throw new HttpsError("invalid-argument", "Plano inválido.");
     }
 
@@ -95,6 +104,7 @@ exports.createAsaasCheckout = onCall(
 
     await tokenRef.set({
       plan,
+      billingCycle: cycleKey,
       status: "pending",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
@@ -114,13 +124,13 @@ exports.createAsaasCheckout = onCall(
       items: [
         {
           name: planInfo.name,
-          description: "Assinatura mensal do Locarion",
+          description: cycleInfo.description,
           quantity: 1,
-          value: planInfo.value,
+          value: cycleInfo.value,
         },
       ],
       subscription: {
-        cycle: "MONTHLY",
+        cycle: cycleInfo.asaasCycle,
         nextDueDate: nextDueDate(),
       },
     };
@@ -313,7 +323,7 @@ async function assertIsAdmin(request) {
   }
 }
 
-const VALID_PLANS = ["profissional", "enterprise"];
+const VALID_PLANS = ["locarion", "profissional", "enterprise"]; // os dois últimos são planos antigos, até a migração
 const VALID_STATUSES = ["active", "trialing", "inactive", "canceled"];
 const TRIAL_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -475,6 +485,7 @@ exports.confirmSubscription = onCall(
         {
           subscriptionStatus: "active",
           plan: data.plan,
+          ...(data.billingCycle ? { billingCycle: data.billingCycle } : {}),
           ...(data.asaasSubscriptionId ? { asaasSubscriptionId: data.asaasSubscriptionId } : {}),
           ...(data.asaasCustomerId ? { asaasCustomerId: data.asaasCustomerId } : {}),
           email: request.auth.token.email || null,
@@ -713,5 +724,56 @@ exports.sendWhatsApp = onCall(
       throw new HttpsError("failed-precondition", msg);
     }
     return { ok: true };
+  }
+);
+
+/* -------------------------------------------------------------------------
+   adminMigrateSubscriptions — leva as assinaturas dos planos antigos
+   (Profissional R$ 97 e Enterprise R$ 197) para o plano único (R$ 127 por mês
+   ou R$ 1.397 por ano), alterando o valor da assinatura no Asaas.
+   - Só admin chama. Por padrão roda em SIMULAÇÃO (dryRun): só lista o que mudaria.
+   - Para aplicar, chame com { dryRun: false }.
+   - O novo valor vale a partir da PRÓXIMA cobrança (não altera cobrança já emitida).
+   ------------------------------------------------------------------------- */
+exports.adminMigrateSubscriptions = onCall(
+  { secrets: [ASAAS_API_KEY], region: "southamerica-east1", maxInstances: 1, timeoutSeconds: 300 },
+  async (request) => {
+    await assertIsAdmin(request);
+    const dryRun = !(request.data && request.data.dryRun === false);
+    const snap = await db.collection("users").where("plan", "in", ["profissional", "enterprise"]).get();
+    const report = [];
+    for (const doc of snap.docs) {
+      const u = doc.data();
+      const row = { uid: doc.id, email: u.email || null, plan: u.plan, status: u.subscriptionStatus || null };
+      if (!u.asaasSubscriptionId) { report.push({ ...row, result: "sem assinatura no Asaas (ignorado)" }); continue; }
+      try {
+        const get = await fetch(`${ASAAS_BASE_URL}/subscriptions/${encodeURIComponent(u.asaasSubscriptionId)}`, { headers: { access_token: ASAAS_API_KEY.value() } });
+        const sub = await get.json();
+        if (!get.ok) { report.push({ ...row, result: "erro ao ler no Asaas" }); continue; }
+        const ours = ASAAS_CYCLE_TO_OURS[sub.cycle];
+        if (!ours || sub.status !== "ACTIVE") { report.push({ ...row, result: `ignorado (ciclo ${sub.cycle}, situação ${sub.status})`, currentValue: sub.value }); continue; }
+        const target = PLANS.locarion.cycles[ours].value;
+        row.cycle = ours; row.currentValue = sub.value; row.newValue = target;
+        if (sub.value === target) { report.push({ ...row, result: "já está no valor novo" }); }
+        else if (dryRun) { report.push({ ...row, result: "mudaria (simulação)" }); continue; }
+        else {
+          const put = await fetch(`${ASAAS_BASE_URL}/subscriptions/${encodeURIComponent(u.asaasSubscriptionId)}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json", access_token: ASAAS_API_KEY.value() },
+            body: JSON.stringify({ value: target, updatePendingPayments: false }),
+          });
+          if (!put.ok) { report.push({ ...row, result: "erro ao atualizar no Asaas" }); continue; }
+          report.push({ ...row, result: "migrada" });
+        }
+        if (!dryRun) {
+          await doc.ref.set({ plan: "locarion", billingCycle: ours, previousPlan: u.plan, updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        }
+      } catch (err) {
+        logger.error("Falha ao migrar assinatura", { uid: doc.id, error: String(err && err.message) });
+        report.push({ ...row, result: "erro inesperado" });
+      }
+    }
+    logger.info("adminMigrateSubscriptions", { dryRun, total: report.length });
+    return { dryRun, total: report.length, report };
   }
 );
