@@ -6,7 +6,12 @@
 **Horários:** 07:30 (antes de abrir a loja) nas terças e quintas; 11:30 aos sábados.
 **CTA padrão:** teste grátis por 15 dias, sem cartão → locarion.app
 
-## Direção visual (adaptar ao estilo do Behance quando você puder me mandar os prints)
+## Modelos visuais prontos
+As imagens (1080x1350; capas de reels em 1080x1920) estão em `marketing/posts/`, numeradas conforme os posts abaixo (ex.: `05-carrossel-contrato-03.png`).
+Para ajustar textos e regenerar: edite `marketing/gerar-posts.js` e rode `NODE_PATH=$(npm root -g) node marketing/gerar-posts.js`.
+Layout inspirado no Behance (títulos leve + negrito, alternando escuro e claro, botão contorno, cabeçalho e rodapé finos), com a identidade da Locarion (Inter, logo azul com ponto laranja, laranja `#F0761C`, JetBrains Mono nos microtextos, prints reais do painel).
+
+## Direção visual
 - Paleta: laranja `#FF3D00` / `#D9620F`, azul `#1E3A5F`, fundo escuro `#000710`, branco.
 - Fotos de obra e equipamento + recorte do painel (`assets/painel-escuro.webp`, `assets/celular-escuro.webp`, `assets/agenda-preview.png`).
 - Título grande em caixa alta, 1 ideia por card, selo "Locarion" no canto.
