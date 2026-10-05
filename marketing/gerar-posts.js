@@ -106,6 +106,40 @@ const tiles = () => `<div style="position:absolute;left:0;right:0;bottom:0;heigh
 const blob = (c1, c2) => `<svg viewBox="0 0 1080 620" width="1080" height="620" style="position:absolute;left:0;bottom:0"><defs><linearGradient id="bl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs><path d="M0 330 C140 190 330 210 470 300 C640 410 760 250 920 230 C1010 220 1060 250 1080 270 L1080 620 L0 620Z" fill="url(#bl)"/><path d="M0 470 C180 400 330 430 430 500 C520 560 600 560 700 520 L700 620 L0 620Z" fill="#FFB070" opacity=".5"/></svg>`;
 
 
+// ---------- mockups de aparelhos ----------
+const STATUS = (dark, w) => `<div style="height:${w * .14}px;display:flex;justify-content:space-between;align-items:center;padding:0 ${w * .1}px;font-size:${w * .058}px;font-weight:600;background:${dark ? '#0b0d10' : '#F6F7F9'};color:${dark ? '#fff' : '#0F1013'}">
+  <span>9:41</span><span style="display:flex;gap:${w * .02}px;align-items:center"><svg width="${w * .07}" height="${w * .05}" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2" width="3" height="10" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg><svg width="${w * .11}" height="${w * .05}" viewBox="0 0 26 12" fill="none"><rect x=".5" y=".5" width="22" height="11" rx="3" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="17" height="8" rx="2" fill="currentColor"/><rect x="24" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".5"/></svg></span></div>`;
+function IPHONE(img, w, { dark = true, rot = 0, style = '' } = {}) {
+  const r = w * .17;
+  const btn = (side, top, hh) => `<i style="position:absolute;${side}:-${w * .014}px;top:${top}%;width:${w * .018}px;height:${hh}%;border-radius:3px;background:linear-gradient(90deg,#2a2d33,#5a5e66)"></i>`;
+  return `<div style="position:absolute;${style};width:${w}px;border-radius:${r}px;padding:${w * .036}px;transform:rotate(${rot}deg);
+    background:linear-gradient(145deg,#6b6f78 0%,#2a2c31 18%,#4a4d55 50%,#1d1f23 80%,#5b5f68 100%);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.25),inset 0 0 0 ${w * .012}px #121316,0 50px 90px rgba(0,0,0,.55),0 10px 25px rgba(0,0,0,.35)">
+    ${btn('left', 20, 5)}${btn('left', 29, 9)}${btn('left', 40, 9)}${btn('right', 30, 14)}
+    <div style="position:relative;width:100%;display:flex;flex-direction:column;border-radius:${r - w * .036}px;overflow:hidden;background:${dark ? '#0b0d10' : '#F6F7F9'}">
+      ${STATUS(dark, w)}
+      <img src="${A(img)}" style="width:100%;display:block">
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;background:${dark ? '#0b0d10' : '#fff'}">
+        ${dark ? `<div style="display:flex;justify-content:space-around;padding:${w * .03}px 0 ${w * .02}px;border-top:1px solid rgba(255,255,255,.1);font-size:${w * .042}px;color:#8A93A0">${[['Início', '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'], ['Contratos', '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>'], ['Agenda', '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>'], ['Financeiro', '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>']].map(([t, ic], k) => `<span style="display:flex;flex-direction:column;align-items:center;gap:${w * .012}px;${k ? '' : 'color:#F0761C'}"><svg width="${w * .085}" height="${w * .085}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${ic}</svg>${t}</span>`).join('')}</div>` : ''}
+        <i style="display:block;width:${w * .36}px;height:${w * .016}px;border-radius:999px;background:${dark ? '#fff' : '#0F1013'};opacity:.85;margin:${w * .025}px auto ${w * .03}px"></i></div>
+      <div style="position:absolute;top:${w * .03}px;left:50%;transform:translateX(-50%);width:${w * .3}px;height:${w * .088}px;border-radius:999px;background:#000"></div>
+      <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,0) 32%,rgba(255,255,255,0) 70%,rgba(255,255,255,.05) 100%);pointer-events:none"></div>
+    </div></div>`;
+}
+function LAPTOP(img, w, { style = '' } = {}) {
+  const pad = w * .022;
+  return `<div style="position:absolute;${style};width:${w}px">
+    <div style="position:relative;background:#0b0c0e;border-radius:${w * .03}px ${w * .03}px ${w * .008}px ${w * .008}px;padding:${pad}px ${pad}px ${pad * 1.2}px;box-shadow:inset 0 0 0 1.5px #3a3d44,0 0 0 1px #1a1b1f">
+      <i style="position:absolute;top:${pad * .35}px;left:50%;width:${w * .009}px;height:${w * .009}px;margin-left:-${w * .0045}px;border-radius:50%;background:#1f2a3a;box-shadow:0 0 0 2px #15171b"></i>
+      <img src="${A(img)}" style="width:100%;display:block;border-radius:3px">
+      <div style="position:absolute;inset:${pad}px;background:linear-gradient(115deg,rgba(255,255,255,.10),rgba(255,255,255,0) 38%);pointer-events:none"></div></div>
+    <div style="position:relative;height:${w * .028}px;margin:0 -${w * .07}px;background:linear-gradient(180deg,#e4e6ea 0%,#b9bcc3 45%,#868a92 100%);border-radius:${w * .004}px ${w * .004}px ${w * .05}px ${w * .05}px / ${w * .004}px ${w * .004}px ${w * .022}px ${w * .022}px;box-shadow:0 40px 70px rgba(0,0,0,.55),0 12px 20px rgba(0,0,0,.3)">
+      <i style="position:absolute;left:50%;top:0;width:${w * .16}px;height:${w * .012}px;margin-left:-${w * .08}px;border-radius:0 0 ${w * .012}px ${w * .012}px;background:linear-gradient(180deg,#9a9ea6,#c3c6cc)"></i></div></div>`;
+}
+const TOAST = (color, icon, title, sub, style) => `<div style="position:absolute;${style};display:flex;gap:16px;align-items:center;padding:18px 24px 18px 18px;border-radius:24px;background:rgba(22,26,33,.82);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(14px);box-shadow:0 30px 60px rgba(0,0,0,.5);color:#fff;z-index:5">
+  <div style="width:52px;height:52px;border-radius:16px;background:${color};display:flex;align-items:center;justify-content:center;flex:none"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${icon}</svg></div>
+  <div><div style="font-size:21px;font-weight:700;letter-spacing:-.01em">${title}</div><div style="font-size:17px;color:#A8B0BC;margin-top:3px">${sub}</div></div></div>`;
+const IC_CHECK = '<path d="M5 12l5 5L20 7"/>', IC_DOC = '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>', IC_TRUCK = '<path d="M1 3h15v13H1zM16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>';
+
 // ---------- visuais por tema ----------
 const ck = (c = '#2DA44E') => `<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>`;
 const V = {
@@ -114,21 +148,23 @@ const V = {
   gem: (o, H) => `<div class="obj" style="height:620px;display:flex;justify-content:center;align-items:flex-end;padding-bottom:95px">${gem(o.size || 520)}</div>`,
   phone: () => `<div class="obj" style="height:760px">${blob('#FF9A4A', '#D9620F')}
       <div class="icon" style="width:190px;height:190px;left:70px;bottom:250px;transform:rotate(-14deg)">${MARK(130)}</div>
-      <div class="phone" style="width:460px;height:760px;left:50%;margin-left:-190px;bottom:-190px;transform:rotate(7deg)"><img src="${A('celular-escuro.webp')}"></div></div>`,
+      ${IPHONE('celular-escuro.webp', 380, { rot: 7, style: 'left:50%;margin-left:-170px;bottom:-330px' })}
+      ${TOAST('#E5484D', '<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>', 'Devolução amanhã', 'Vega Engenharia · Martelete', 'right:40px;bottom:330px')}</div>`,
   shot: (o) => `<div class="obj" style="height:760px">${blob('#FF9A4A', '#D9620F')}</div>
       <img src="${A(o.img)}" style="position:relative;z-index:2;width:${o.w}px;border-radius:24px;box-shadow:0 30px 80px rgba(0,0,0,.25),0 0 0 1px rgba(127,127,127,.3)">`,
 
   // apresentação: painel + celular
-  hero: () => `<div style="position:relative;width:960px;height:640px">
-    <div style="position:absolute;left:0;top:30px;width:820px;border-radius:22px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 0 120px rgba(240,118,28,.35),0 50px 100px rgba(0,0,0,.6);transform:perspective(1800px) rotateY(10deg)">
-      <div style="display:flex;gap:9px;padding:14px 18px;background:#14181f"><i style="width:12px;height:12px;border-radius:50%;background:#E5484D"></i><i style="width:12px;height:12px;border-radius:50%;background:#E8A317"></i><i style="width:12px;height:12px;border-radius:50%;background:#2DA44E"></i></div>
-      <img src="${A('painel-escuro.webp')}" style="width:100%;display:block"></div>
-    <div class="phone" style="right:0;bottom:-20px;width:270px;height:470px;border-radius:44px;border-width:8px;transform:rotate(4deg)"><img src="${A('celular-escuro.webp')}"></div></div>`,
+  hero: () => `<div style="position:relative;width:960px;height:580px">
+    <div style="position:absolute;left:60px;right:60px;bottom:-30px;height:120px;background:radial-gradient(closest-side,rgba(240,118,28,.55),transparent);filter:blur(10px)"></div>
+    ${LAPTOP('painel-escuro.webp', 700, { style: 'left:70px;top:40px' })}
+    ${IPHONE('celular-escuro.webp', 215, { style: 'right:60px;bottom:-6px' })}
+    ${TOAST('#2DA44E', IC_CHECK, 'Pagamento recebido', 'Construtora Alfa · R$ 1.140,00', 'right:0;top:0')}
+    ${TOAST('#F0761C', IC_DOC, 'Contrato CT-0233 gerado', 'Betoneira 400L · 15 dias', 'left:0;bottom:70px')}</div>`,
 
   // post único de apresentação
   intro: () => `<div style="display:flex;flex-direction:column;align-items:center;gap:34px">
-    <div style="zoom:.78">${V.hero()}</div>
-    <div style="display:flex;gap:14px;align-items:center">
+    ${V.hero()}
+    <div style="display:flex;gap:14px;align-items:center;position:relative;z-index:6">
       ${['Navegador e celular', 'Sem instalar', 'Sem fidelidade'].map((t) => `<span style="font-size:22px;padding:12px 22px;border-radius:999px;border:1px solid var(--line);background:var(--card)">${t}</span>`).join('')}
       <span style="font-size:24px;font-weight:700;color:#fff;background:#F0761C;padding:14px 30px;border-radius:999px;box-shadow:0 10px 40px rgba(240,118,28,.45)">15 dias grátis</span></div></div>`,
 
@@ -281,12 +317,10 @@ const V = {
   quote: () => `<div style="font-size:620px;font-weight:800;line-height:.7;color:var(--orange);letter-spacing:-.05em;margin-top:120px;text-shadow:0 30px 120px rgba(240,118,28,.5)">?</div>`,
 
   // navegador
-  browser: () => `<div style="position:relative;width:920px;height:580px">
-    <div class="card" style="position:absolute;left:0;top:0;width:760px;padding:0;overflow:hidden">
-      <div style="display:flex;align-items:center;gap:10px;padding:18px 22px;border-bottom:1px solid var(--line)"><i style="width:14px;height:14px;border-radius:50%;background:#E5484D"></i><i style="width:14px;height:14px;border-radius:50%;background:#E8A317"></i><i style="width:14px;height:14px;border-radius:50%;background:#2DA44E"></i>
-        <div style="margin-left:18px;flex:1;background:rgba(127,127,127,.12);border-radius:10px;padding:8px 16px;font-size:20px;font-family:'JetBrains Mono'">🔒 locarion.app</div></div>
-      <img src="${A('painel-claro.webp')}" style="width:100%;display:block"></div>
-    <div class="phone" style="position:absolute;right:0;bottom:0;width:230px;height:420px;border-radius:40px;border-width:7px"><img src="${A('celular-escuro.webp')}"></div></div>`,
+  browser: () => `<div style="position:relative;width:940px;height:560px">
+    <div style="position:absolute;left:60px;right:60px;bottom:-20px;height:90px;background:radial-gradient(closest-side,rgba(15,16,19,.25),transparent);filter:blur(8px)"></div>
+    ${LAPTOP('painel-claro.webp', 700, { style: 'left:40px;top:10px' })}
+    ${IPHONE('celular-claro.webp', 210, { dark: false, style: 'right:30px;bottom:-10px' })}</div>`,
 
   // dados isolados
   shield: () => `<div style="display:flex;align-items:center;gap:34px">
