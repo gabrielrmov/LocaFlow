@@ -866,7 +866,7 @@ body:has(.modal-backdrop){overflow:hidden}
         <span class="name" id="user-name">—</span>
         <button id="logout-btn" title="Sair"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></button>
       </div>
-      <div class="plan-chip"><span>Plano <b id="plan-label">Profissional</b></span></div>
+      <div class="plan-chip"><span>Plano <b id="plan-label">Locarion</b></span></div>
       <div class="theme-toggle" id="theme-toggle">
         <button data-theme-opt="light">Claro</button>
         <button data-theme-opt="dark">Escuro</button>
@@ -968,7 +968,7 @@ _______________________________________
 _______________________________________
 {{cliente_nome}} (LOCATÁRIO)`;
 
-const STATE = { equipment:[], clients:[], contracts:[], maintenance:[], payments:[], expenses:[], company:{name:"Locarion", plan:"profissional", contractTemplate:DEFAULT_CONTRACT_TEMPLATE} };
+const STATE = { equipment:[], clients:[], contracts:[], maintenance:[], payments:[], expenses:[], company:{name:"Locarion", plan:"locarion", contractTemplate:DEFAULT_CONTRACT_TEMPLATE} };
 const LOADED = { equipment:false, clients:false, contracts:false, maintenance:false, payments:false, expenses:false, company:false };
 const FILTERS = {
   equipamentos:{ q:"", status:"todos", cat:"todos", kind:"equipamento" },
@@ -3162,7 +3162,7 @@ function renderRelatorios(){
 }
 
 /* ======================= ADMINISTRAÇÃO (Locarion) ======================= */
-const ADMIN_PLAN_LABEL = { profissional:"Profissional", enterprise:"Enterprise" };
+const ADMIN_PLAN_LABEL = { locarion:"Locarion", profissional:"Profissional (antigo)", enterprise:"Enterprise (antigo)" };
 const ADMIN_STATUS_META = {
   active:{label:"Ativa",cls:"st-good"},
   trialing:{label:"Em teste",cls:"st-accent"},
@@ -3355,23 +3355,18 @@ function renderConfigGeralBody(){
 }
 function renderConfigPlanoBody(){
   const wrap = $("#cfg-body");
-  const plans = [
-    {id:"profissional",name:"Profissional",price:"R$ 97/mês",features:["Equipamentos e contratos ilimitados","Agenda e financeiro completos","Até 3 usuários","Suporte por e-mail"]},
-    {id:"enterprise",name:"Enterprise",price:"R$ 197/mês",features:["Tudo do Profissional","Usuários ilimitados","Relatórios avançados","Suporte prioritário"]},
-  ];
+  const features = ["Equipamentos, clientes e contratos ilimitados","Contrato impresso em quadros","Agenda de retiradas e devoluções","Financeiro completo e relatórios","Importação de faturas por planilha","Avisos de hoje, WhatsApp e notificação no celular","Controle de manutenção","Suporte por e-mail"];
   wrap.innerHTML = `
     <div class="card card-pad">
       <h3 class="section-title" style="margin-bottom:4px">Plano</h3>
-      <p class="hint" style="margin-bottom:14px">Do time único à operação com múltiplas filiais.</p>
-      <div class="grid-2" style="max-width:640px">
-        ${plans.map(p=>`<div class="card card-pad" style="border-color:${STATE.company.plan===p.id?'var(--accent)':'var(--border)'};position:relative">
-          ${STATE.company.plan===p.id?`<span class="badge st-accent" style="position:absolute;top:14px;right:14px"><span class="dot"></span>Atual</span>`:""}
-          <div style="font-family:var(--font-display);font-weight:700">${p.name}</div>
-          <div style="font-family:var(--font-display);font-size:20px;font-weight:800;margin:6px 0 10px">${p.price}</div>
-          <ul style="margin:0;padding-left:18px;color:var(--ink-2);font-size:12.5px;display:flex;flex-direction:column;gap:5px">${p.features.map(f=>`<li>${escapeHtml(f)}</li>`).join("")}</ul>
-          ${STATE.company.plan!==p.id?`<button class="btn btn-secondary btn-sm" style="margin-top:12px" data-action="set-plan" data-id="${p.id}">Selecionar</button>`:""}
-        </div>`).join("")}
+      <p class="hint" style="margin-bottom:14px">Um plano único, com todas as funcionalidades.</p>
+      <div class="card card-pad" style="max-width:380px;border-color:var(--accent)">
+        <div style="font-family:var(--font-display);font-weight:700">Locarion</div>
+        <div style="font-family:var(--font-display);font-size:20px;font-weight:800;margin:6px 0 2px">R$ 127/mês</div>
+        <div class="hint" style="margin-bottom:10px">ou R$ 1.397/ano (equivale a R$ 116,42 por mês)</div>
+        <ul style="margin:0;padding-left:18px;color:var(--ink-2);font-size:12.5px;display:flex;flex-direction:column;gap:5px">${features.map(f=>`<li>${escapeHtml(f)}</li>`).join("")}</ul>
       </div>
+      <p class="hint" style="margin-top:14px">Para alterar a forma de pagamento ou cancelar a assinatura, fale com o suporte.</p>
     </div>
   `;
 }
@@ -3830,9 +3825,9 @@ function renderIntegracoes(){
   const integrations = [
     {name:"WhatsApp Business", desc:"Abra a conversa com o cliente e a mensagem já pronta, em contratos, cobranças e no perfil do cliente. O envio automático virá numa próxima etapa.", badge:"Disponível"},
     {name:"Boletos e Pix", desc:"Geração de boletos e cobranças Pix com baixa automática, via integração Asaas acima.", badge:co.asaasApiKey?"Conectado":"Requer Asaas"},
-    {name:"Exportação contábil", desc:"Exporte lançamentos de receitas e despesas em formato compatível com seu sistema de contabilidade.", badge:"Disponível no Enterprise"},
+    {name:"Exportação contábil", desc:"Exporte lançamentos de receitas e despesas em formato compatível com seu sistema de contabilidade.", badge:"Em breve"},
     {name:"Google Agenda", desc:"Sincronize retiradas e devoluções da Agenda do Locarion com sua agenda pessoal.", badge:"Em breve"},
-    {name:"API aberta", desc:"Conecte o Locarion a outros sistemas da sua operação via API REST.", badge:"Disponível no Enterprise"},
+    {name:"API aberta", desc:"Conecte o Locarion a outros sistemas da sua operação via API REST.", badge:"Em breve"},
   ];
   view.innerHTML = `
     <div class="card card-pad" style="margin-bottom:16px;max-width:620px">
@@ -3844,7 +3839,7 @@ function renderIntegracoes(){
       <button class="btn btn-primary btn-sm" id="asaas-connect">${co.asaasApiKey?"Atualizar conexão":"Conectar com Asaas"}</button>
       ${co.asaasApiKey? `<span class="badge st-good" style="margin-left:8px"><span class="dot"></span>Conectado</span>` : ""}
     </div>
-    <p class="hint" style="margin-bottom:16px;max-width:640px">Outras integrações conectam o Locarion a mais ferramentas da sua locadora. As marcadas como Enterprise fazem parte do plano Enterprise (multi-filial, integrações sob medida e suporte dedicado).</p>
+    <p class="hint" style="margin-bottom:16px;max-width:640px">Outras integrações conectam o Locarion a mais ferramentas da sua locadora. As marcadas como "Em breve" ainda estão em desenvolvimento.</p>
     <div class="grid-3">
       ${integrations.map(i=>{ const cls = i.badge==='Em breve'?'st-neutral':(i.badge==='Conectado'||i.badge==='Disponível')?'st-good':i.badge==='Requer Asaas'?'st-warning':'st-accent'; return `<div class="card card-pad">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px">
@@ -3988,8 +3983,7 @@ function updatePlanLabel(){
     if(chip) chip.innerHTML = `Teste grátis · <b>${TRIAL.days} ${TRIAL.days===1?"dia":"dias"}</b>`;
     return;
   }
-  const map={profissional:"Profissional",enterprise:"Enterprise"};
-  const el = $("#plan-label"); if(el) el.textContent = map[STATE.company.plan]||"Profissional";
+  const el = $("#plan-label"); if(el) el.textContent = "Locarion";
 }
 function rerenderCurrent(){ updatePlanLabel(); renderRoute(); }
 
@@ -4036,7 +4030,6 @@ function handleAction(action, id){
     case "cal-prev": CAL_MONTH.setMonth(CAL_MONTH.getMonth()-1); renderCalendar(); break;
     case "cal-next": CAL_MONTH.setMonth(CAL_MONTH.getMonth()+1); renderCalendar(); break;
     case "cal-today": CAL_MONTH = new Date(); renderCalendar(); break;
-    case "set-plan": saveCompany({plan:id}).then(()=>toast("Plano atualizado (demonstração).","ok")); break;
     case "new-quote": contractFormModal(null,"orcamento"); break;
     case "convert-quote": convertQuote(id); break;
     case "toggle-signed": { const c=byId(STATE.contracts,id); saveDoc("contracts",id,{signed:!c.signed}).then(()=>toast(c.signed?"Marcado como pendente.":"Contrato marcado como assinado.","ok")); break; }
