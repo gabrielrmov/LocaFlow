@@ -9,7 +9,7 @@
 ## Modelos visuais prontos
 As imagens (1080x1350; capas de reels em 1080x1920) estão em `marketing/posts/`, numeradas conforme os posts abaixo (ex.: `05-carrossel-contrato-03.png`).
 Para ajustar textos e regenerar: edite `marketing/gerar-posts.js` e rode `NODE_PATH=$(npm root -g) node marketing/gerar-posts.js`.
-Layout inspirado no Behance (títulos leve + negrito, alternando escuro e claro, botão contorno, cabeçalho e rodapé finos), com a identidade da Locarion (Inter, logo azul com ponto laranja, laranja `#F0761C`, JetBrains Mono nos microtextos, prints reais do painel).
+Layout fiel à referência do Behance (logo e título centralizados, peso leve + negrito, linha de microtexto no topo e no rodapé, botão contorno, objetos 3D de vidro em leque, ladrilhos, diamante e celular com ícone, alternando escuro e claro), com a identidade da Locarion (Inter, logo azul com ponto laranja, laranja `#F0761C`, JetBrains Mono nos microtextos, prints reais do painel).
 
 ## Direção visual
 - Paleta: laranja `#FF3D00` / `#D9620F`, azul `#1E3A5F`, fundo escuro `#000710`, branco.
