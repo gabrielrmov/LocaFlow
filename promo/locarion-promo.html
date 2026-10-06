@@ -6,23 +6,29 @@
 <title>Locarion · Vídeo promocional</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
+  /* identidade do locarion.app */
   --navy:#1E3A5F;
-  --orange:#F29A4A;
+  --orange:#FF3D00;
+  --orange-hot:#FF5A26;
+  --orange-soft:#F0761C;
+  --deep:#000710;
   --blue:#4C8DFF;
-  --blue-2:#7FB2FF;
-  --app-bg:#0B0C0F;
-  --app-card:#15161A;
-  --app-card-2:#1B1C21;
-  --app-line:#26272D;
-  --app-ink:#F2F3F5;
-  --app-ink-2:#A3A5AD;
-  --app-ink-3:#6F717A;
-  --good:#3DD68C;
-  --warn:#F5B942;
-  --bad:#F06464;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  /* telas do app em tema claro, como no site */
+  --app-bg:#F3F3F7;
+  --app-card:#FFFFFF;
+  --app-line:rgba(21,25,30,.08);
+  --app-line-2:rgba(21,25,30,.13);
+  --app-ink:#15191E;
+  --app-ink-2:#5B626B;
+  --app-ink-3:#8A9099;
+  --good:#127A2E; --good-bg:#E3F6EA;
+  --warn:#8A5A05; --warn-bg:#FCEFD9;
+  --bad:#C22F2F;  --bad-bg:#FBE7E7;
+  --info:#1E3A5F; --info-bg:#E8ECF2;
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:#000;overflow:hidden}
@@ -30,16 +36,16 @@ body{font-family:"Inter",system-ui,-apple-system,sans-serif;-webkit-font-smoothi
 
 /* ---------- palco 1920x1080 escalado para caber na janela ---------- */
 #viewport{position:fixed;inset:0;display:grid;place-items:center}
-#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;overflow:hidden;background:#04060C;
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;overflow:hidden;background:var(--deep);
   transform-origin:0 0;perspective:2600px;perspective-origin:50% 50%}
 
 /* ---------- fundo com brilho colorido ---------- */
 .bg{position:absolute;inset:0;overflow:hidden}
 .blob{position:absolute;border-radius:50%;opacity:.55}
-.b1{width:900px;height:900px;left:900px;top:-200px;background:radial-gradient(circle,#2F6BFF 0%,rgba(47,107,255,0) 70%)}
-.b2{width:760px;height:760px;left:-160px;top:420px;background:radial-gradient(circle,#F28C3A 0%,rgba(242,140,58,0) 70%);opacity:.38}
-.b3{width:700px;height:700px;left:1300px;top:520px;background:radial-gradient(circle,#8A4DFF 0%,rgba(138,77,255,0) 70%);opacity:.42}
-.b4{width:600px;height:600px;left:500px;top:-260px;background:radial-gradient(circle,#19C2C9 0%,rgba(25,194,201,0) 70%);opacity:.22}
+.b1{width:900px;height:900px;left:900px;top:-200px;background:radial-gradient(circle,#2A5BD7 0%,rgba(42,91,215,0) 70%);opacity:.5}
+.b2{width:900px;height:900px;left:-200px;top:380px;background:radial-gradient(circle,#FF3D00 0%,rgba(255,61,0,0) 70%);opacity:.32}
+.b3{width:760px;height:760px;left:1250px;top:520px;background:radial-gradient(circle,#F0761C 0%,rgba(240,118,28,0) 70%);opacity:.26}
+.b4{width:700px;height:700px;left:420px;top:-300px;background:radial-gradient(circle,#1E3A5F 0%,rgba(30,58,95,0) 70%);opacity:.9}
 .bg-grid{position:absolute;inset:-2px;opacity:.07;
   background-image:linear-gradient(rgba(255,255,255,.6) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.6) 1px,transparent 1px);
   background-size:80px 80px;
@@ -60,8 +66,9 @@ body{font-family:"Inter",system-ui,-apple-system,sans-serif;-webkit-font-smoothi
   background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(10px);
   font-size:20px;font-weight:600;color:#C9D3E6;letter-spacing:.01em;margin-bottom:34px}
 .eyebrow img{width:30px;height:30px;border-radius:8px}
-.eyebrow .num{color:var(--orange);font-weight:700}
-.headline h2{margin:0;font-size:96px;line-height:1.02;font-weight:800;letter-spacing:-.045em;color:#fff}
+.eyebrow .num{color:var(--orange-hot);font-weight:700;font-family:var(--mono);font-size:18px}
+.eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--orange);box-shadow:0 0 0 4px rgba(255,61,0,.18),0 0 14px rgba(255,61,0,.8)}
+.headline h2{margin:0;font-size:96px;line-height:1.02;font-weight:600;letter-spacing:-.05em;color:#fff}
 .headline h2 .w{display:inline-block}
 .headline h2 .kw{display:inline-block;padding-right:.06em;margin-right:-.06em}
 .kw{background:linear-gradient(100deg,#3D7BFF 0%,#6FA8FF 45%,#3D7BFF 90%);background-size:200% 100%;
@@ -87,118 +94,144 @@ body{font-family:"Inter",system-ui,-apple-system,sans-serif;-webkit-font-smoothi
   background:linear-gradient(118deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,.04) 26%,transparent 42%,transparent 70%,rgba(255,255,255,.05) 100%)}
 .scr{position:absolute;inset:0;opacity:0}
 
-/* ---------- UI do app (tema escuro do painel Locarion) ---------- */
-.app{position:absolute;inset:0;background:var(--app-bg);color:var(--app-ink);font-size:14px;letter-spacing:-.005em;display:flex;flex-direction:column}
-.sb{height:52px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:6px 30px 0 34px;font-weight:600;font-size:15px}
+/* ---------- UI do app (tema claro, igual ao painel mostrado no site) ---------- */
+.app{position:absolute;inset:0;background:var(--app-bg);color:var(--app-ink);font-size:14px;letter-spacing:-.01em;display:flex;flex-direction:column}
+.sb{height:52px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:6px 30px 0 34px;font-weight:600;font-size:15px;background:#fff}
 .sb .ic{display:flex;gap:6px;align-items:center}
-.hdr{display:flex;align-items:center;gap:10px;padding:8px 16px 12px;border-bottom:1px solid var(--app-line)}
-.hdr h3{margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em;flex:1}
-.hdr .sub{font-size:12px;color:var(--app-ink-3);font-weight:600}
-.ibtn{width:38px;height:38px;border-radius:11px;border:1px solid var(--app-line);background:var(--app-card);display:grid;place-items:center;color:var(--app-ink);position:relative}
-.ibtn.blue{background:var(--blue);border-color:var(--blue);color:#fff}
-.ibtn .badge{position:absolute;top:-5px;right:-5px;width:17px;height:17px;border-radius:50%;background:var(--bad);font-size:10px;font-weight:800;display:grid;place-items:center}
+.hdr{display:flex;align-items:center;gap:10px;padding:8px 16px 12px;background:#fff;border-bottom:1px solid var(--app-line)}
+.hdr h3{margin:0;font-size:20px;font-weight:600;letter-spacing:-.03em;flex:1}
+.hdr .sub{font:500 11.5px var(--mono);color:var(--app-ink-3)}
+.ibtn{width:38px;height:38px;border-radius:10px;border:1px solid var(--app-line-2);background:#fff;display:grid;place-items:center;color:var(--app-ink);position:relative}
+.ibtn.or{background:var(--orange);border-color:var(--orange);color:#fff}
+.ibtn .badge{position:absolute;top:-5px;right:-5px;width:17px;height:17px;border-radius:50%;background:var(--orange);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center}
 .body{flex:1;overflow:hidden;padding:14px 14px 0;display:flex;flex-direction:column;gap:12px}
-.search{display:flex;align-items:center;gap:9px;height:40px;border-radius:12px;background:var(--app-card);border:1px solid var(--app-line);padding:0 12px;color:var(--app-ink-3);font-size:13.5px}
+.hello{padding:2px 2px 0}
+.hello small{display:block;font-size:11.5px;color:var(--app-ink-3)}
+.hello b{font-size:22px;font-weight:600;letter-spacing:-.03em}
+.search{display:flex;align-items:center;gap:9px;height:40px;border-radius:10px;background:#fff;border:1px solid var(--app-line-2);padding:0 12px;color:var(--app-ink-3);font-size:13.5px}
+.search kbd{margin-left:auto;font:500 10.5px var(--mono);padding:3px 6px;border-radius:5px;border:1px solid var(--app-line-2);border-bottom-width:2px;color:var(--app-ink-2)}
 .chips{display:flex;gap:7px}
-.chip{padding:7px 10px;border-radius:999px;background:var(--app-card);border:1px solid var(--app-line);font-size:11.5px;font-weight:600;color:var(--app-ink-2);white-space:nowrap}
-.chip b{color:var(--app-ink);margin-left:3px}
-.chip.on{background:rgba(76,141,255,.16);border-color:rgba(76,141,255,.45);color:#BFD5FF}
-.list{display:flex;flex-direction:column;border-radius:16px;background:var(--app-card);border:1px solid var(--app-line);overflow:hidden}
-.row{display:flex;align-items:center;gap:11px;padding:11px 12px;border-bottom:1px solid var(--app-line)}
+.chip{padding:7px 10px;border-radius:999px;background:#fff;border:1px solid var(--app-line-2);font-size:11.5px;font-weight:500;color:var(--app-ink-2);white-space:nowrap}
+.chip b{color:var(--app-ink);margin-left:3px;font-weight:600}
+.chip.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.chip.on b{color:#fff}
+.list{display:flex;flex-direction:column;border-radius:14px;background:#fff;border:1px solid var(--app-line);overflow:hidden;box-shadow:0 1px 2px rgba(16,17,20,.04)}
+.lh{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid var(--app-line);font-weight:600;font-size:13.5px}
+.lh span{font-weight:400;font-size:11.5px;color:var(--app-ink-3)}
+.row{display:flex;align-items:center;gap:11px;padding:10px 12px;border-bottom:1px solid var(--app-line)}
 .row:last-child{border-bottom:0}
-.tile{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;flex:none}
-.t-blue{background:rgba(76,141,255,.15);color:#7FB0FF}
-.t-green{background:rgba(61,214,140,.14);color:var(--good)}
-.t-orange{background:rgba(242,154,74,.16);color:var(--orange)}
-.t-yellow{background:rgba(245,185,66,.15);color:var(--warn)}
-.t-red{background:rgba(240,100,100,.15);color:var(--bad)}
-.t-violet{background:rgba(160,120,255,.16);color:#B79BFF}
+.tile{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;flex:none}
+.t-navy{background:var(--info-bg);color:var(--navy)}
+.t-green{background:var(--good-bg);color:var(--good)}
+.t-orange{background:#FFE9E0;color:var(--orange)}
+.t-yellow{background:var(--warn-bg);color:var(--warn)}
+.t-red{background:var(--bad-bg);color:var(--bad)}
 .row .tx{flex:1;min-width:0}
-.row .nm{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.row .mt{font-size:11.5px;color:var(--app-ink-3);margin-top:2px;white-space:nowrap}
+.row .nm{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .mt{font-size:11.5px;color:var(--app-ink-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row .rt{text-align:right}
-.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:10.5px;font-weight:700;white-space:nowrap}
-.p-green{background:rgba(61,214,140,.14);color:var(--good)}
-.p-blue{background:rgba(76,141,255,.16);color:#8DB8FF}
-.p-orange{background:rgba(242,154,74,.16);color:var(--orange)}
-.p-yellow{background:rgba(245,185,66,.15);color:var(--warn)}
-.p-red{background:rgba(240,100,100,.15);color:var(--bad)}
-.price{font-size:11px;color:var(--app-ink-3);margin-top:4px;font-weight:600}
-.tabbar{flex:none;height:78px;border-top:1px solid var(--app-line);background:rgba(14,15,18,.96);display:flex;justify-content:space-around;padding:10px 6px 0}
-.tab{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;font-weight:600;color:var(--app-ink-3)}
-.tab.on{color:var(--blue)}
-.card{border-radius:16px;background:var(--app-card);border:1px solid var(--app-line);padding:13px}
-.lbl{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--app-ink-3)}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:999px;font-size:10.5px;font-weight:600;white-space:nowrap}
+.pill::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}
+.p-green{background:var(--good-bg);color:var(--good)}
+.p-navy{background:var(--info-bg);color:var(--navy)}
+.p-orange{background:#FFE9E0;color:#C63000}
+.p-yellow{background:var(--warn-bg);color:var(--warn)}
+.p-red{background:var(--bad-bg);color:var(--bad)}
+.price{font:500 10.5px var(--mono);color:var(--app-ink-3);margin-top:4px}
+.tabbar{flex:none;height:78px;border-top:1px solid var(--app-line);background:#fff;display:flex;justify-content:space-around;padding:10px 6px 0}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;font-weight:500;color:var(--app-ink-3)}
+.tab.on{color:var(--orange)}
+.card{border-radius:14px;background:#fff;border:1px solid var(--app-line);padding:12px;box-shadow:0 1px 2px rgba(16,17,20,.04)}
+.lbl{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--app-ink-3)}
 .steps{display:flex;align-items:center;gap:6px}
-.step{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--app-ink-2)}
-.step .dot{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:rgba(61,214,140,.16);color:var(--good)}
-.step.on{color:#fff}
-.step.on .dot{background:var(--blue);color:#fff;box-shadow:0 0 0 4px rgba(76,141,255,.22)}
-.steps .bar{flex:1;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--good),rgba(61,214,140,.3))}
+.step{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:500;color:var(--app-ink-2)}
+.step .dot{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--good-bg);color:var(--good);font:600 11px var(--mono)}
+.step.on{color:var(--app-ink);font-weight:600}
+.step.on .dot{background:#fff;border:1px solid rgba(240,118,28,.7);color:var(--orange);box-shadow:0 0 0 4px rgba(240,118,28,.1)}
+.steps .bar{flex:1;height:1px;background:linear-gradient(90deg,var(--orange),rgba(242,153,74,.2))}
 .cl{display:flex;align-items:center;gap:11px}
-.av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#2C5C9A,#1E3A5F);display:grid;place-items:center;font-weight:800;font-size:13px}
-.it{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px dashed var(--app-line)}
-.it span:first-child{color:var(--app-ink-2)}
-.it b{font-weight:700}
-.total{display:flex;justify-content:space-between;align-items:baseline;padding-top:10px}
-.total b{font-size:26px;font-weight:800;letter-spacing:-.02em}
+.av{width:38px;height:38px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:600;font-size:13px}
+.rate{display:flex;justify-content:space-between;padding:7px 10px;font-size:12.5px;color:var(--app-ink-2);border-radius:8px}
+.rate b{font:500 12px var(--mono);color:var(--app-ink)}
+.rate.best{background:rgba(30,58,95,.07);color:var(--app-ink);font-weight:600}
+.rate.best .tg{font-size:9.5px;font-weight:600;color:#fff;background:var(--navy);padding:2px 6px;border-radius:99px;margin-left:6px}
+.total{display:flex;justify-content:space-between;align-items:baseline;padding:8px 2px 0;border-top:1px dashed var(--app-line-2);margin-top:6px}
+.total b{font-size:24px;font-weight:600;letter-spacing:-.03em}
 .pay{display:flex;gap:8px}
-.opt{flex:1;border-radius:12px;border:1px solid var(--app-line);background:var(--app-card);padding:10px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px}
-.opt.on{border-color:var(--blue);background:rgba(76,141,255,.12)}
-.opt .rd{width:16px;height:16px;border-radius:50%;border:2px solid var(--app-ink-3)}
-.opt.on .rd{border:5px solid var(--blue);background:#fff}
-.cta{height:50px;border-radius:14px;background:linear-gradient(180deg,#5A97FF,#3B7BF2);display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800;font-size:15px;box-shadow:0 10px 30px -8px rgba(76,141,255,.7)}
-.wa{border-radius:14px 14px 14px 4px;background:#12351F;border:1px solid #1E5532;padding:10px 12px;font-size:12.5px;line-height:1.45;color:#DDF5E6}
-.wa .meta{display:flex;justify-content:flex-end;gap:5px;font-size:10px;color:#7BC596;margin-top:4px;font-weight:600}
-.wa-h{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;color:var(--app-ink-2)}
-.wa-h .g{width:20px;height:20px;border-radius:50%;background:#25D366;display:grid;place-items:center;color:#06240F}
-.alerts{border-color:rgba(240,100,100,.55)}
-.al{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--app-line)}
+.opt{flex:1;border-radius:10px;border:1px solid var(--app-line-2);background:#fff;padding:9px 10px;display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px}
+.opt.on{border-color:var(--navy);background:var(--info-bg)}
+.opt .rd{width:15px;height:15px;border-radius:50%;border:2px solid var(--app-ink-3)}
+.opt.on .rd{border:5px solid var(--navy);background:#fff}
+.cta{height:48px;border-radius:11px;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:15px;box-shadow:0 10px 26px -8px rgba(255,61,0,.6)}
+.split{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--app-line)}
+.split div{padding:10px 12px}
+.split div+div{border-left:1px solid var(--app-line)}
+.split .v{font-size:30px;font-weight:600;letter-spacing:-.03em;margin-top:4px}
+.meter{height:6px;border-radius:3px;background:var(--app-bg);margin:0 12px 10px;overflow:hidden}
+.meter i{display:block;height:100%;width:75%;border-radius:3px;background:var(--navy)}
+.alerts{border-color:rgba(194,47,47,.35);background:linear-gradient(180deg,#FFF7F6,#fff)}
+.al{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--app-line)}
 .al:last-child{border-bottom:0}
-.al i{width:8px;height:8px;border-radius:50%;margin-top:6px;flex:none}
-.al b{display:block;font-size:13px}
-.al span{font-size:11.5px;color:var(--app-ink-3)}
-.kpis{display:grid;grid-template-columns:1fr 1fr;border-radius:16px;border:1px solid var(--app-line);overflow:hidden;background:var(--app-line);gap:1px}
-.kpi{background:var(--app-card);padding:12px}
+.al i{width:7px;height:7px;border-radius:50%;margin-top:6px;flex:none}
+.al b{display:block;font-size:12.5px;font-weight:600}
+.al span{font-size:11px;color:var(--app-ink-3)}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpi{background:#fff;border:1px solid var(--app-line);border-radius:12px;padding:11px}
 .kpi .top{display:flex;justify-content:space-between;align-items:flex-start}
-.kpi .v{font-size:27px;font-weight:800;margin-top:6px;letter-spacing:-.02em}
-.kpi .s{font-size:11px;color:var(--app-ink-3);margin-top:2px}
-.mini{width:24px;height:24px;border-radius:7px;display:grid;place-items:center}
-.bars{display:flex;align-items:flex-end;gap:6px;height:84px;margin-top:10px}
-.bars i{flex:1;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,#5A97FF,rgba(76,141,255,.25))}
-.bars i.dim{background:rgba(255,255,255,.08)}
+.kpi .v{font-size:25px;font-weight:600;margin-top:6px;letter-spacing:-.03em}
+.kpi .s{font-size:10.5px;color:var(--app-ink-3);margin-top:2px}
+.mini{width:22px;height:22px;border-radius:6px;display:grid;place-items:center}
+.bars{display:flex;align-items:flex-end;gap:6px;height:76px;margin-top:10px}
+.bars i{flex:1;border-radius:4px 4px 2px 2px;background:var(--navy);opacity:.85}
+.bars i.dim{background:var(--app-line-2)}
+.bars i.hot{background:var(--orange);opacity:1}
 .hl{position:relative}
-.hl::after{content:"";position:absolute;inset:-4px;border-radius:18px;border:2px solid var(--blue);box-shadow:0 0 0 6px rgba(76,141,255,.18),0 0 40px rgba(76,141,255,.5);opacity:var(--hl,0)}
+.hl::after{content:"";position:absolute;inset:-4px;border-radius:16px;border:2px solid var(--orange);box-shadow:0 0 0 6px rgba(255,61,0,.12),0 0 34px rgba(255,61,0,.45);opacity:var(--hl,0);pointer-events:none}
 
-/* ---------- cards que saltam do celular ---------- */
-.fc{position:absolute;min-width:300px;white-space:nowrap;border-radius:22px;padding:18px 20px;display:flex;align-items:center;gap:16px;
-  background:linear-gradient(160deg,rgba(38,42,54,.92),rgba(18,20,27,.92));border:1px solid rgba(255,255,255,.14);
-  box-shadow:0 30px 60px -20px rgba(0,0,0,.85),0 0 0 1px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.08);
-  backdrop-filter:blur(18px);opacity:0;transform-style:preserve-3d}
-.fc .tile{width:54px;height:54px;border-radius:15px}
-.fc .t1{font-size:21px;font-weight:700;letter-spacing:-.015em;color:#fff}
-.fc .t2{font-size:16px;color:#9AA4B8;margin-top:3px;font-weight:500}
-.fc.kp{flex-direction:column;align-items:flex-start;gap:6px;min-width:280px}
-.fc.kp .lbl{font-size:13px}
-.fc.kp .big{font-size:46px;font-weight:800;letter-spacing:-.03em;line-height:1}
-.fc.kp .s{font-size:15px;color:#9AA4B8;font-weight:500}
-.fc.paid{width:auto;padding:14px 22px 14px 14px;border-radius:999px;background:linear-gradient(160deg,rgba(24,70,46,.95),rgba(14,40,27,.95));border-color:rgba(61,214,140,.5)}
-.fc.paid .tile{width:44px;height:44px;border-radius:50%;background:var(--good);color:#04230F}
-.fc.bubble{border-radius:24px 24px 24px 6px;background:linear-gradient(160deg,rgba(28,80,48,.95),rgba(16,48,29,.95));border-color:rgba(61,214,140,.4)}
+/* ---------- cards que saltam do celular (estilo dos "float" do site) ---------- */
+.fc{position:absolute;min-width:300px;white-space:nowrap;border-radius:18px;padding:16px 20px 16px 16px;display:flex;align-items:center;gap:15px;
+  background:rgba(255,255,255,.96);border:1px solid rgba(21,25,30,.1);color:var(--app-ink);
+  box-shadow:0 30px 60px -18px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.4);opacity:0;transform-style:preserve-3d}
+.fc .tile{width:52px;height:52px;border-radius:14px}
+.fc .t1{font-size:21px;font-weight:600;letter-spacing:-.025em}
+.fc .t2{font-size:16px;color:var(--app-ink-3);margin-top:3px}
+.fc .pill{font-size:13px;padding:4px 10px;margin-left:6px}
+.fc.kp{flex-direction:column;align-items:flex-start;gap:6px;min-width:270px;padding:18px 22px}
+.fc.kp .lbl{font-size:12.5px}
+.fc.kp .big{font-size:48px;font-weight:600;letter-spacing:-.04em;line-height:1}
+.fc.kp .s{font-size:15px;color:var(--app-ink-3)}
+.fc.paid{min-width:0;padding:12px 22px 12px 12px;border-radius:999px}
+.fc.paid .tile{width:42px;height:42px;border-radius:50%;background:var(--good);color:#fff}
+.fc.doc{flex-direction:column;align-items:stretch;gap:0;padding:18px 22px;border-radius:10px;font:500 14.5px/1.85 var(--mono);color:#1B1D22;white-space:nowrap}
+.fc.doc .dt{font-weight:600;font-size:14px;letter-spacing:.02em;margin-bottom:4px}
+.fc.doc mark{background:rgba(240,118,28,.22);color:inherit;padding:0 3px;border-radius:2px}
+.fc.doc .ln{height:6px;border-radius:3px;background:#E6E8EC;margin-top:7px}
+
+/* faixa de equipamentos (marquee do site) */
+.marq{position:absolute;left:150px;top:975px;width:800px;overflow:hidden;opacity:0;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}
+.marq-track{display:flex;gap:12px;width:max-content}
+.mchip{display:inline-flex;align-items:center;gap:10px;padding:11px 20px;border-radius:99px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#C7CEDA;font-size:19px;font-weight:500;white-space:nowrap}
+.mchip::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--orange)}
 
 /* ---------- leque ---------- */
 #fan{position:absolute;inset:0;transform-style:preserve-3d;pointer-events:none}
 #fan .rig{opacity:0}
 
-/* ---------- encerramento ---------- */
+/* ---------- encerramento (como o CTA escuro do site) ---------- */
 #end{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0}
 .lockup{display:flex;align-items:center;gap:44px}
-.lockup img{width:210px;height:210px;border-radius:52px;box-shadow:0 40px 90px -20px rgba(0,0,0,.8),0 0 120px rgba(76,141,255,.35)}
-.wordmark{font-size:176px;font-weight:700;letter-spacing:-.045em;line-height:1;color:#fff;display:flex}
+.lockup img{width:200px;height:200px;border-radius:50px;box-shadow:0 40px 90px -20px rgba(0,0,0,.8),0 0 120px rgba(255,61,0,.25)}
+.wordmark{font-size:172px;font-weight:600;letter-spacing:-.055em;line-height:1;color:#fff;display:flex}
 .wordmark span{display:inline-block}
-.tagline{margin-top:46px;font-size:46px;font-weight:600;letter-spacing:-.02em;color:#B9C3D6}
-.url{margin-top:30px;padding:12px 26px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);font-size:24px;font-weight:600;color:#DCE4F2;letter-spacing:.01em}
-.url b{color:var(--orange)}
+.tagline{margin-top:40px;font-size:50px;font-weight:500;letter-spacing:-.035em;color:#C9D1DE}
+.endcta{display:flex;gap:18px;align-items:center;margin-top:46px}
+.btn-or{display:inline-flex;align-items:center;height:72px;padding:0 36px;border-radius:14px;background:var(--orange);color:#fff;font-size:27px;font-weight:600;letter-spacing:-.01em;box-shadow:0 0 50px -6px rgba(255,61,0,.7)}
+.url{display:inline-flex;align-items:center;height:72px;padding:0 30px;border-radius:14px;border:1px solid rgba(255,255,255,.22);font-size:26px;font-weight:500;color:#E6EAF1}
+.url b{color:var(--orange-hot)}
+.checks{display:flex;gap:34px;margin-top:34px;font-size:21px;color:#AEB6C4}
+.checks span{display:inline-flex;align-items:center;gap:10px}
+.checks span::before{content:"";width:16px;height:9px;border-left:2.5px solid var(--orange-hot);border-bottom:2.5px solid var(--orange-hot);transform:rotate(-45deg) translate(1px,-3px)}
 
 /* ---------- modo vertical 1080x1920 (?v) ---------- */
 .vert #stage{width:1080px;height:1920px}
@@ -212,8 +245,10 @@ body{font-family:"Inter",system-ui,-apple-system,sans-serif;-webkit-font-smoothi
 .vert .lockup{flex-direction:column;gap:56px}
 .vert .lockup img{width:260px;height:260px;border-radius:64px}
 .vert .wordmark{font-size:180px}
-.vert .tagline{margin-top:56px;font-size:54px}
-.vert .url{margin-top:40px;font-size:28px}
+.vert .tagline{margin-top:50px;font-size:56px}
+.vert .endcta{flex-direction:column;gap:20px;margin-top:56px}
+.vert .checks{flex-direction:column;align-items:center;gap:14px;font-size:24px}
+.vert .marq{left:0;top:780px;width:1080px}
 .vert .fc .t1{font-size:23px}
 .vert .fc .t2{font-size:17px}
 .vert .fc.kp .big{font-size:50px}
@@ -242,27 +277,31 @@ body.clean #ctrl{display:none}
   <div id="world">
     <!-- Cena 1 -->
     <div class="headline left" id="h1">
-      <div class="eyebrow"><img src="locarion-icon.png" alt=""><span><span class="num">01</span> · Equipamentos</span></div>
+      <div class="eyebrow"><span class="dot"></span><span><span class="num">01</span> · Equipamentos</span></div>
       <h2>Feito para quem aluga equipamento para <em class="kw">construção</em>.</h2>
-      <p>Betoneira, andaime, escora, martelete, gerador. Do pátio até a obra, e de volta.</p>
+      <p>Betoneira, andaime, escora, martelete, compactador, gerador. Do pátio até a obra do cliente, e de volta.</p>
     </div>
+    <div class="marq" id="marq"><div class="marq-track">
+      <span class="mchip">Betoneira</span><span class="mchip">Andaime tubular</span><span class="mchip">Escora metálica</span><span class="mchip">Gerador</span><span class="mchip">Placa vibratória</span><span class="mchip">Serra mármore</span><span class="mchip">Motobomba</span><span class="mchip">Andaime fachadeiro</span><span class="mchip">Vibrador de concreto</span><span class="mchip">Cortadora de piso</span>
+      <span class="mchip">Betoneira</span><span class="mchip">Andaime tubular</span><span class="mchip">Escora metálica</span><span class="mchip">Gerador</span><span class="mchip">Placa vibratória</span><span class="mchip">Serra mármore</span><span class="mchip">Motobomba</span><span class="mchip">Andaime fachadeiro</span><span class="mchip">Vibrador de concreto</span><span class="mchip">Cortadora de piso</span>
+    </div></div>
     <!-- Cena 2 -->
     <div class="headline right" id="h2">
-      <div class="eyebrow"><img src="locarion-icon.png" alt=""><span><span class="num">02</span> · Contratos e cobrança</span></div>
+      <div class="eyebrow"><span class="dot"></span><span><span class="num">02</span> · Contrato e cobrança</span></div>
       <h2>Do cadastro à <em class="kw">cobrança</em>.</h2>
-      <p>Contrato no seu modelo, valor calculado e cobrança por Pix ou boleto, sem sair do sistema.</p>
+      <p>Cadastre o que você aluga, emita o contrato no seu modelo e acompanhe quem pagou e quem está devendo.</p>
     </div>
     <!-- Cena 3 -->
     <div class="headline left" id="h3">
-      <div class="eyebrow"><img src="locarion-icon.png" alt=""><span><span class="num">03</span> · Avisos automáticos</span></div>
+      <div class="eyebrow"><span class="dot"></span><span><span class="num">03</span> · Agenda e estoque</span></div>
       <h2>Menos <em class="kw">ligação</em>.</h2>
-      <p>Lembretes de devolução e vencimento chegam no WhatsApp do cliente antes de alguém precisar ligar.</p>
+      <p>O Locarion responde as perguntas que aparecem todo dia na locadora, antes de alguém precisar ligar para perguntar.</p>
     </div>
     <!-- Cena 4 -->
     <div class="headline right" id="h4">
-      <div class="eyebrow"><img src="locarion-icon.png" alt=""><span><span class="num">04</span> · Painel</span></div>
+      <div class="eyebrow"><span class="dot"></span><span><span class="num">04</span> · No computador e no celular</span></div>
       <h2>Sua locadora organizada <em class="kw">em um só lugar</em>.</h2>
-      <p>Contratos, agenda, manutenção e financeiro numa tela só.</p>
+      <p>Contratos, retiradas, devoluções, estoque, manutenção e cobrança. Tudo o que sai e volta do seu pátio.</p>
     </div>
 
     <!-- iPhone principal -->
@@ -274,62 +313,66 @@ body.clean #ctrl{display:none}
     </div>
 
     <!-- cards cena 1 -->
-    <div class="fc" data-scene="1" style="left:1515px;top:205px">
+    <div class="fc" data-scene="1" style="right:60px;top:205px">
       <div class="tile t-green" data-ic="mixer"></div>
-      <div><div class="t1">Betoneira 400L</div><div class="t2">4 de 6 livres no pátio</div></div>
+      <div><div class="t1">Betoneira 400L · BET-01</div><div class="t2">Disponível no pátio</div></div>
     </div>
-    <div class="fc" data-scene="1" style="left:925px;top:585px">
-      <div class="tile t-blue" data-ic="layers"></div>
-      <div><div class="t1">Andaime tubular</div><div class="t2">240 peças · 80 na obra</div></div>
+    <div class="fc" data-scene="1" style="left:905px;top:585px">
+      <div class="tile t-navy" data-ic="layers"></div>
+      <div><div class="t1">Andaime tubular 1,5m</div><div class="t2">173 no pátio · 58 alugadas</div></div>
     </div>
-    <div class="fc" data-scene="1" style="left:1545px;top:735px">
+    <div class="fc" data-scene="1" style="right:50px;top:735px">
       <div class="tile t-yellow" data-ic="wrench"></div>
-      <div><div class="t1">Martelete MT-03</div><div class="t2">Volta da manutenção em 2 dias</div></div>
+      <div><div class="t1">Martelete 10kg</div><div class="t2">Em manutenção · volta em 2 dias</div></div>
     </div>
 
     <!-- cards cena 2 -->
-    <div class="fc" data-scene="2" style="left:90px;top:170px">
-      <div class="tile t-blue" data-ic="user"></div>
-      <div><div class="t1">Cliente cadastrado</div><div class="t2">Construtora Alfa</div></div>
+    <div class="fc" data-scene="2" style="left:90px;top:160px">
+      <div class="tile t-navy" data-ic="clock"></div>
+      <div><div class="t1">A tarifa certa para o prazo</div><div class="t2">15 dias → quinzenal · R$ 720,00</div></div>
     </div>
-    <div class="fc" data-scene="2" style="left:690px;top:430px">
-      <div class="tile t-violet" data-ic="file"></div>
-      <div><div class="t1">Contrato CT-0233</div><div class="t2">PDF no seu modelo</div></div>
+    <div class="fc doc" data-scene="2" style="left:700px;top:390px">
+      <div class="dt">CONTRATO DE LOCAÇÃO Nº <mark>CT-0233</mark></div>
+      <div>LOCATÁRIO: <mark>Construtora Alfa</mark></div>
+      <div>OBJETO: <mark>2 × Betoneira 400L</mark></div>
+      <div>PRAZO: <mark>06/10</mark> a <mark>21/10</mark>, 15 dia(s)</div>
+      <div>VALOR: <mark>R$ 1.660,00</mark></div>
+      <div class="ln" style="width:80%"></div><div class="ln" style="width:55%"></div>
     </div>
     <div class="fc" data-scene="2" style="left:80px;top:760px">
       <div class="tile t-orange" data-ic="card"></div>
-      <div><div class="t1">Cobrança enviada</div><div class="t2">Pix · R$ 1.840,00</div></div>
+      <div><div class="t1">Cobrança enviada</div><div class="t2">Pix e boleto · R$ 1.660,00</div></div>
     </div>
-    <div class="fc paid" data-scene="2" style="left:700px;top:770px">
+    <div class="fc paid" data-scene="2" style="left:720px;top:800px">
       <div class="tile" data-ic="check"></div>
-      <div><div class="t1">Pago</div><div class="t2" style="color:#9FE3BE">R$ 1.840,00 recebido</div></div>
+      <div><div class="t1">Pago</div><div class="t2">Construtora Alfa · R$ 1.660,00</div></div>
     </div>
 
     <!-- cards cena 3 -->
-    <div class="fc" data-scene="3" style="left:1525px;top:215px">
-      <div class="tile t-green" data-ic="wa"></div>
-      <div><div class="t1">Lembrete enviado</div><div class="t2">Devolução amanhã · CT-0231</div></div>
+    <div class="fc" data-scene="3" style="right:60px;top:215px">
+      <div class="tile t-orange" data-ic="arrowOut"></div>
+      <div><div class="t1">Sai hoje <span class="pill p-navy">Sai</span></div><div class="t2">Betoneira 400L → Setor Bueno</div></div>
     </div>
-    <div class="fc bubble" data-scene="3" style="left:920px;top:560px">
-      <div><div class="t2" style="color:#8FD8AC;margin:0 0 4px;font-size:14px;font-weight:700">Construtora Alfa respondeu</div><div class="t1">“Ok, devolvemos amanhã às 10h.”</div></div>
+    <div class="fc kp" data-scene="3" style="left:910px;top:540px">
+      <div class="lbl">Andaime tubular 1,5m · no pátio</div><div class="big">173</div><div class="s">58 alugadas · saldo na hora</div>
     </div>
-    <div class="fc" data-scene="3" style="left:1545px;top:745px">
-      <div class="tile t-blue" data-ic="bell"></div>
-      <div><div class="t1">18 avisos hoje</div><div class="t2">Enviados sem pegar no telefone</div></div>
+    <div class="fc" data-scene="3" style="right:50px;top:745px">
+      <div class="tile t-green" data-ic="arrowIn"></div>
+      <div><div class="t1">Volta hoje <span class="pill p-green">Volta</span></div><div class="t2">Serra mármore · Obras Ferreira</div></div>
     </div>
 
     <!-- cards cena 4 -->
     <div class="fc kp" data-scene="4" style="left:110px;top:150px">
-      <div class="lbl">Contratos ativos</div><div class="big">32</div><div class="s"><span style="color:var(--good)">+4</span> esta semana</div>
+      <div class="lbl">Contratos ativos</div><div class="big">32</div><div class="s"><span style="color:var(--good);font-weight:600">+4</span> esta semana</div>
     </div>
     <div class="fc kp" data-scene="4" style="left:680px;top:300px">
-      <div class="lbl">Recebido no mês</div><div class="big" style="color:#8DB8FF">R$ 48,9 mil</div><div class="s">Pix e boleto conciliados</div>
+      <div class="lbl">Recebido no mês</div><div class="big" style="color:var(--good)">R$ 48.920</div><div class="s">Pix e boleto conciliados</div>
     </div>
     <div class="fc kp" data-scene="4" style="left:100px;top:700px">
-      <div class="lbl">Devoluções hoje</div><div class="big" style="color:var(--warn)">3</div><div class="s">na agenda, com endereço</div>
+      <div class="lbl">A receber</div><div class="big" style="color:var(--warn)">R$ 12.170</div><div class="s">vence esta semana</div>
     </div>
     <div class="fc kp" data-scene="4" style="left:720px;top:720px">
-      <div class="lbl">Inadimplência</div><div class="big" style="color:var(--bad)">4,5%</div><div class="s">quem deve, em um clique</div>
+      <div class="lbl">Atrasado</div><div class="big" style="color:var(--bad)">1</div><div class="s">vira alerta na tela inicial</div>
     </div>
 
     <!-- leque de celulares -->
@@ -341,8 +384,12 @@ body.clean #ctrl{display:none}
         <img src="locarion-icon.png" alt="Locarion">
         <div class="wordmark" id="wordmark">Locarion</div>
       </div>
-      <div class="tagline" id="tagline">Sistemas para <span class="kw">locadoras</span></div>
-      <div class="url" id="url">locarion<b>.</b>app</div>
+      <div class="tagline" id="tagline">Sistemas para <span class="kw">locadoras</span>.</div>
+      <div class="endcta" id="endcta">
+        <span class="btn-or">Testar 15 dias grátis</span>
+        <span class="url">locarion<b>.</b>app</span>
+      </div>
+      <div class="checks" id="checks"><span>15 dias de teste, sem cartão</span><span>Login com Google</span><span>Sem fidelidade</span></div>
     </div>
   </div>
 
@@ -396,9 +443,9 @@ const I = (n,s=18,w=2) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" f
 
 /* ===================== telas do app ===================== */
 const statusBar = `<div class="sb"><span>9:41</span><span class="ic">
-  <svg width="18" height="12" viewBox="0 0 18 12" fill="#fff"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
-  <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.2a10 10 0 0 1 14 0M3.5 7a6.4 6.4 0 0 1 9 0"/><circle cx="8" cy="10" r="1.2" fill="#fff" stroke="none"/></svg>
-  <svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="#fff" opacity=".45"/><rect x="2" y="2" width="18" height="9" rx="2" fill="#fff"/><rect x="25" y="4.5" width="1.6" height="4" rx=".8" fill="#fff" opacity=".45"/></svg>
+  <svg width="18" height="12" viewBox="0 0 18 12" fill="#15191E"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+  <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#15191E" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.2a10 10 0 0 1 14 0M3.5 7a6.4 6.4 0 0 1 9 0"/><circle cx="8" cy="10" r="1.2" fill="#15191E" stroke="none"/></svg>
+  <svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="#15191E" opacity=".4"/><rect x="2" y="2" width="18" height="9" rx="2" fill="#15191E"/><rect x="25" y="4.5" width="1.6" height="4" rx=".8" fill="#15191E" opacity=".4"/></svg>
 </span></div>`;
 const tabbar = on => `<div class="tabbar">${[
   ['home','Início'],['box','Equip.'],['file','Contratos'],['cal','Agenda'],['wallet','Financeiro']
@@ -410,18 +457,18 @@ const row = (tile,ic,nm,mt,pill,pc,price) => `<div class="row"><div class="tile 
 
 const SCREENS = {
 equip: `<div class="app">${statusBar}
-  <div class="hdr"><div class="ibtn">${I('menu')}</div><h3>Equipamentos</h3><div class="ibtn blue">${I('plus',20,2.4)}</div></div>
+  <div class="hdr"><div class="ibtn">${I('menu')}</div><h3>Equipamentos</h3><div class="ibtn or">${I('plus',20,2.4)}</div></div>
   <div class="body">
-    <div class="search">${I('search',17)} Buscar equipamento ou código…</div>
+    <div class="search">${I('search',17)} Buscar equipamento ou código<kbd>Ctrl K</kbd></div>
     <div class="chips"><span class="chip on">Todos<b>48</b></span><span class="chip">Livres<b>31</b></span><span class="chip">Locados<b>14</b></span><span class="chip">Manut.<b>3</b></span></div>
     <div class="list">
-      <div class="hl" id="hlEquip">${row('t-green','mixer','Betoneira 400L','BT-01 a BT-06','4 livres','p-green','R$ 45/dia')}</div>
-      ${row('t-blue','layers','Andaime tubular 1,0m','240 peças · 160 no pátio','Por peça','p-blue','R$ 1,20/dia')}
-      ${row('t-orange','pillar','Escora metálica 3,1m','500 peças · 320 locadas','Locado','p-orange','R$ 0,90/dia')}
+      <div class="hl" id="hlEquip">${row('t-green','mixer','Betoneira 400L','BET-01 a BET-06 · por unidade','4 livres','p-green','R$ 90/dia')}</div>
+      ${row('t-navy','layers','Andaime tubular 1,5m','231 peças · por quantidade','173 no pátio','p-navy','R$ 1,20/dia')}
+      ${row('t-orange','pillar','Escora metálica 3,1m','500 peças · 320 alugadas','Alugada','p-orange','R$ 0,90/dia')}
       ${row('t-yellow','hammer','Martelete 10kg','MT-03 · troca de escova','Manutenção','p-yellow','R$ 60/dia')}
-      ${row('t-green','box','Compactador (sapo)','CP-02 · pátio','Disponível','p-green','R$ 85/dia')}
-      ${row('t-orange','bolt','Gerador 15 kVA','GR-01 · Vega Engenharia','Locado','p-orange','R$ 180/dia')}
-      ${row('t-blue','truck','Placa vibratória','PV-01 · pátio','Disponível','p-green','R$ 70/dia')}
+      ${row('t-green','box','Compactador (sapo)','CP-02 · no pátio','Disponível','p-green','R$ 85/dia')}
+      ${row('t-orange','bolt','Gerador 15 kVA','GR-01 · Vega Engenharia','Alugado','p-orange','R$ 180/dia')}
+      ${row('t-green','truck','Placa vibratória','PV-01 · no pátio','Disponível','p-green','R$ 70/dia')}
     </div>
   </div>${tabbar('Equip.')}</div>`,
 
@@ -429,71 +476,74 @@ contrato: `<div class="app">${statusBar}
   <div class="hdr"><div class="ibtn">${I('back')}</div><h3>Novo contrato</h3><span class="sub">CT-0233</span></div>
   <div class="body">
     <div class="steps">
-      <span class="step"><span class="dot">${I('check',13,3)}</span>Cadastro</span><span class="bar"></span>
-      <span class="step"><span class="dot">${I('check',13,3)}</span>Contrato</span><span class="bar"></span>
+      <span class="step"><span class="dot">${I('check',12,3)}</span>Cadastro</span><span class="bar"></span>
+      <span class="step"><span class="dot">${I('check',12,3)}</span>Contrato</span><span class="bar"></span>
       <span class="step on"><span class="dot">3</span>Cobrança</span>
     </div>
-    <div class="card"><div class="cl"><div class="av">CA</div><div style="flex:1"><div style="font-weight:700">Construtora Alfa</div><div style="font-size:11.5px;color:var(--app-ink-3);margin-top:2px">CNPJ 12.345.678/0001-90 · Setor Bueno</div></div></div>
-      <div style="display:flex;gap:8px;margin-top:11px"><span class="pill p-blue">06/10 → 21/10</span><span class="pill p-green">15 dias</span><span class="pill p-orange">Entrega na obra</span></div></div>
-    <div class="card">
-      <div class="lbl" style="margin-bottom:4px">Itens</div>
-      <div class="it"><span>2× Betoneira 400L</span><b>R$ 900,00</b></div>
-      <div class="it"><span>120× Andaime tubular</span><b>R$ 720,00</b></div>
-      <div class="it"><span>Frete ida e volta</span><b>R$ 220,00</b></div>
-      <div class="total"><span class="lbl">Total</span><b>R$ 1.840,00</b></div>
+    <div class="card"><div class="cl"><div class="av">CA</div><div style="flex:1"><div style="font-weight:600">Construtora Alfa</div><div style="font-size:11px;color:var(--app-ink-3);margin-top:2px">CNPJ 12.345.678/0001-90 · Setor Bueno</div></div></div>
+      <div style="display:flex;gap:6px;margin-top:10px"><span class="pill p-navy">06/10 → 21/10</span><span class="pill p-green">15 dias</span><span class="pill p-orange">Entrega na obra</span></div></div>
+    <div class="card" style="padding:10px 8px">
+      <div style="display:flex;justify-content:space-between;padding:0 4px 6px"><b style="font-size:13px;font-weight:600">2× Betoneira 400L · 15 dias</b><span class="lbl">tarifas</span></div>
+      <div class="rate"><span>Diária</span><b>R$ 90,00</b></div>
+      <div class="rate"><span>Semanal</span><b>R$ 450,00</b></div>
+      <div class="rate best"><span>Quinzenal<span class="tg">aplicada</span></span><b>R$ 720,00</b></div>
+      <div class="rate"><span>Mensal</span><b>R$ 1.200,00</b></div>
+      <div class="total" style="margin:6px 4px 0"><span class="lbl">Total com frete</span><b>R$ 1.660,00</b></div>
     </div>
     <div class="pay"><div class="opt on"><span class="rd"></span>Pix</div><div class="opt"><span class="rd"></span>Boleto</div></div>
-    <div class="hl" id="hlCta" style="border-radius:14px"><div class="cta">${I('card',18,2.4)} Gerar cobrança</div></div>
-    <div class="list">
-      ${row('t-violet','doc','Contrato CT-0233.pdf','Gerado no modelo da sua locadora','Pronto','p-green')}
-      ${row('t-green','wa','Enviar ao cliente','WhatsApp · (62) 9 9812-4410','Enviar','p-blue')}
-    </div>
+    <div class="hl" id="hlCta" style="border-radius:12px"><div class="cta">${I('file',18,2.2)} Emitir contrato e cobrar</div></div>
   </div>${tabbar('Contratos')}</div>`,
 
 avisos: `<div class="app">${statusBar}
   <div class="hdr"><div class="ibtn">${I('menu')}</div><h3>Agenda</h3><div class="ibtn">${I('bell')}<span class="badge">2</span></div></div>
   <div class="body">
     <div class="list">
-      <div class="row" style="padding:9px 12px"><div class="lbl" style="flex:1">Hoje · 3 movimentações</div></div>
-      ${row('t-orange','mixer','Betoneira 400L','Construtora Alfa · Setor Bueno','Sai','p-orange')}
-      ${row('t-orange','box','Placa vibratória','Vega Engenharia · Anápolis','Sai','p-orange')}
+      <div class="lh">Hoje<span>3 movimentações</span></div>
+      ${row('t-orange','mixer','Betoneira 400L','Construtora Alfa · Setor Bueno','Sai','p-navy')}
+      ${row('t-orange','truck','Placa vibratória','Vega Engenharia · DAIA, Anápolis','Sai','p-navy')}
       ${row('t-green','hammer','Serra mármore','Obras Ferreira · Setor Oeste','Volta','p-green')}
     </div>
-    <div class="wa-h"><span class="g">${I('wa',13,2.2)}</span>Avisos automáticos · WhatsApp</div>
-    <div class="hl" id="hlWa" style="border-radius:14px"><div class="wa">Olá, Construtora Alfa! A devolução da <b>Betoneira 400L</b> (CT-0231) é amanhã, 07/10. Qualquer dúvida, é só responder.<div class="meta">08:00 ✓✓</div></div></div>
-    <div class="wa">Vega Engenharia, sua fatura de <b>R$ 640,00</b> vence hoje. Pix copia e cola e boleto no link.<div class="meta">08:01 ✓✓</div></div>
-    <div class="list">${row('t-blue','bell','18 avisos hoje','Devolução, vencimento, entrega','Automático','p-green')}</div>
+    <div class="hl" id="hlWa" style="border-radius:14px"><div class="list">
+      <div class="lh">Andaime tubular 1,5m<span>estoque</span></div>
+      <div class="split"><div><div class="lbl">No pátio</div><div class="v">173</div></div><div><div class="lbl">Alugadas</div><div class="v">58</div></div></div>
+      <div class="meter"><i></i></div>
+      ${row('t-navy','user','Vega Engenharia','60 peças · até 22/10','Ativo','p-green')}
+    </div></div>
+    <div class="list">
+      ${row('t-red','alert','Obras Ferreira','Serra mármore · venceu há 2 dias','Atrasado','p-red')}
+      ${row('t-yellow','doc','Vega Engenharia','Boleto · vence amanhã','Pendente','p-yellow')}
+    </div>
   </div>${tabbar('Agenda')}</div>`,
 
 dash: `<div class="app">${statusBar}
-  <div class="hdr"><div class="ibtn">${I('menu')}</div><h3>Dashboard</h3><div class="ibtn">${I('bell')}<span class="badge">3</span></div><div class="ibtn blue">${I('plus',20,2.4)}</div></div>
+  <div class="hdr"><div class="ibtn">${I('menu')}</div><h3>Dashboard</h3><div class="ibtn">${I('bell')}<span class="badge">3</span></div><div class="ibtn or">${I('plus',20,2.4)}</div></div>
   <div class="body">
+    <div class="hello"><small>Segunda, 6 de outubro</small><b>Bom dia!</b></div>
     <div class="card alerts hl" id="hlDash">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><b style="font-size:16px">Alertas</b><span style="font-size:12px;color:var(--app-ink-2);font-weight:600">Ver todos (3)</span></div>
-      <div class="al"><i style="background:var(--bad)"></i><div><b>Pagamento atrasado — Obras Ferreira</b><span>R$ 220,00 · venceu em 27/09</span></div></div>
-      <div class="al"><i style="background:var(--warn)"></i><div><b>CT-0231 vence em 1 dia</b><span>Construtora Alfa</span></div></div>
-      <div class="al"><i style="background:var(--warn)"></i><div><b>CT-0232 vence em 2 dias</b><span>Vega Engenharia</span></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><b style="font-size:14px;font-weight:600">Alertas</b><span style="font-size:11px;color:var(--app-ink-3)">Ver todos (3)</span></div>
+      <div class="al"><i style="background:var(--bad)"></i><div><b>Pagamento atrasado — Obras Ferreira</b><span>R$ 220,00 · venceu em 03/10</span></div></div>
+      <div class="al"><i style="background:#E0A100"></i><div><b>CT-0231 vence em 1 dia</b><span>Construtora Alfa</span></div></div>
+      <div class="al"><i style="background:#E0A100"></i><div><b>CT-0232 vence em 2 dias</b><span>Vega Engenharia</span></div></div>
     </div>
     <div class="kpis">
-      <div class="kpi"><div class="top"><span class="lbl">Contratos<br>ativos</span><span class="mini t-blue">${I('file',14)}</span></div><div class="v">32</div><div class="s">4 agendados</div></div>
-      <div class="kpi"><div class="top"><span class="lbl">Vencendo<br>hoje</span><span class="mini t-violet">${I('clock',14)}</span></div><div class="v">3</div><div class="s">devoluções previstas</div></div>
-      <div class="kpi"><div class="top"><span class="lbl">Manutenções<br>pendentes</span><span class="mini t-yellow">${I('wrench',14)}</span></div><div class="v">1</div><div class="s">0 atrasadas</div></div>
-      <div class="kpi"><div class="top"><span class="lbl">Inadim-<br>plência</span><span class="mini t-red">${I('trend',14)}</span></div><div class="v" style="color:var(--bad)">4,5%</div><div class="s">das faturas</div></div>
-      <div class="kpi" style="grid-column:span 2"><div class="top"><span class="lbl">Recebido no mês</span><span class="mini t-green">${I('wallet',14)}</span></div><div class="v" style="color:var(--warn)">R$ 48.920,00</div></div>
+      <div class="kpi"><div class="top"><span class="lbl">Contratos ativos</span><span class="mini t-navy">${I('file',13)}</span></div><div class="v">32</div><div class="s">4 agendados</div></div>
+      <div class="kpi"><div class="top"><span class="lbl">Vencendo hoje</span><span class="mini t-navy">${I('clock',13)}</span></div><div class="v">3</div><div class="s">devoluções previstas</div></div>
+      <div class="kpi"><div class="top"><span class="lbl">Manutenção</span><span class="mini t-yellow">${I('wrench',13)}</span></div><div class="v">1</div><div class="s">0 atrasadas</div></div>
+      <div class="kpi"><div class="top"><span class="lbl">Atrasados</span><span class="mini t-red">${I('alert',13)}</span></div><div class="v" style="color:var(--bad)">1</div><div class="s">sem devolução</div></div>
+      <div class="kpi" style="grid-column:span 2"><div class="top"><span class="lbl">Recebido no mês</span><span class="mini t-green">${I('wallet',13)}</span></div><div class="v" style="color:var(--good)">R$ 48.920,00</div></div>
     </div>
   </div>${tabbar('Início')}</div>`,
 
 fin: `<div class="app">${statusBar}
   <div class="hdr"><div class="ibtn">${I('menu')}</div><h3>Financeiro</h3><div class="ibtn">${I('search')}</div></div>
   <div class="body">
-    <div class="card"><div class="lbl">Recebido em outubro</div><div style="font-size:30px;font-weight:800;letter-spacing:-.02em;margin-top:6px">R$ 48.920,00</div>
-      <div class="bars"><i style="height:38%"></i><i style="height:55%"></i><i style="height:46%"></i><i style="height:70%"></i><i style="height:62%"></i><i style="height:88%"></i><i style="height:100%"></i><i class="dim" style="height:40%"></i></div></div>
+    <div class="list"><div class="split" style="border-top:0"><div><div class="lbl">Recebido no mês</div><div class="v" style="color:var(--good);font-size:24px">R$ 48.920</div></div><div><div class="lbl">A receber</div><div class="v" style="color:var(--warn);font-size:24px">R$ 12.170</div></div></div>
+      <div style="padding:0 12px 12px"><div class="bars"><i style="height:38%"></i><i style="height:55%"></i><i style="height:46%"></i><i style="height:70%"></i><i style="height:62%"></i><i style="height:88%"></i><i class="hot" style="height:100%"></i><i class="dim" style="height:40%"></i></div></div></div>
     <div class="list">
-      ${row('t-green','check','Construtora Alfa','CT-0233 · Pix','Pago','p-green','R$ 1.840,00')}
-      ${row('t-blue','doc','Vega Engenharia','CT-0232 · boleto','Vence hoje','p-yellow','R$ 640,00')}
-      ${row('t-red','alert','Obras Ferreira','CT-0228 · boleto','Atrasado','p-red','R$ 220,00')}
-      ${row('t-green','check','Engemix','CT-0226 · Pix','Pago','p-green','R$ 3.120,00')}
-      ${row('t-blue','doc','Marques Reformas','CT-0230 · Pix','Em aberto','p-blue','R$ 480,00')}
+      ${row('t-green','check','Construtora Alfa','CT-0233 · Pix','Pago','p-green','R$ 1.660,00')}
+      ${row('t-yellow','doc','Vega Engenharia','Boleto · vence amanhã','Pendente','p-yellow','R$ 640,00')}
+      ${row('t-red','alert','Obras Ferreira','Serra mármore · venceu há 2 dias','Atrasado','p-red','R$ 220,00')}
+      ${row('t-green','check','Engemix','CT-0226 · boleto','Pago','p-green','R$ 3.120,00')}
     </div>
   </div>${tabbar('Financeiro')}</div>`
 };
@@ -508,7 +558,7 @@ const fan = document.getElementById('fan');
 const FAN = ['equip','contrato','dash','avisos','fin'];
 fan.innerHTML = FAN.map(k=>`<div class="rig"><div class="floor"></div><div class="phone">${phoneInner([k])}</div></div>`).join('');
 fan.querySelectorAll('.scr').forEach(s=>s.style.opacity=1);
-document.querySelectorAll('[data-ic]').forEach(el=>el.innerHTML = I(el.dataset.ic, el.closest('.paid')?24:28, el.closest('.paid')?3:2));
+document.querySelectorAll('[data-ic]').forEach(el=>el.innerHTML = I(el.dataset.ic, el.closest('.paid')?22:26, el.closest('.paid')?3:2));
 
 /* separa as palavras das headlines para animar uma a uma */
 document.querySelectorAll('.headline h2').forEach(h=>{
@@ -618,6 +668,10 @@ tl.fromTo('.bg',{opacity:0,scale:1.15},{opacity:1,scale:1,duration:1.6,ease:'pow
 headIn('#h1',.5);
 tl.to(rig,{rotationY:-10,rotationX:3,rotationZ:0,duration:3.5,ease:'sine.inOut'},2);
 pulse('#hlEquip',2.1,1.6);
+// faixa de equipamentos, como no site
+tl.fromTo('#marq',{opacity:0,y:30,filter:'blur(10px)'},{opacity:1,y:0,filter:'blur(0px)',duration:.8},1.3)
+  .fromTo('#marq .marq-track',{x:0},{x:-900,duration:5,ease:'none'},1.0)
+  .to('#marq',{opacity:0,filter:'blur(16px)',duration:.5,ease:'power2.in'},5.7);
 cardsOut(1,2.4,L.s1.x,L.s1.y-40);
 headOut('#h1',5.75);
 cardsAway(1,5.7);
@@ -696,8 +750,11 @@ tl.to(fanRigs,{y:'+=520',opacity:0,filter:'blur(20px)',scale:.6,duration:.7,stag
   .from('.lockup img',{scale:.2,opacity:0,rotation:-20,filter:'blur(20px)',duration:.9,ease:'back.out(1.8)'},27.35)
   .from('#wordmark span',{y:80,opacity:0,filter:'blur(16px)',duration:.7,stagger:.04},27.55)
   .from('#tagline',{y:30,opacity:0,filter:'blur(14px)',duration:.7},28.1)
-  .from('#url',{y:20,opacity:0,filter:'blur(10px)',duration:.6},28.45)
-  .to('.b1',{opacity:.85,scale:1.4,duration:2.5,ease:'power2.out'},27.3)
+  .from('#endcta > *',{y:24,opacity:0,filter:'blur(10px)',duration:.6,stagger:.12},28.4)
+  .from('#checks span',{y:14,opacity:0,duration:.5,stagger:.1},28.8)
+  .fromTo('.btn-or',{boxShadow:'0 0 0px -6px rgba(255,61,0,0)'},{boxShadow:'0 0 60px -4px rgba(255,61,0,.85)',duration:.8,yoyo:true,repeat:1,ease:'sine.inOut'},28.9)
+  .to('.b2',{left:V?-90:510,top:V?820:330,x:0,y:0,opacity:.5,scale:1.25,duration:2.4,ease:'power2.out'},27.2)
+  .to('.b1',{opacity:.3,duration:2},27.2)
   .to('.lockup',{scale:1.03,duration:2.6,ease:'none'},27.4)
   .to({},{duration:.01},D);   // garante a duração total de 30 s
 
