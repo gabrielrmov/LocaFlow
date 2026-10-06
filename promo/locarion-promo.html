@@ -56,7 +56,7 @@ body{font-family:"Inter",system-ui,-apple-system,sans-serif;-webkit-font-smoothi
 .vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 85% 80% at 50% 50%,transparent 55%,rgba(0,0,0,.65) 100%)}
 .flash{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 50%,rgba(120,170,255,.55),transparent 60%);opacity:0}
 
-#world{position:absolute;inset:0;transform-style:preserve-3d}
+#world{position:absolute;inset:0}  /* plano: cada elemento 3D tem a própria perspectiva, sem planos se cruzando */
 
 /* ---------- headlines ---------- */
 .headline{position:absolute;top:50%;width:780px;transform:translateY(-50%)}
@@ -81,14 +81,17 @@ body{font-family:"Inter",system-ui,-apple-system,sans-serif;-webkit-font-smoothi
 .float{position:absolute;inset:0;transform-style:preserve-3d}
 .floor{position:absolute;left:50%;bottom:-70px;width:360px;height:60px;margin-left:-180px;border-radius:50%;
   background:radial-gradient(ellipse,rgba(0,0,0,.75),transparent 70%);filter:blur(12px)}
-.phone{position:absolute;inset:0;border-radius:68px;padding:5px;
-  background:linear-gradient(140deg,#5B5F68 0%,#24262B 22%,#3A3D44 50%,#1A1B1F 78%,#4A4D55 100%);
-  box-shadow:0 0 0 1px rgba(0,0,0,.9),0 80px 140px -40px rgba(0,0,0,.9),0 0 120px -20px rgba(76,141,255,.35),inset 0 0 0 1px rgba(255,255,255,.18)}
-.phone::before,.phone::after{content:"";position:absolute;width:5px;border-radius:3px;background:linear-gradient(90deg,#2A2C31,#5C6068)}
-.phone::before{left:-4px;top:180px;height:70px;box-shadow:0 95px 0 #3A3D43}
-.phone::after{right:-4px;top:250px;height:110px}
-.bezel{position:absolute;inset:5px;border-radius:63px;background:#000;padding:10px}
-.screen{position:relative;width:100%;height:100%;border-radius:53px;overflow:hidden;background:var(--app-bg)}
+.phone{position:absolute;inset:0;border-radius:66px;padding:4px;
+  background:linear-gradient(135deg,#8A8F98 0%,#3A3D44 18%,#1C1D21 45%,#2E3036 70%,#9AA0AA 100%);
+  box-shadow:0 0 0 1px rgba(0,0,0,.85),inset 0 0 0 1px rgba(255,255,255,.35),inset 0 0 0 2.5px rgba(0,0,0,.6),
+    0 70px 120px -40px rgba(0,0,0,.95),0 30px 60px -30px rgba(0,0,0,.8),0 0 140px -30px rgba(76,141,255,.3)}
+.phone .btn-s{position:absolute;width:4px;border-radius:2px;background:linear-gradient(90deg,#6B7078,#2B2D32 60%,#55595F)}
+.phone .b-act{left:-4px;top:150px;height:34px}
+.phone .b-vu{left:-4px;top:210px;height:62px}
+.phone .b-vd{left:-4px;top:286px;height:62px}
+.phone .b-pw{right:-4px;top:240px;height:96px;background:linear-gradient(270deg,#6B7078,#2B2D32 60%,#55595F)}
+.bezel{position:absolute;inset:4px;border-radius:62px;background:#050506;padding:9px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.screen{position:relative;width:100%;height:100%;border-radius:53px;overflow:hidden;background:var(--app-bg);isolation:isolate;-webkit-mask-image:-webkit-radial-gradient(white,black)}
 .island{position:absolute;left:50%;top:12px;width:118px;height:34px;margin-left:-59px;border-radius:20px;background:#000;z-index:20}
 .glare{position:absolute;inset:0;z-index:19;pointer-events:none;border-radius:53px;
   background:linear-gradient(118deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,.04) 26%,transparent 42%,transparent 70%,rgba(255,255,255,.05) 100%)}
@@ -548,7 +551,7 @@ fin: `<div class="app">${statusBar}
   </div>${tabbar('Financeiro')}</div>`
 };
 
-const phoneInner = screens => `<div class="bezel"><div class="screen"><div class="island"></div>
+const phoneInner = screens => `<span class="btn-s b-act"></span><span class="btn-s b-vu"></span><span class="btn-s b-vd"></span><span class="btn-s b-pw"></span><div class="bezel"><div class="screen"><div class="island"></div>
   ${screens.map(k=>`<div class="scr" data-k="${k}">${SCREENS[k]}</div>`).join('')}<div class="glare"></div></div></div>`;
 
 /* monta o iPhone principal e os 5 do leque */
@@ -611,7 +614,7 @@ const rig = $('#rig'), flt = $('#float');
 const scr = k => mainPhone.querySelector(`.scr[data-k="${k}"]`);
 const cards = n => $$(`.fc[data-scene="${n}"]`);
 
-gsap.set(rig,{xPercent:-50,yPercent:-50,x:L.start.x,y:L.start.y,rotationY:-28,rotationX:18,rotationZ:6,scale:L.ps,transformPerspective:2600});
+gsap.set(rig,{xPercent:-50,yPercent:-50,x:L.start.x,y:L.start.y,rotationY:-22,rotationX:14,rotationZ:4,scale:L.ps,transformPerspective:2600});
 gsap.set('.headline',{opacity:0});
 gsap.set('.hl',{'--hl':0});
 gsap.set(scr('equip'),{opacity:1});
@@ -644,8 +647,8 @@ function headOut(id,t){
 function cardsOut(n,t,px,py){
   cards(n).forEach((c,i)=>{
     const cx=c.offsetLeft+c.offsetWidth/2, cy=c.offsetTop+c.offsetHeight/2;
-    tl.fromTo(c,{x:px-cx,y:py-cy,scale:.25,opacity:0,z:-200,rotationY:i%2?-30:30,filter:'blur(12px)'},
-               {x:0,y:0,scale:1,opacity:1,z:120,rotationY:0,filter:'blur(0px)',duration:.9,ease:'back.out(1.6)'},t+i*.22)
+    tl.fromTo(c,{transformPerspective:1600,x:px-cx,y:py-cy,scale:.25,opacity:0,z:-200,rotationY:i%2?-30:30,filter:'blur(12px)'},
+               {x:0,y:0,scale:1,opacity:1,z:60,rotationY:0,filter:'blur(0px)',duration:.9,ease:'back.out(1.6)'},t+i*.22)
       .to(c,{y:'-=14',duration:1.4,yoyo:true,repeat:1,ease:'sine.inOut'},t+i*.22+.9);
   });
 }
@@ -663,8 +666,8 @@ function pulse(sel,t,d=1.2){
 
 /* ---------- CENA 1 · 0.0 – 6.6 : equipamento para construção ---------- */
 tl.fromTo('.bg',{opacity:0,scale:1.15},{opacity:1,scale:1,duration:1.6,ease:'power2.out'},0)
-  .fromTo(rig,{filter:'blur(18px)'},{filter:'blur(0px)',duration:1.2,ease:'power2.out'},.15)
-  .to(rig,{x:L.s1.x,y:L.s1.y,rotationY:-18,rotationX:6,rotationZ:2,duration:1.8,ease:'expo.out'},.15);
+  .fromTo('#mainPhone',{filter:'blur(18px)'},{filter:'blur(0px)',duration:1.2,ease:'power2.out',clearProps:'filter'},.15)
+  .to(rig,{x:L.s1.x,y:L.s1.y,rotationY:-14,rotationX:5,rotationZ:1.5,duration:1.8,ease:'expo.out'},.15);
 headIn('#h1',.5);
 tl.to(rig,{rotationY:-10,rotationX:3,rotationZ:0,duration:3.5,ease:'sine.inOut'},2);
 pulse('#hlEquip',2.1,1.6);
@@ -677,8 +680,9 @@ headOut('#h1',5.75);
 cardsAway(1,5.7);
 
 /* ---------- CENA 2 · 6.0 – 12.4 : do cadastro à cobrança (zoom na tela) ---------- */
-tl.to(rig,{x:L.s2.x,y:L.s2.y,rotationY:22,rotationX:5,rotationZ:-2,filter:'blur(6px)',duration:.6,ease:'power2.in'},5.85)
-  .to(rig,{filter:'blur(0px)',duration:.6,ease:'power2.out'},6.45)
+tl.to(rig,{x:L.s2.x,y:L.s2.y,rotationY:16,rotationX:4,rotationZ:-1.5,duration:.6,ease:'power2.in'},5.85)
+  .fromTo('#mainPhone',{filter:'blur(0px)'},{filter:'blur(6px)',duration:.45,ease:'power2.in',immediateRender:false},5.95)
+  .to('#mainPhone',{filter:'blur(0px)',duration:.5,ease:'power2.out',clearProps:'filter'},6.45)
   .to(rig,{rotationY:12,rotationX:2,duration:.9,ease:'power3.out'},6.45);
 swap('equip','contrato',6.0);
 headIn('#h2',6.5);
@@ -693,8 +697,9 @@ headOut('#h2',12.0);
 cardsAway(2,11.95);
 
 /* ---------- CENA 3 · 12.3 – 18.4 : menos ligação ---------- */
-tl.to(rig,{x:L.s3.x,y:L.s3.y,rotationY:-24,rotationX:5,rotationZ:2,filter:'blur(6px)',duration:.6,ease:'power2.in'},12.15)
-  .to(rig,{filter:'blur(0px)',duration:.6,ease:'power2.out'},12.75)
+tl.to(rig,{x:L.s3.x,y:L.s3.y,rotationY:-16,rotationX:4,rotationZ:1.5,duration:.6,ease:'power2.in'},12.15)
+  .fromTo('#mainPhone',{filter:'blur(0px)'},{filter:'blur(6px)',duration:.45,ease:'power2.in',immediateRender:false},12.25)
+  .to('#mainPhone',{filter:'blur(0px)',duration:.5,ease:'power2.out',clearProps:'filter'},12.75)
   .to(rig,{rotationY:-12,rotationX:2,rotationZ:0,duration:.9},12.75);
 swap('contrato','avisos',12.3);
 headIn('#h3',12.8);
@@ -709,8 +714,9 @@ headOut('#h3',18.05);
 cardsAway(3,18.0);
 
 /* ---------- CENA 4 · 18.4 – 24.4 : organizada em um só lugar ---------- */
-tl.to(rig,{x:L.s4.x,y:L.s4.y,rotationY:24,rotationX:5,rotationZ:-2,filter:'blur(6px)',duration:.6,ease:'power2.in'},18.2)
-  .to(rig,{filter:'blur(0px)',duration:.6,ease:'power2.out'},18.8)
+tl.to(rig,{x:L.s4.x,y:L.s4.y,rotationY:16,rotationX:4,rotationZ:-1.5,duration:.6,ease:'power2.in'},18.2)
+  .fromTo('#mainPhone',{filter:'blur(0px)'},{filter:'blur(6px)',duration:.45,ease:'power2.in',immediateRender:false},18.3)
+  .to('#mainPhone',{filter:'blur(0px)',duration:.5,ease:'power2.out',clearProps:'filter'},18.8)
   .to(rig,{rotationY:12,rotationX:2,rotationZ:0,duration:.9},18.8);
 swap('avisos','dash',18.35);
 headIn('#h4',18.85);
@@ -740,12 +746,12 @@ tl.to(rig,{x:L.fan.x,y:L.fan.y,scale:FS,rotationY:0,rotationX:0,rotationZ:0,dura
       rotationY:i=>-fanAngles[i]*.5,
       z:i=>-Math.abs(fanAngles[i])*8,
       duration:1.1,ease:'back.out(1.3)'},25.2)
-  .fromTo(fanRigs.map(r=>r.querySelector('.screen')),{filter:'blur(8px)'},{filter:'blur(0px)',duration:.8},25.2)
   .to(fanRigs,{y:'-=20',duration:1.2,ease:'sine.inOut'},26.3)
   .to('#flash',{opacity:.5,duration:.25,yoyo:true,repeat:1,ease:'power1.inOut'},27.05);
 
 /* ---------- CENA 6 · 27.3 – 30 : logo + tagline ---------- */
-tl.to(fanRigs,{y:'+=520',opacity:0,filter:'blur(20px)',scale:.6,duration:.7,stagger:{each:.05,from:'center'},ease:'power3.in'},27.0)
+tl.to(fanRigs.map(r=>r.querySelector('.phone')),{filter:'blur(14px)',duration:.6,ease:'power2.in'},27.05)
+  .to(fanRigs,{y:'+=520',opacity:0,scale:.6,duration:.7,stagger:{each:.05,from:'center'},ease:'power3.in'},27.0)
   .set('#end',{opacity:1},27.35)
   .from('.lockup img',{scale:.2,opacity:0,rotation:-20,filter:'blur(20px)',duration:.9,ease:'back.out(1.8)'},27.35)
   .from('#wordmark span',{y:80,opacity:0,filter:'blur(16px)',duration:.7,stagger:.04},27.55)
@@ -781,7 +787,20 @@ addEventListener('keydown',e=>{
   if(e.key==='ArrowLeft')tl.seek(Math.max(0,tl.time()-1));
 });
 if(params.has('clean')) document.body.classList.add('clean');
-window.tl=tl;   // útil para gravar quadro a quadro
+window.tl=tl;
+
+/* trilha sonora: segue a timeline (toca, pausa, pula e reinicia junto) */
+const music=new Audio('trilha/trilha.m4a'); music.preload='auto';
+const audioOn=!params.has('t') && !params.has('mute');
+gsap.ticker.add(()=>{
+  if(!audioOn) return;
+  const playing=!tl.paused() && tl.progress()<1;
+  if(!playing){ if(!music.paused) music.pause(); return; }
+  if(Math.abs(music.currentTime-tl.time())>0.12) music.currentTime=tl.time();
+  if(music.paused) music.play().catch(()=>{});   // navegadores só liberam som depois de um clique
+});
+const unlock=()=>{ if(audioOn && !tl.paused()) music.play().catch(()=>{}); };
+addEventListener('pointerdown',unlock); addEventListener('keydown',unlock);   // útil para gravar quadro a quadro
 
 const start=()=>{
   if(params.has('t')){ tl.seek(parseFloat(params.get('t'))); tl.pause(); }
