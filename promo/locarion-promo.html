@@ -200,6 +200,24 @@ body{font-family:"Inter",system-ui,-apple-system,sans-serif;-webkit-font-smoothi
 .url{margin-top:30px;padding:12px 26px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);font-size:24px;font-weight:600;color:#DCE4F2;letter-spacing:.01em}
 .url b{color:var(--orange)}
 
+/* ---------- modo vertical 1080x1920 (?v) ---------- */
+.vert #stage{width:1080px;height:1920px}
+.vert .headline{left:80px!important;top:150px;width:920px;transform:none}
+.vert .headline h2{font-size:94px}
+.vert .headline p{font-size:32px;max-width:900px}
+.vert .b1{left:180px;top:-60px;width:1000px;height:1000px}
+.vert .b2{left:-380px;top:1000px}
+.vert .b3{left:520px;top:1250px}
+.vert .b4{left:-200px;top:-260px}
+.vert .lockup{flex-direction:column;gap:56px}
+.vert .lockup img{width:260px;height:260px;border-radius:64px}
+.vert .wordmark{font-size:180px}
+.vert .tagline{margin-top:56px;font-size:54px}
+.vert .url{margin-top:40px;font-size:28px}
+.vert .fc .t1{font-size:23px}
+.vert .fc .t2{font-size:17px}
+.vert .fc.kp .big{font-size:50px}
+
 /* ---------- controles (fora do palco) ---------- */
 #ctrl{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);display:flex;align-items:center;gap:12px;padding:8px 14px;border-radius:999px;
   background:rgba(20,22,28,.85);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(10px);font:600 13px Inter,sans-serif;color:#cfd6e4;
@@ -506,8 +524,32 @@ document.querySelectorAll('.wordmark').forEach(w=>w.innerHTML=[...w.textContent]
 
 /* ===================== escala do palco ===================== */
 const stage = document.getElementById('stage');
+const V = new URLSearchParams(location.search).has('v');   // ?v → vídeo vertical 1080x1920
+const W = V?1080:1920, H = V?1920:1080;
+if(V) document.documentElement.classList.add('vert');
+/* posições de cada cena para os dois formatos */
+const L = V ? {
+  ps:1.15, start:{x:540,y:2700}, s1:{x:540,y:1340}, s2:{x:540,y:1340}, s3:{x:540,y:1340}, s4:{x:540,y:1340},
+  z2:{x:540,y:1000,s:1.8}, z3:{x:520,y:1160,s:1.55}, z4:{x:620,y:1300,s:1.8},
+  fan:{x:540,y:1120,s:.8,spread:12,drop:3.6}
+} : {
+  ps:1, start:{x:1380,y:1500}, s1:{x:1380,y:540}, s2:{x:560,y:540}, s3:{x:1380,y:540}, s4:{x:560,y:540},
+  z2:{x:760,y:330,s:1.75}, z3:{x:1260,y:430,s:1.4}, z4:{x:640,y:700,s:1.7},
+  fan:{x:960,y:520,s:.74,spread:15,drop:4.2}
+};
+/* no vertical os cards ficam nas laterais, abaixo do título */
+if(V){
+  const VC={1:[['r',940],['l',1250],['r',1570]],
+            2:[['l',930],['r',1130],['l',1470],['r',1660]],
+            3:[['r',940],['l',1260],['r',1580]],
+            4:[['l',900],['r',1060],['l',1500],['r',1640]]};
+  for(const n in VC) document.querySelectorAll(`.fc[data-scene="${n}"]`).forEach((c,i)=>{
+    const [side,top]=VC[n][i]; c.style.top=top+'px';
+    if(side==='l'){c.style.left='36px';c.style.right='auto';} else {c.style.left='auto';c.style.right='36px';}
+  });
+}
 function fit(){
-  const s = Math.min(innerWidth/1920, innerHeight/1080);
+  const s = Math.min(innerWidth/W, innerHeight/H);
   stage.style.transform = `scale(${s}) translate(-50%,-50%)`;
 }
 addEventListener('resize',fit); fit();
@@ -519,7 +561,7 @@ const rig = $('#rig'), flt = $('#float');
 const scr = k => mainPhone.querySelector(`.scr[data-k="${k}"]`);
 const cards = n => $$(`.fc[data-scene="${n}"]`);
 
-gsap.set(rig,{xPercent:-50,yPercent:-50,x:1380,y:1500,rotationY:-28,rotationX:18,rotationZ:6,transformPerspective:2600});
+gsap.set(rig,{xPercent:-50,yPercent:-50,x:L.start.x,y:L.start.y,rotationY:-28,rotationX:18,rotationZ:6,scale:L.ps,transformPerspective:2600});
 gsap.set('.headline',{opacity:0});
 gsap.set('.hl',{'--hl':0});
 gsap.set(scr('equip'),{opacity:1});
@@ -572,74 +614,74 @@ function pulse(sel,t,d=1.2){
 /* ---------- CENA 1 · 0.0 – 6.6 : equipamento para construção ---------- */
 tl.fromTo('.bg',{opacity:0,scale:1.15},{opacity:1,scale:1,duration:1.6,ease:'power2.out'},0)
   .fromTo(rig,{filter:'blur(18px)'},{filter:'blur(0px)',duration:1.2,ease:'power2.out'},.15)
-  .to(rig,{y:540,rotationY:-18,rotationX:6,rotationZ:2,duration:1.8,ease:'expo.out'},.15);
+  .to(rig,{x:L.s1.x,y:L.s1.y,rotationY:-18,rotationX:6,rotationZ:2,duration:1.8,ease:'expo.out'},.15);
 headIn('#h1',.5);
 tl.to(rig,{rotationY:-10,rotationX:3,rotationZ:0,duration:3.5,ease:'sine.inOut'},2);
 pulse('#hlEquip',2.1,1.6);
-cardsOut(1,2.4,1380,500);
+cardsOut(1,2.4,L.s1.x,L.s1.y-40);
 headOut('#h1',5.75);
 cardsAway(1,5.7);
 
 /* ---------- CENA 2 · 6.0 – 12.4 : do cadastro à cobrança (zoom na tela) ---------- */
-tl.to(rig,{x:560,rotationY:22,rotationX:5,rotationZ:-2,filter:'blur(6px)',duration:.6,ease:'power2.in'},5.85)
+tl.to(rig,{x:L.s2.x,y:L.s2.y,rotationY:22,rotationX:5,rotationZ:-2,filter:'blur(6px)',duration:.6,ease:'power2.in'},5.85)
   .to(rig,{filter:'blur(0px)',duration:.6,ease:'power2.out'},6.45)
   .to(rig,{rotationY:12,rotationX:2,duration:.9,ease:'power3.out'},6.45);
 swap('equip','contrato',6.0);
 headIn('#h2',6.5);
 // zoom no botão "Gerar cobrança"
-tl.to(rig,{x:760,y:330,scale:1.75,rotationY:0,rotationX:0,rotationZ:0,duration:1.1,ease:'power3.inOut'},8.0)
+tl.to(rig,{x:L.z2.x,y:L.z2.y,scale:L.z2.s,rotationY:0,rotationX:0,rotationZ:0,duration:1.1,ease:'power3.inOut'},8.0)
   .to('#h2',{opacity:.12,filter:'blur(14px)',duration:.6},8.0);
 pulse('#hlCta',8.9,.8);
-tl.to(rig,{x:560,y:540,scale:1,rotationY:14,rotationX:3,duration:1,ease:'power3.inOut'},9.9)
+tl.to(rig,{x:L.s2.x,y:L.s2.y,scale:L.ps,rotationY:14,rotationX:3,duration:1,ease:'power3.inOut'},9.9)
   .to('#h2',{opacity:1,filter:'blur(0px)',duration:.6},10.1);
-cardsOut(2,10.1,560,520);
+cardsOut(2,10.1,L.s2.x,L.s2.y-20);
 headOut('#h2',12.0);
 cardsAway(2,11.95);
 
 /* ---------- CENA 3 · 12.3 – 18.4 : menos ligação ---------- */
-tl.to(rig,{x:1380,rotationY:-24,rotationX:5,rotationZ:2,filter:'blur(6px)',duration:.6,ease:'power2.in'},12.15)
+tl.to(rig,{x:L.s3.x,y:L.s3.y,rotationY:-24,rotationX:5,rotationZ:2,filter:'blur(6px)',duration:.6,ease:'power2.in'},12.15)
   .to(rig,{filter:'blur(0px)',duration:.6,ease:'power2.out'},12.75)
   .to(rig,{rotationY:-12,rotationX:2,rotationZ:0,duration:.9},12.75);
 swap('contrato','avisos',12.3);
 headIn('#h3',12.8);
 // zoom suave na mensagem automática
-tl.to(rig,{x:1260,y:430,scale:1.4,rotationY:-4,duration:1,ease:'power3.inOut'},14.0)
+tl.to(rig,{x:L.z3.x,y:L.z3.y,scale:L.z3.s,rotationY:-4,duration:1,ease:'power3.inOut'},14.0)
   .to('#h3',{opacity:.25,filter:'blur(10px)',duration:.5},14.0);
 pulse('#hlWa',14.7,.7);
-tl.to(rig,{x:1380,y:540,scale:1,rotationY:-10,duration:.9,ease:'power3.inOut'},15.6)
+tl.to(rig,{x:L.s3.x,y:L.s3.y,scale:L.ps,rotationY:-10,duration:.9,ease:'power3.inOut'},15.6)
   .to('#h3',{opacity:1,filter:'blur(0px)',duration:.5},15.7);
-cardsOut(3,15.7,1380,560);
+cardsOut(3,15.7,L.s3.x,L.s3.y+20);
 headOut('#h3',18.05);
 cardsAway(3,18.0);
 
 /* ---------- CENA 4 · 18.4 – 24.4 : organizada em um só lugar ---------- */
-tl.to(rig,{x:560,rotationY:24,rotationX:5,rotationZ:-2,filter:'blur(6px)',duration:.6,ease:'power2.in'},18.2)
+tl.to(rig,{x:L.s4.x,y:L.s4.y,rotationY:24,rotationX:5,rotationZ:-2,filter:'blur(6px)',duration:.6,ease:'power2.in'},18.2)
   .to(rig,{filter:'blur(0px)',duration:.6,ease:'power2.out'},18.8)
   .to(rig,{rotationY:12,rotationX:2,rotationZ:0,duration:.9},18.8);
 swap('avisos','dash',18.35);
 headIn('#h4',18.85);
 // zoom nos alertas do painel
-tl.to(rig,{x:640,y:700,scale:1.7,rotationY:0,rotationX:0,duration:1.1,ease:'power3.inOut'},20.3)
+tl.to(rig,{x:L.z4.x,y:L.z4.y,scale:L.z4.s,rotationY:0,rotationX:0,duration:1.1,ease:'power3.inOut'},20.3)
   .to('#h4',{opacity:.12,filter:'blur(14px)',duration:.6},20.3);
 pulse('#hlDash',21.1,.6);
-tl.to(rig,{x:560,y:540,scale:1,rotationY:12,rotationX:2,duration:1,ease:'power3.inOut'},21.9)
+tl.to(rig,{x:L.s4.x,y:L.s4.y,scale:L.ps,rotationY:12,rotationX:2,duration:1,ease:'power3.inOut'},21.9)
   .to('#h4',{opacity:1,filter:'blur(0px)',duration:.6},22.1);
-cardsOut(4,22.0,560,520);
+cardsOut(4,22.0,L.s4.x,L.s4.y-20);
 headOut('#h4',24.15);
 cardsAway(4,24.1);
 
 /* ---------- CENA 5 · 24.4 – 27.4 : celulares em leque ---------- */
 const fanRigs = $$('#fan .rig');
-const FS = .74;            // escala dos celulares no leque
+const FS = L.fan.s;            // escala dos celulares no leque
 const fanAngles=[-30,-15,0,15,30];
-gsap.set(fanRigs,{xPercent:-50,yPercent:-50,x:960,y:520,scale:FS,transformOrigin:'50% 50%',transformPerspective:2600});
+gsap.set(fanRigs,{xPercent:-50,yPercent:-50,x:L.fan.x,y:L.fan.y,scale:FS,transformOrigin:'50% 50%',transformPerspective:2600});
 gsap.set(fanRigs[2],{zIndex:5}); gsap.set([fanRigs[1],fanRigs[3]],{zIndex:4});
-tl.to(rig,{x:960,y:520,scale:FS,rotationY:0,rotationX:0,rotationZ:0,duration:.8,ease:'power3.inOut'},24.4)
+tl.to(rig,{x:L.fan.x,y:L.fan.y,scale:FS,rotationY:0,rotationX:0,rotationZ:0,duration:.8,ease:'power3.inOut'},24.4)
   .set(fanRigs,{opacity:1},25.15)
   .set(rig,{opacity:0},25.2)
   .to(fanRigs,{
-      x:i=>960+fanAngles[i]*15,
-      y:i=>520+Math.abs(fanAngles[i])*4.2,
+      x:i=>L.fan.x+fanAngles[i]*L.fan.spread,
+      y:i=>L.fan.y+Math.abs(fanAngles[i])*L.fan.drop,
       rotationZ:i=>fanAngles[i]*.75,
       rotationY:i=>-fanAngles[i]*.5,
       z:i=>-Math.abs(fanAngles[i])*8,
