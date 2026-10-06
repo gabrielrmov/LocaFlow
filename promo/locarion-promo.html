@@ -570,7 +570,8 @@ function pulse(sel,t,d=1.2){
 }
 
 /* ---------- CENA 1 · 0.0 – 6.6 : equipamento para construção ---------- */
-tl.fromTo('#world',{filter:'blur(30px)',scale:1.08},{filter:'blur(0px)',scale:1,duration:1.4,ease:'power2.out'},0)
+tl.fromTo('.bg',{opacity:0,scale:1.15},{opacity:1,scale:1,duration:1.6,ease:'power2.out'},0)
+  .fromTo(rig,{filter:'blur(18px)'},{filter:'blur(0px)',duration:1.2,ease:'power2.out'},.15)
   .to(rig,{y:540,rotationY:-18,rotationX:6,rotationZ:2,duration:1.8,ease:'expo.out'},.15);
 headIn('#h1',.5);
 tl.to(rig,{rotationY:-10,rotationX:3,rotationZ:0,duration:3.5,ease:'sine.inOut'},2);
