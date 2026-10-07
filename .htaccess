@@ -13,6 +13,13 @@ AddDefaultCharset UTF-8
   </FilesMatch>
 </IfModule>
 
+# Páginas antigas do site da V7 Locações que não fazem parte do Locarion (ex.: /equipamentos).
+# 410 = "removida de propósito": o Google tira da busca mais rápido do que com 404.
+# (O painel usa só endereços com # — dashboard.html#/equipamentos —, que não passam por aqui.)
+<IfModule mod_alias.c>
+  RedirectMatch gone ^/equipamentos(/.*)?$
+</IfModule>
+
 # Service worker das notificações e manifesto do aplicativo: sempre a versão mais nova
 <IfModule mod_headers.c>
   <FilesMatch "^(firebase-messaging-sw\.js|manifest\.webmanifest)$">
