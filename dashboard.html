@@ -187,6 +187,34 @@ button{font-family:inherit}
 .cf-sec .checklist [data-eq-row]{border-radius:8px}
 .cf-sec .checklist [data-eq-row]:hover{background:var(--surface-2)}
 .cf-sec .contract-summary{margin:14px 0 0; background:var(--surface)}
+/* contrato: lista de equipamentos em linhas */
+#f-equip{gap:6px; padding:0 10px 10px; position:relative}
+.eq-group{position:sticky; top:0; z-index:2; background:var(--surface); padding:12px 4px 6px; margin:0 -2px; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3,var(--muted)); border-bottom:1px solid var(--border)}
+.eq-row{border:1px solid var(--border); border-radius:10px; background:var(--surface); transition:border-color .15s, background .15s}
+.eq-row:hover{border-color:var(--border-strong,var(--ink-3,var(--border)))}
+.eq-row.picked{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 7%, var(--surface))}
+.eq-main{display:grid; grid-template-columns:auto minmax(0,1fr) auto auto; gap:14px; align-items:center; padding:10px 12px; cursor:pointer; font-size:13.5px}
+#f-equip .eq-main{display:grid; padding:10px 12px}
+.field label.eq-main,.eq-row .eq-main{color:var(--ink); font-size:13.5px; font-weight:400}
+.eq-check input{width:20px; height:20px; accent-color:var(--accent); cursor:pointer}
+.eq-check{display:flex; width:96px}
+.eq-info{display:flex; flex-direction:column; gap:2px; min-width:0}
+.eq-name{font-weight:600; line-height:1.3}
+.eq-info small,.eq-price small{color:var(--ink-3,var(--muted)); font-size:12px; font-weight:400}
+.eq-price{display:flex; flex-direction:column; align-items:flex-end; gap:1px; text-align:right; white-space:nowrap}
+.eq-price b{font-size:14px}
+.eq-price2{font-size:11.5px}
+.stepper{display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:8px; overflow:hidden; width:96px; background:var(--surface-2)}
+.stepper .qty-btn{width:30px; height:34px; border:0; background:transparent; color:inherit; font-size:18px; cursor:pointer; line-height:1}
+.stepper .qty-btn:hover{background:var(--surface)}
+.stepper .qty-input{width:36px; padding:0; text-align:center; border:0; border-radius:0; background:transparent; height:34px; -moz-appearance:textfield}
+.stepper .qty-input::-webkit-inner-spin-button,.stepper .qty-input::-webkit-outer-spin-button{-webkit-appearance:none; margin:0}
+.eq-picked{display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:10px}
+.eq-picked[hidden]{display:none}
+.eq-pill{display:inline-flex; align-items:center; gap:6px; background:color-mix(in srgb, var(--accent) 12%, var(--surface)); border:1px solid var(--accent); border-radius:999px; padding:3px 6px 3px 12px; font-size:12.5px}
+.eq-pill button{border:0; background:transparent; color:inherit; cursor:pointer; font-size:15px; line-height:1; width:20px; height:20px; border-radius:50%}
+.eq-pill button:hover{background:rgba(0,0,0,.12)}
+@media (max-width:640px){.eq-main{grid-template-columns:auto minmax(0,1fr) auto; row-gap:6px}.eq-price{grid-column:2/3; align-items:flex-start; text-align:left}.eq-main .item-date-toggle{grid-row:1; grid-column:3}}
 /* contrato: busca de cliente e de equipamentos */
 .combo{position:relative}
 .combo-list{position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:30; max-height:260px; overflow-y:auto; background:var(--surface); border:1px solid var(--border-strong,var(--border)); border-radius:var(--radius-sm); box-shadow:0 12px 32px rgba(0,0,0,.28); padding:4px}
@@ -1986,14 +2014,22 @@ function contractFormModal(id, presetStatus, cloneFrom){
         <input class="input" id="f-eq-search" type="search" placeholder="Buscar equipamento por nome, código ou categoria…" autocomplete="off">
         <select class="select" id="f-eq-cat"><option value="">Todas as categorias</option>${[...new Set(availEquip.map(e=>e.category).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(ct=>`<option value="${escapeHtml(ct)}">${escapeHtml(ct)}</option>`).join("")}</select>
         <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;white-space:nowrap"><input type="checkbox" id="f-eq-only"> Só selecionados <b id="f-eq-count" style="margin-left:2px">0</b></label>
-      </div><div class="checklist" id="f-equip"><p class="hint" id="f-eq-empty" style="padding:6px" hidden>Nenhum equipamento encontrado para essa busca.</p>
-      ${availEquip.length? availEquip.map(e=>{
+      </div><div class="eq-picked" id="eq-picked" hidden></div><div class="checklist" id="f-equip"><p class="hint" id="f-eq-empty" style="padding:6px" hidden>Nenhum equipamento encontrado para essa busca.</p>
+      ${availEquip.length? [...availEquip].sort((x,y)=> (x.category||"Sem categoria").localeCompare(y.category||"Sem categoria") || x.name.localeCompare(y.name)).map((e,i,arr)=>{
+        const cat = e.category||"Sem categoria";
+        const head = (i===0 || (arr[i-1].category||"Sem categoria")!==cat) ? `<div class="eq-group" data-group="${escapeHtml(cat)}">${escapeHtml(cat)}</div>` : "";
+        const price = `<div class="eq-price"><span><b>${fmtMoney(e.dailyRate)}</b><small>/dia</small></span>${e.weeklyRate||e.monthlyRate?`<small class="eq-price2">${[e.weeklyRate?`sem ${fmtMoney(e.weeklyRate)}`:"",e.monthlyRate?`mês ${fmtMoney(e.monthlyRate)}`:""].filter(Boolean).join(" · ")}</small>`:""}</div>`;
+        const sub = [e.code?`[${escapeHtml(e.code)}]`:"", isStockMode(e)?`${equipStockAvailable(e)}/${e.stockQty||0} em estoque`:""].filter(Boolean).join(" · ");
+        const info = `<div class="eq-info"><span class="eq-name">${escapeHtml(e.name)}</span>${sub?`<small>${sub}</small>`:""}</div>`;
+        const attrs = `data-eq-row="${e.id}" data-q="${escapeHtml(fold(e.name+" "+(e.code||"")+" "+(e.category||"")))}" data-cat="${escapeHtml(e.category||"")}" data-name="${escapeHtml(e.name)}"`;
         if(isStockMode(e)){
           const already = selectedQty[e.id]||0;
           const max = equipStockAvailable(e) + already;
-          return `<div data-eq-row="${e.id}" data-q="${escapeHtml(fold(e.name+" "+(e.code||"")+" "+(e.category||"")))}" data-cat="${escapeHtml(e.category||"")}"><label style="display:flex;align-items:center;gap:8px"><span style="flex:1">${escapeHtml(e.name)}${e.code?` <span class="hint">[${escapeHtml(e.code)}]</span>`:""} <span class="hint">· ${equipmentRateSummary(e)} · ${equipStockAvailable(e)}/${e.stockQty||0} em estoque</span></span><input type="number" class="input qty-input" data-eq="${e.id}" min="0" max="${max}" value="${Math.min(already,max)}" style="width:70px">${dateToggleBtn(e.id)}</label>${dateFieldsRow(e.id)}</div>`;
+          return head+`<div class="eq-row" ${attrs}><div class="eq-main">
+            <div class="stepper"><button type="button" class="qty-btn" data-eq="${e.id}" data-d="-1" aria-label="Diminuir">−</button><input type="number" class="input qty-input" data-eq="${e.id}" min="0" max="${max}" value="${Math.min(already,max)}"><button type="button" class="qty-btn" data-eq="${e.id}" data-d="1" aria-label="Aumentar">+</button></div>
+            ${info}${price}${dateToggleBtn(e.id)}</div>${dateFieldsRow(e.id)}</div>`;
         }
-        return `<div data-eq-row="${e.id}" data-q="${escapeHtml(fold(e.name+" "+(e.code||"")+" "+(e.category||"")))}" data-cat="${escapeHtml(e.category||"")}"><label><input type="checkbox" value="${e.id}" ${selectedIds.has(e.id)?"checked":""}> <span style="flex:1">${escapeHtml(e.name)}${e.code?` <span class="hint">[${escapeHtml(e.code)}]</span>`:""} <span class="hint">· ${equipmentRateSummary(e)}</span></span>${dateToggleBtn(e.id)}</label>${dateFieldsRow(e.id)}</div>`;
+        return head+`<div class="eq-row" ${attrs}><label class="eq-main"><span class="eq-check"><input type="checkbox" value="${e.id}" ${selectedIds.has(e.id)?"checked":""}></span>${info}${price}${dateToggleBtn(e.id)}</label>${dateFieldsRow(e.id)}</div>`;
       }).join("") : '<p class="hint" style="padding:6px">Nenhum equipamento disponível no momento.</p>'}
     </div></div>
     ${availServ.length? `<div class="field"><label>Serviços adicionais</label><div class="checklist" id="f-serv">
@@ -2069,19 +2105,53 @@ function contractFormModal(id, presetStatus, cloneFrom){
       /* --- equipamentos: busca, categoria e "só selecionados" --- */
       function filterEquip(){
         const q = fold($("#f-eq-search").value.trim()), cat = $("#f-eq-cat").value, only = $("#f-eq-only").checked;
-        let visible = 0, picked = 0;
+        let visible = 0; const picks = [];
         $all("#f-equip [data-eq-row]").forEach(row=>{
           const cb = row.querySelector("input[type=checkbox]"), qty = row.querySelector(".qty-input");
-          const isPicked = cb ? cb.checked : (Number(qty && qty.value)||0) > 0;
-          if(isPicked) picked++;
-          const ok = (!q || row.dataset.q.includes(q)) && (!cat || row.dataset.cat===cat) && (!only || isPicked);
+          const n = cb ? (cb.checked?1:0) : (Number(qty && qty.value)||0);
+          row.classList.toggle("picked", n>0);
+          if(n>0) picks.push({ id:row.dataset.eqRow, name:row.dataset.name, n, stock:!cb });
+          const ok = (!q || row.dataset.q.includes(q)) && (!cat || row.dataset.cat===cat) && (!only || n>0);
           row.style.display = ok ? "" : "none"; if(ok) visible++;
         });
-        $("#f-eq-count").textContent = picked;
+        /* cabeçalhos de categoria só aparecem se sobrar algum item embaixo */
+        let head = null, any = false;
+        const flush = ()=>{ if(head) head.style.display = any ? "" : "none"; };
+        $all("#f-equip > .eq-group, #f-equip > .eq-row").forEach(el=>{
+          if(el.classList.contains("eq-group")){ flush(); head = el; any = false; }
+          else if(el.style.display!=="none") any = true;
+        });
+        flush();
+        $("#f-eq-count").textContent = picks.length;
         $("#f-eq-empty").hidden = visible>0;
+        const box = $("#eq-picked");
+        box.hidden = !picks.length;
+        box.innerHTML = picks.length ? `<span class="hint">Selecionados:</span>` + picks.map(x=>`<span class="eq-pill">${escapeHtml(x.name)}${x.stock?` ×${x.n}`:""}<button type="button" data-unpick="${x.id}" aria-label="Remover">×</button></span>`).join("") : "";
       }
+      $("#eq-picked").addEventListener("click", (e)=>{
+        const b = e.target.closest("[data-unpick]"); if(!b) return;
+        const row = $(`#f-equip [data-eq-row="${b.dataset.unpick}"]`); if(!row) return;
+        const cb = row.querySelector("input[type=checkbox]"), qty = row.querySelector(".qty-input");
+        if(cb){ cb.checked = false; cb.dispatchEvent(new Event("change",{bubbles:true})); }
+        else if(qty){ qty.value = 0; qty.dispatchEvent(new Event("input",{bubbles:true})); }
+      });
+      $("#f-equip").addEventListener("click", (e)=>{
+        const b = e.target.closest(".qty-btn"); if(!b) return;
+        const qty = $(`#f-equip .qty-input[data-eq="${b.dataset.eq}"]`);
+        const max = Number(qty.max)||0, next = Math.min(Math.max((Number(qty.value)||0) + Number(b.dataset.d), 0), max);
+        if(next===(Number(qty.value)||0) && Number(b.dataset.d)>0 && max===0) toast("Sem estoque disponível desse item.","err");
+        qty.value = next; qty.dispatchEvent(new Event("input",{bubbles:true}));
+      });
       $("#f-eq-search").addEventListener("input", filterEquip);
-      $("#f-eq-search").addEventListener("keydown", (e)=>{ if(e.key==="Enter") e.preventDefault(); });
+      $("#f-eq-search").addEventListener("keydown", (e)=>{
+        if(e.key!=="Enter") return; e.preventDefault();
+        const rows = $all("#f-equip [data-eq-row]").filter(r=>r.style.display!=="none");
+        if(rows.length!==1) return;
+        const cb = rows[0].querySelector("input[type=checkbox]"), qty = rows[0].querySelector(".qty-input");
+        if(cb){ cb.checked = !cb.checked; cb.dispatchEvent(new Event("change",{bubbles:true})); }
+        else if(qty){ qty.value = Math.min((Number(qty.value)||0)+1, Number(qty.max)||0); qty.dispatchEvent(new Event("input",{bubbles:true})); }
+        $("#f-eq-search").select();
+      });
       $("#f-eq-cat").addEventListener("change", filterEquip);
       $("#f-eq-only").addEventListener("change", filterEquip);
       $("#f-equip").addEventListener("change", ()=> setTimeout(filterEquip,0));
