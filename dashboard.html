@@ -1612,7 +1612,7 @@ function renderDashboard(){
       <div class="kpi-grid">
         ${kp("Contratos ativos","0","nenhum em andamento","accent",svgI('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/>'))}
         ${kp("Vencendo hoje","0","devoluções previstas","neutral",svgI('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/>'))}
-        ${kp("Faturas em aberto","R$ 0,00","nenhuma fatura","neutral",svgI('<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>'))}
+        ${kp("A vencer","R$ 0,00","nenhuma fatura a vencer","neutral",svgI('<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>'))}
         ${kp("Equipamentos","0","cadastrados","neutral",ICO.eq)}
       </div>
     `;
@@ -1625,7 +1625,8 @@ function renderDashboard(){
   const overdue = STATE.contracts.filter(c=>contractComputedStatus(c)==="atrasado");
   const upcoming = STATE.contracts.filter(c=>{ const s=contractComputedStatus(c); return s==="ativo" && daysBetween(today,c.endDate)<=3 && daysBetween(today,c.endDate)>0; });
   const scheduled = STATE.contracts.filter(c=>contractComputedStatus(c)==="agendado");
-  const openInvoices = STATE.payments.filter(p=>paymentComputedStatus(p)!=="pago");
+  /* no painel geral só entra o que ainda vai vencer (as atrasadas aparecem em Alertas e no Financeiro) */
+  const openInvoices = STATE.payments.filter(p=>paymentComputedStatus(p)==="pendente");
   const openInvoicesSum = openInvoices.reduce((s,p)=>s+Number(p.amount||0),0);
   const pendingMaint = STATE.maintenance.filter(m=>maintenanceComputedStatus(m)!=="concluida");
 
@@ -1706,7 +1707,7 @@ function renderDashboard(){
       <div class="kpi"><div class="kpi-top"><span class="kpi-label">Vencendo hoje</span><span class="kpi-icon ${dueToday.length?'warning':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg></span></div><div class="kpi-value tabular" style="color:${dueToday.length?'var(--warning)':'var(--ink)'}">${dueToday.length}</div><div class="kpi-sub">devoluções previstas</div></div>
       <div class="kpi"><div class="kpi-top"><span class="kpi-label">Contratos atrasados</span><span class="kpi-icon ${overdue.length?'critical':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></span></div><div class="kpi-value tabular" style="color:${overdue.length?'var(--critical)':'var(--ink)'}">${overdue.length}</div><div class="kpi-sub">sem devolução</div></div>
       <div class="kpi"><div class="kpi-top"><span class="kpi-label">Manutenções pendentes</span><span class="kpi-icon ${pendingMaint.length?'warning':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4a4 4 0 0 0-4.9 3.9c0 .5.1 1 .3 1.4L3 12.7V16h3.3l3.4-3.4c.4.2.9.3 1.4.3A4 4 0 0 0 15 8.9L11 4Z"/><circle cx="17.5" cy="17.5" r="3.5"/></svg></span></div><div class="kpi-value tabular">${pendingMaint.length}</div><div class="kpi-sub">${STATE.maintenance.filter(m=>maintenanceComputedStatus(m)==="atrasada").length} atrasadas</div></div>
-      <div class="kpi"><div class="kpi-top"><span class="kpi-label">Faturas em aberto</span><span class="kpi-icon ${openInvoicesSum?'warning':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2.5" y="6" width="19" height="13" rx="2"/><path d="M2.5 10h19"/></svg></span></div><div class="kpi-value tabular" style="color:${openInvoicesSum?'var(--warning)':'var(--ink)'}">${fmtMoney(openInvoicesSum)}</div><div class="kpi-sub">${openInvoices.length} faturas</div></div>
+      <div class="kpi"><div class="kpi-top"><span class="kpi-label">A vencer</span><span class="kpi-icon ${openInvoicesSum?'warning':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2.5" y="6" width="19" height="13" rx="2"/><path d="M2.5 10h19"/></svg></span></div><div class="kpi-value tabular" style="color:${openInvoicesSum?'var(--warning)':'var(--ink)'}">${fmtMoney(openInvoicesSum)}</div><div class="kpi-sub">${openInvoices.length===0?"nenhuma fatura a vencer":`${openInvoices.length} ${openInvoices.length===1?"fatura":"faturas"} a vencer`}</div></div>
       <div class="kpi"><div class="kpi-top"><span class="kpi-label">Inadimplência</span><span class="kpi-icon ${inadimplencia>0?'critical':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></span></div><div class="kpi-value tabular" style="color:${inadimplencia>0?'var(--critical)':'var(--ink)'}">${inadimplencia.toFixed(1)}%</div><div class="kpi-sub">do faturado total</div></div>
     </div>
 
