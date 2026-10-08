@@ -173,11 +173,16 @@ button{font-family:inherit}
 .cf-sec .field-row{align-items:start}
 .cf-sec .field{display:flex; flex-direction:column; justify-content:flex-start; align-self:start}
 .cf-sec .contract-summary+.field-row{margin-top:16px}
+.cf-layout{display:grid; grid-template-columns:minmax(0,1.55fr) minmax(0,1fr); gap:16px; align-items:start}
+.cf-col{display:flex; flex-direction:column; gap:16px; min-width:0}
+@media (max-width:1000px){.cf-layout{grid-template-columns:1fr}}
+.cf-sec #f-equip{max-height:calc(100dvh - 600px); min-height:230px}
+.cf-sec #f-serv{max-height:170px}
 .cf-row1{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,2fr) minmax(0,1fr); gap:14px; align-items:start}
 @media (max-width:760px){.cf-row1{grid-template-columns:1fr}}
 .cf-grid3{display:grid; grid-template-columns:1fr 1.6fr 1fr; gap:14px}
 @media (max-width:760px){.cf-grid3{grid-template-columns:1fr}}
-.cf-sec .checklist{background:var(--surface); max-height:380px; gap:4px; padding:10px}
+.cf-sec .checklist{background:var(--surface); gap:4px; padding:10px}
 .cf-sec .checklist label{padding:9px 10px}
 .cf-sec .checklist [data-eq-row]{border-radius:8px}
 .cf-sec .checklist [data-eq-row]:hover{background:var(--surface-2)}
@@ -278,7 +283,7 @@ td.num{text-align:right}
 .modal-backdrop{position:fixed; inset:0; background:rgba(10,12,30,.5); display:flex; align-items:flex-start; justify-content:center; padding:5vh 16px; z-index:100; overflow-y:auto}
 .modal{background:var(--surface); border-radius:var(--radius-lg); width:100%; max-width:560px; box-shadow:var(--shadow-md); margin-bottom:5vh}
 .modal.modal-lg{max-width:720px}
-.modal.modal-xl{max-width:1000px}
+.modal.modal-xl{max-width:min(1480px, 96vw)}
 .modal-xl .modal-body{max-height:calc(100dvh - 190px); gap:16px}
 .modal-header{display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid var(--border)}
 .modal-header h3{font-size:16.5px}
@@ -1955,6 +1960,7 @@ function contractFormModal(id, presetStatus, cloneFrom){
   if(!c){ let n = STATE.contracts.length+1; const used = new Set(STATE.contracts.map(x=>String(x.code||"").toUpperCase())); while(used.has("LF-"+String(n).padStart(4,"0"))) n++; suggestedCode = "LF-"+String(n).padStart(4,"0"); }
   openModal(c?`Contrato ${c.code}`:(cloneFrom?`Novo contrato (a partir de ${escapeHtml(cloneFrom.code||"")})`:(presetStatus==="orcamento"?"Novo orçamento":"Novo contrato")), `
     ${cloneFrom? `<p class="hint" style="margin:-2px 0 10px">Duplicado do contrato ${escapeHtml(cloneFrom.code||"")}. Revise cliente, itens e datas antes de criar.</p>` : ""}
+    <div class="cf-layout"><div class="cf-col">
     <section class="cf-sec"><h4><span class="cf-n">1</span> Contrato e cliente</h4>
     <div class="cf-row1">
       <div class="field"><label>Número do contrato</label><input class="input" id="f-code" maxlength="40" value="${escapeHtml(suggestedCode)}" placeholder="Ex: 00009"></div>
@@ -1980,7 +1986,7 @@ function contractFormModal(id, presetStatus, cloneFrom){
         <input class="input" id="f-eq-search" type="search" placeholder="Buscar equipamento por nome, código ou categoria…" autocomplete="off">
         <select class="select" id="f-eq-cat"><option value="">Todas as categorias</option>${[...new Set(availEquip.map(e=>e.category).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(ct=>`<option value="${escapeHtml(ct)}">${escapeHtml(ct)}</option>`).join("")}</select>
         <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;white-space:nowrap"><input type="checkbox" id="f-eq-only"> Só selecionados <b id="f-eq-count" style="margin-left:2px">0</b></label>
-      </div><div class="checklist" id="f-equip" style="max-height:300px"><p class="hint" id="f-eq-empty" style="padding:6px" hidden>Nenhum equipamento encontrado para essa busca.</p>
+      </div><div class="checklist" id="f-equip"><p class="hint" id="f-eq-empty" style="padding:6px" hidden>Nenhum equipamento encontrado para essa busca.</p>
       ${availEquip.length? availEquip.map(e=>{
         if(isStockMode(e)){
           const already = selectedQty[e.id]||0;
@@ -1994,6 +2000,7 @@ function contractFormModal(id, presetStatus, cloneFrom){
       ${availServ.map(e=>`<label><input type="checkbox" value="${e.id}" ${selectedIds.has(e.id)?"checked":""}> ${escapeHtml(e.name)} <span class="hint">· ${fmtMoney(e.dailyRate)}</span></label>`).join("")}
     </div></div>` : ""}
     </section>
+    </div><div class="cf-col">
     <section class="cf-sec"><h4><span class="cf-n">3</span> Período e valores</h4>
     <div class="field-row">
       <div class="field"><label>Data de início</label><input class="input" type="date" id="f-start" value="${pre?.startDate||todayISO()}"></div>
@@ -2020,6 +2027,7 @@ function contractFormModal(id, presetStatus, cloneFrom){
     <div class="field"><label>Observações</label><textarea class="textarea" id="f-notes">${escapeHtml(pre?.notes||"")}</textarea></div>
     <div class="field"><label style="display:flex;align-items:center;gap:7px;font-weight:500"><input type="checkbox" id="f-signed" ${c?.signed?"checked":""}> Contrato assinado</label></div>
     </section>
+    </div></div>
   `, `${c?`<button class="btn btn-secondary" id="duplicate-contract" style="margin-right:auto">Duplicar</button>`:""}<button class="btn btn-secondary" data-action="close-modal">Cancelar</button><button class="btn btn-primary" id="save-contract">${c?"Salvar":"Criar contrato"}</button>`,
   { large:true, xl:true, onMount(){
       $("#f-freight-on").addEventListener("change", ()=>{ $("#f-freight").style.display = $("#f-freight-on").checked ? "block" : "none"; });
