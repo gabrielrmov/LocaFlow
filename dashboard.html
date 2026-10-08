@@ -164,6 +164,22 @@ button{font-family:inherit}
 .checklist label{display:flex; align-items:center; gap:8px; font-size:13px; padding:5px 6px; border-radius:6px}
 .checklist label:hover{background:var(--surface-2)}
 .checklist label.disabled{opacity:.45}
+/* contrato: busca de cliente e de equipamentos */
+.combo{position:relative}
+.combo-list{position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:30; max-height:260px; overflow-y:auto; background:var(--surface); border:1px solid var(--border-strong,var(--border)); border-radius:var(--radius-sm); box-shadow:0 12px 32px rgba(0,0,0,.28); padding:4px}
+.combo-list[hidden]{display:none}
+.combo-opt{display:flex; flex-direction:column; gap:1px; padding:8px 10px; border-radius:6px; cursor:pointer; font-size:13.5px}
+.combo-opt small{color:var(--ink-3,var(--muted)); font-size:12px}
+.combo-opt.active,.combo-opt:hover{background:var(--surface-2)}
+.combo-empty{padding:10px; font-size:13px; color:var(--ink-3,var(--muted))}
+.eq-tools{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px}
+.eq-tools .input{flex:1; min-width:160px}
+.eq-tools .select{width:auto; max-width:200px}
+.chips{display:flex; gap:6px; flex-wrap:wrap; margin-top:6px}
+.chip-btn{border:1px solid var(--border); background:var(--surface-2); color:inherit; font:inherit; font-size:12px; padding:4px 10px; border-radius:999px; cursor:pointer}
+.chip-btn:hover{border-color:var(--accent)}
+.contract-summary{display:flex; gap:14px; flex-wrap:wrap; font-size:12.5px; color:var(--ink-2,inherit); background:var(--surface-2); border-radius:var(--radius-sm); padding:8px 12px; margin:-2px 0 14px}
+.contract-summary b{font-weight:700}
 
 /* ---------- cards / kpis ---------- */
 .card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); box-shadow:var(--shadow-sm)}
@@ -1077,6 +1093,7 @@ function waContractMessage(c, cl){
   return head+`Confirmando a retirada de ${eq} (contrato ${c.code}) em ${fmtDate(c.startDate)}. Qualquer dúvida, é só responder esta mensagem.`;
 }
 
+function fold(s){ return String(s==null?"":s).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase(); }
 function clientName(id){ return byId(STATE.clients,id)?.name || "Cliente removido"; }
 function equipmentName(id){ return byId(STATE.equipment,id)?.name || "Equipamento removido"; }
 /* Agrupa ids repetidos (itens de estoque com quantidade > 1) em "Nome ×N" para exibição. */
@@ -1920,7 +1937,14 @@ function contractFormModal(id, presetStatus, cloneFrom){
     ${cloneFrom? `<p class="hint" style="margin:-2px 0 10px">Duplicado do contrato ${escapeHtml(cloneFrom.code||"")}. Revise cliente, itens e datas antes de criar.</p>` : ""}
     <div class="field"><label>Número do contrato</label><input class="input" id="f-code" maxlength="40" value="${escapeHtml(suggestedCode)}" placeholder="Ex: 00009"></div>
     <div class="field-row">
-      <div class="field"><label>Cliente</label><select class="select" id="f-client">${STATE.clients.map(cl=>`<option value="${cl.id}" ${pre?.clientId===cl.id?"selected":""}>${escapeHtml(cl.name)}</option>`).join("") || '<option value="">Cadastre um cliente primeiro</option>'}</select></div>
+      <div class="field"><label>Cliente</label>
+        <div class="combo" id="client-combo">
+          <input class="input" id="f-client-search" autocomplete="off" placeholder="${STATE.clients.length?"Digite o nome, CPF/CNPJ ou telefone…":"Cadastre um cliente primeiro"}" value="${escapeHtml(byId(STATE.clients,pre?.clientId)?.name||"")}" ${STATE.clients.length?"":"disabled"}>
+          <input type="hidden" id="f-client" value="${escapeHtml(pre?.clientId||"")}">
+          <div class="combo-list" id="client-list" hidden></div>
+        </div>
+        <p class="hint" id="client-hint" style="margin-top:4px"></p>
+      </div>
       <div class="field"><label>Status</label><select class="select" id="f-status">
         <option value="orcamento" ${defaultStatus==="orcamento"?"selected":""}>Orçamento</option>
         <option value="agendado" ${defaultStatus==="agendado"?"selected":""}>Agendado</option>
@@ -1929,14 +1953,18 @@ function contractFormModal(id, presetStatus, cloneFrom){
         ${c?`<option value="cancelado" ${c.status==="cancelado"?"selected":""}>Cancelado</option>`:""}
       </select></div>
     </div>
-    <div class="field"><label>Equipamentos</label><p class="hint" style="margin:-2px 0 6px">Use o ícone de calendário para dar a um item datas de entrega/devolução diferentes do contrato — afeta o valor calculado e o texto do contrato. A disponibilidade do equipamento continua controlada pela data geral do contrato.</p><div class="checklist" id="f-equip" style="max-height:280px">
+    <div class="field"><label>Equipamentos</label><p class="hint" style="margin:-2px 0 6px">Use o ícone de calendário para dar a um item datas de entrega/devolução diferentes do contrato — afeta o valor calculado e o texto do contrato. A disponibilidade do equipamento continua controlada pela data geral do contrato.</p><div class="eq-tools">
+        <input class="input" id="f-eq-search" type="search" placeholder="Buscar equipamento por nome, código ou categoria…" autocomplete="off">
+        <select class="select" id="f-eq-cat"><option value="">Todas as categorias</option>${[...new Set(availEquip.map(e=>e.category).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(ct=>`<option value="${escapeHtml(ct)}">${escapeHtml(ct)}</option>`).join("")}</select>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;white-space:nowrap"><input type="checkbox" id="f-eq-only"> Só selecionados <b id="f-eq-count" style="margin-left:2px">0</b></label>
+      </div><div class="checklist" id="f-equip" style="max-height:300px"><p class="hint" id="f-eq-empty" style="padding:6px" hidden>Nenhum equipamento encontrado para essa busca.</p>
       ${availEquip.length? availEquip.map(e=>{
         if(isStockMode(e)){
           const already = selectedQty[e.id]||0;
           const max = equipStockAvailable(e) + already;
-          return `<div data-eq-row="${e.id}"><label style="display:flex;align-items:center;gap:8px"><span style="flex:1">${escapeHtml(e.name)} <span class="hint">· ${equipmentRateSummary(e)} · ${equipStockAvailable(e)}/${e.stockQty||0} em estoque</span></span><input type="number" class="input qty-input" data-eq="${e.id}" min="0" max="${max}" value="${Math.min(already,max)}" style="width:70px">${dateToggleBtn(e.id)}</label>${dateFieldsRow(e.id)}</div>`;
+          return `<div data-eq-row="${e.id}" data-q="${escapeHtml(fold(e.name+" "+(e.code||"")+" "+(e.category||"")))}" data-cat="${escapeHtml(e.category||"")}"><label style="display:flex;align-items:center;gap:8px"><span style="flex:1">${escapeHtml(e.name)}${e.code?` <span class="hint">[${escapeHtml(e.code)}]</span>`:""} <span class="hint">· ${equipmentRateSummary(e)} · ${equipStockAvailable(e)}/${e.stockQty||0} em estoque</span></span><input type="number" class="input qty-input" data-eq="${e.id}" min="0" max="${max}" value="${Math.min(already,max)}" style="width:70px">${dateToggleBtn(e.id)}</label>${dateFieldsRow(e.id)}</div>`;
         }
-        return `<div data-eq-row="${e.id}"><label><input type="checkbox" value="${e.id}" ${selectedIds.has(e.id)?"checked":""}> <span style="flex:1">${escapeHtml(e.name)} <span class="hint">· ${equipmentRateSummary(e)}</span></span>${dateToggleBtn(e.id)}</label>${dateFieldsRow(e.id)}</div>`;
+        return `<div data-eq-row="${e.id}" data-q="${escapeHtml(fold(e.name+" "+(e.code||"")+" "+(e.category||"")))}" data-cat="${escapeHtml(e.category||"")}"><label><input type="checkbox" value="${e.id}" ${selectedIds.has(e.id)?"checked":""}> <span style="flex:1">${escapeHtml(e.name)}${e.code?` <span class="hint">[${escapeHtml(e.code)}]</span>`:""} <span class="hint">· ${equipmentRateSummary(e)}</span></span>${dateToggleBtn(e.id)}</label>${dateFieldsRow(e.id)}</div>`;
       }).join("") : '<p class="hint" style="padding:6px">Nenhum equipamento disponível no momento.</p>'}
     </div></div>
     ${availServ.length? `<div class="field"><label>Serviços adicionais</label><div class="checklist" id="f-serv">
@@ -1944,8 +1972,11 @@ function contractFormModal(id, presetStatus, cloneFrom){
     </div></div>` : ""}
     <div class="field-row">
       <div class="field"><label>Data de início</label><input class="input" type="date" id="f-start" value="${pre?.startDate||todayISO()}"></div>
-      <div class="field"><label>Devolução prevista</label><input class="input" type="date" id="f-end" value="${pre?.endDate||isoAddDays(todayISO(),3)}"></div>
+      <div class="field"><label>Devolução prevista</label><input class="input" type="date" id="f-end" value="${pre?.endDate||isoAddDays(todayISO(),3)}">
+        <div class="chips" id="dur-chips"><span class="hint" style="align-self:center">Duração:</span>${[[1,"1 dia"],[3,"3 dias"],[7,"1 semana"],[15,"15 dias"],[30,"1 mês"]].map(([n,l])=>`<button type="button" class="chip-btn" data-days="${n}">${l}</button>`).join("")}</div>
+      </div>
     </div>
+    <div class="contract-summary" id="contract-summary"></div>
     <div class="field-row">
       <div class="field"><label>Valor total (R$)</label><input class="input" type="number" min="0" step="0.01" id="f-value" value="${pre?.value??""}" placeholder="Calculado automaticamente"></div>
       <div class="field"><label>Local de entrega</label>
@@ -1963,6 +1994,77 @@ function contractFormModal(id, presetStatus, cloneFrom){
   `, `${c?`<button class="btn btn-secondary" id="duplicate-contract" style="margin-right:auto">Duplicar</button>`:""}<button class="btn btn-secondary" data-action="close-modal">Cancelar</button><button class="btn btn-primary" id="save-contract">${c?"Salvar":"Criar contrato"}</button>`,
   { large:true, onMount(){
       $("#f-freight-on").addEventListener("change", ()=>{ $("#f-freight").style.display = $("#f-freight-on").checked ? "block" : "none"; });
+
+      /* --- cliente: busca por nome, CPF/CNPJ ou telefone, com setas e Enter --- */
+      const cSearch = $("#f-client-search"), cList = $("#client-list"), cHidden = $("#f-client");
+      let cActive = -1, cShown = [];
+      function clientHint(){
+        const cl = byId(STATE.clients, cHidden.value);
+        $("#client-hint").textContent = cl ? [cl.document, cl.phone].filter(Boolean).join(" · ") : "";
+      }
+      function renderClientList(){
+        const q = fold(cSearch.value.trim()), qd = q.replace(/\D/g,"");
+        cShown = STATE.clients.filter(cl=>{
+          if(!q) return true;
+          if(fold(cl.name).includes(q) || fold(cl.tradeName||"").includes(q)) return true;
+          return qd.length>=3 && (String(cl.document||"").replace(/\D/g,"").includes(qd) || String(cl.phone||"").replace(/\D/g,"").includes(qd));
+        }).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,60);
+        cActive = cShown.length ? 0 : -1;
+        cList.innerHTML = cShown.length ? cShown.map((cl,i)=>`<div class="combo-opt ${i===0?"active":""}" data-id="${cl.id}"><span>${escapeHtml(cl.name)}</span><small>${escapeHtml([cl.document,cl.phone].filter(Boolean).join(" · ")||"sem documento")}</small></div>`).join("") : `<div class="combo-empty">Nenhum cliente encontrado. Cadastre em Clientes.</div>`;
+        cList.hidden = false;
+      }
+      function pickClient(id){
+        const cl = byId(STATE.clients,id); if(!cl) return;
+        cHidden.value = id; cSearch.value = cl.name; cList.hidden = true; clientHint();
+        cHidden.dispatchEvent(new Event("change"));
+      }
+      cSearch.addEventListener("focus", ()=>{ cSearch.select(); renderClientList(); });
+      cSearch.addEventListener("input", ()=>{ cHidden.value = ""; clientHint(); renderClientList(); });
+      cSearch.addEventListener("keydown", (e)=>{
+        if(e.key==="ArrowDown"||e.key==="ArrowUp"){ e.preventDefault(); if(cList.hidden) renderClientList(); if(!cShown.length) return; cActive = (cActive + (e.key==="ArrowDown"?1:-1) + cShown.length) % cShown.length; $all("#client-list .combo-opt").forEach((o,i)=>{ o.classList.toggle("active", i===cActive); if(i===cActive) o.scrollIntoView({block:"nearest"}); }); }
+        else if(e.key==="Enter"){ if(!cList.hidden && cShown[cActive]){ e.preventDefault(); pickClient(cShown[cActive].id); } }
+        else if(e.key==="Escape" && !cList.hidden){ e.stopPropagation(); cList.hidden = true; }
+      });
+      cList.addEventListener("mousedown", (e)=>{ const o = e.target.closest(".combo-opt"); if(o){ e.preventDefault(); pickClient(o.dataset.id); } });
+      cSearch.addEventListener("blur", ()=>{ setTimeout(()=>{ cList.hidden = true; const cl = byId(STATE.clients,cHidden.value); if(cl) cSearch.value = cl.name; }, 120); });
+      clientHint();
+
+      /* --- equipamentos: busca, categoria e "só selecionados" --- */
+      function filterEquip(){
+        const q = fold($("#f-eq-search").value.trim()), cat = $("#f-eq-cat").value, only = $("#f-eq-only").checked;
+        let visible = 0, picked = 0;
+        $all("#f-equip [data-eq-row]").forEach(row=>{
+          const cb = row.querySelector("input[type=checkbox]"), qty = row.querySelector(".qty-input");
+          const isPicked = cb ? cb.checked : (Number(qty && qty.value)||0) > 0;
+          if(isPicked) picked++;
+          const ok = (!q || row.dataset.q.includes(q)) && (!cat || row.dataset.cat===cat) && (!only || isPicked);
+          row.style.display = ok ? "" : "none"; if(ok) visible++;
+        });
+        $("#f-eq-count").textContent = picked;
+        $("#f-eq-empty").hidden = visible>0;
+      }
+      $("#f-eq-search").addEventListener("input", filterEquip);
+      $("#f-eq-search").addEventListener("keydown", (e)=>{ if(e.key==="Enter") e.preventDefault(); });
+      $("#f-eq-cat").addEventListener("change", filterEquip);
+      $("#f-eq-only").addEventListener("change", filterEquip);
+      $("#f-equip").addEventListener("change", ()=> setTimeout(filterEquip,0));
+      $("#f-equip").addEventListener("input", ()=> setTimeout(filterEquip,0));
+
+      /* --- atalhos de duração e resumo --- */
+      $all("#dur-chips .chip-btn").forEach(b=> b.addEventListener("click", ()=>{
+        const st = $("#f-start").value || todayISO();
+        $("#f-end").value = isoAddDays(st, Number(b.dataset.days)); $("#f-end").dispatchEvent(new Event("change"));
+      }));
+      function updateSummary(){
+        const st = $("#f-start").value, en = $("#f-end").value;
+        const days = st && en ? Math.max(daysBetween(st,en),1) : 0;
+        const items = $all("#f-equip input[type=checkbox]:checked").length + $all("#f-equip .qty-input").reduce((n,i)=>n+(Number(i.value)||0),0) + ($("#f-serv") ? $all("#f-serv input:checked").length : 0);
+        const v = Number($("#f-value").value)||0;
+        $("#contract-summary").innerHTML = `<span><b>${days}</b> ${days===1?"dia":"dias"}</span><span><b>${items}</b> ${items===1?"item":"itens"}</span><span>Valor <b>${fmtMoney(v)}</b>${days>0 && v>0 ? ` · ${fmtMoney(v/days)}/dia`:""}</span>`;
+      }
+      ["#f-start","#f-end","#f-value"].forEach(sel=> $(sel).addEventListener("input", updateSummary));
+      $("#f-equip").addEventListener("change", updateSummary); $("#f-equip").addEventListener("input", updateSummary);
+      if($("#f-serv")) $("#f-serv").addEventListener("change", updateSummary);
       function itemDays(eqId, fallbackDays){
         const df = $(`.item-date-fields[data-eq-dates="${eqId}"]`);
         if(df && df.style.display!=="none"){
@@ -1979,6 +2081,7 @@ function contractFormModal(id, presetStatus, cloneFrom){
         $all("#f-equip .qty-input").forEach(i=>{ const qty=Number(i.value)||0; if(!qty) return; const eq=byId(STATE.equipment,i.dataset.eq); if(eq) total += bestRateForDays(eq,itemDays(i.dataset.eq,days)).total * qty; });
         if($("#f-serv")) $all("#f-serv input:checked").forEach(i=>{ const eq=byId(STATE.equipment,i.value); if(eq) total += Number(eq.dailyRate||0); });
         if(!$("#f-value").dataset.touched) $("#f-value").value = total.toFixed(2);
+        if(typeof updateSummary==="function") updateSummary();
       }
       function refreshLocPicker(){
         const locs = clientLocationOptions($("#f-client").value);
@@ -2029,6 +2132,7 @@ function contractFormModal(id, presetStatus, cloneFrom){
       });
       refreshLocPicker();
       recalc();
+      filterEquip(); updateSummary();
       if($("#duplicate-contract")) $("#duplicate-contract").addEventListener("click", ()=>{
         const duration = Math.max(daysBetween(c.startDate,c.endDate),1);
         const start = todayISO();
