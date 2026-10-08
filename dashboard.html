@@ -164,6 +164,24 @@ button{font-family:inherit}
 .checklist label{display:flex; align-items:center; gap:8px; font-size:13px; padding:5px 6px; border-radius:6px}
 .checklist label:hover{background:var(--surface-2)}
 .checklist label.disabled{opacity:.45}
+/* contrato: seções do formulário */
+.cf-sec{border:1px solid var(--border); border-radius:var(--radius-md); padding:16px 18px 18px; background:var(--surface-2,transparent)}
+.cf-sec>h4{margin:0 0 14px; font-size:13px; font-weight:700; letter-spacing:.02em; display:flex; align-items:center; gap:10px}
+.cf-n{display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:var(--accent); color:#fff; font-size:12px; font-weight:700}
+.cf-sec .field{margin:0}
+.cf-sec .field+.field,.cf-sec .field-row+.field,.cf-sec .field+.field-row,.cf-sec .field-row+.contract-summary{margin-top:14px}
+.cf-sec .field-row{align-items:start}
+.cf-sec .field{display:flex; flex-direction:column; justify-content:flex-start; align-self:start}
+.cf-sec .contract-summary+.field-row{margin-top:16px}
+.cf-row1{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,2fr) minmax(0,1fr); gap:14px; align-items:start}
+@media (max-width:760px){.cf-row1{grid-template-columns:1fr}}
+.cf-grid3{display:grid; grid-template-columns:1fr 1.6fr 1fr; gap:14px}
+@media (max-width:760px){.cf-grid3{grid-template-columns:1fr}}
+.cf-sec .checklist{background:var(--surface); max-height:380px; gap:4px; padding:10px}
+.cf-sec .checklist label{padding:9px 10px}
+.cf-sec .checklist [data-eq-row]{border-radius:8px}
+.cf-sec .checklist [data-eq-row]:hover{background:var(--surface-2)}
+.cf-sec .contract-summary{margin:14px 0 0; background:var(--surface)}
 /* contrato: busca de cliente e de equipamentos */
 .combo{position:relative}
 .combo-list{position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:30; max-height:260px; overflow-y:auto; background:var(--surface); border:1px solid var(--border-strong,var(--border)); border-radius:var(--radius-sm); box-shadow:0 12px 32px rgba(0,0,0,.28); padding:4px}
@@ -260,6 +278,8 @@ td.num{text-align:right}
 .modal-backdrop{position:fixed; inset:0; background:rgba(10,12,30,.5); display:flex; align-items:flex-start; justify-content:center; padding:5vh 16px; z-index:100; overflow-y:auto}
 .modal{background:var(--surface); border-radius:var(--radius-lg); width:100%; max-width:560px; box-shadow:var(--shadow-md); margin-bottom:5vh}
 .modal.modal-lg{max-width:720px}
+.modal.modal-xl{max-width:1000px}
+.modal-xl .modal-body{max-height:calc(100dvh - 190px); gap:16px}
 .modal-header{display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid var(--border)}
 .modal-header h3{font-size:16.5px}
 .modal-body{padding:20px; display:flex; flex-direction:column; gap:14px; max-height:65vh; overflow-y:auto}
@@ -346,7 +366,7 @@ td.num{text-align:right}
   .btn-sm{min-height:34px}
   input,select,textarea{font-size:16px!important} /* evita zoom automático no iOS */
   .modal-backdrop{padding:0; align-items:flex-end}
-  .modal,.modal.modal-lg{max-width:none; border-radius:var(--radius-lg) var(--radius-lg) 0 0; margin-bottom:0}
+  .modal,.modal.modal-lg,.modal.modal-xl{max-width:none; border-radius:var(--radius-lg) var(--radius-lg) 0 0; margin-bottom:0}
   .modal-body{max-height:calc(100dvh - 150px); padding:16px}
   .modal-header{padding:14px 16px}
   .modal-footer{padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px)); flex-wrap:wrap}
@@ -1167,7 +1187,7 @@ function openModal(title, bodyHtml, footerHtml, opts){
   const root = $("#modal-root");
   root.innerHTML = `
     <div class="modal-backdrop" id="modal-backdrop">
-      <div class="modal ${opts.large?'modal-lg':''}" role="dialog" aria-modal="true">
+      <div class="modal ${opts.large?'modal-lg':''} ${opts.xl?'modal-xl':''}" role="dialog" aria-modal="true">
         <div class="modal-header"><h3>${escapeHtml(title)}</h3><button class="icon-btn" data-action="close-modal" aria-label="Fechar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
         <div class="modal-body">${bodyHtml}</div>
         ${footerHtml? `<div class="modal-footer">${footerHtml}</div>` : ""}
@@ -1935,8 +1955,9 @@ function contractFormModal(id, presetStatus, cloneFrom){
   if(!c){ let n = STATE.contracts.length+1; const used = new Set(STATE.contracts.map(x=>String(x.code||"").toUpperCase())); while(used.has("LF-"+String(n).padStart(4,"0"))) n++; suggestedCode = "LF-"+String(n).padStart(4,"0"); }
   openModal(c?`Contrato ${c.code}`:(cloneFrom?`Novo contrato (a partir de ${escapeHtml(cloneFrom.code||"")})`:(presetStatus==="orcamento"?"Novo orçamento":"Novo contrato")), `
     ${cloneFrom? `<p class="hint" style="margin:-2px 0 10px">Duplicado do contrato ${escapeHtml(cloneFrom.code||"")}. Revise cliente, itens e datas antes de criar.</p>` : ""}
-    <div class="field"><label>Número do contrato</label><input class="input" id="f-code" maxlength="40" value="${escapeHtml(suggestedCode)}" placeholder="Ex: 00009"></div>
-    <div class="field-row">
+    <section class="cf-sec"><h4><span class="cf-n">1</span> Contrato e cliente</h4>
+    <div class="cf-row1">
+      <div class="field"><label>Número do contrato</label><input class="input" id="f-code" maxlength="40" value="${escapeHtml(suggestedCode)}" placeholder="Ex: 00009"></div>
       <div class="field"><label>Cliente</label>
         <div class="combo" id="client-combo">
           <input class="input" id="f-client-search" autocomplete="off" placeholder="${STATE.clients.length?"Digite o nome, CPF/CNPJ ou telefone…":"Cadastre um cliente primeiro"}" value="${escapeHtml(byId(STATE.clients,pre?.clientId)?.name||"")}" ${STATE.clients.length?"":"disabled"}>
@@ -1953,6 +1974,8 @@ function contractFormModal(id, presetStatus, cloneFrom){
         ${c?`<option value="cancelado" ${c.status==="cancelado"?"selected":""}>Cancelado</option>`:""}
       </select></div>
     </div>
+    </section>
+    <section class="cf-sec"><h4><span class="cf-n">2</span> Equipamentos e serviços</h4>
     <div class="field"><label>Equipamentos</label><p class="hint" style="margin:-2px 0 6px">Use o ícone de calendário para dar a um item datas de entrega/devolução diferentes do contrato — afeta o valor calculado e o texto do contrato. A disponibilidade do equipamento continua controlada pela data geral do contrato.</p><div class="eq-tools">
         <input class="input" id="f-eq-search" type="search" placeholder="Buscar equipamento por nome, código ou categoria…" autocomplete="off">
         <select class="select" id="f-eq-cat"><option value="">Todas as categorias</option>${[...new Set(availEquip.map(e=>e.category).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(ct=>`<option value="${escapeHtml(ct)}">${escapeHtml(ct)}</option>`).join("")}</select>
@@ -1970,6 +1993,8 @@ function contractFormModal(id, presetStatus, cloneFrom){
     ${availServ.length? `<div class="field"><label>Serviços adicionais</label><div class="checklist" id="f-serv">
       ${availServ.map(e=>`<label><input type="checkbox" value="${e.id}" ${selectedIds.has(e.id)?"checked":""}> ${escapeHtml(e.name)} <span class="hint">· ${fmtMoney(e.dailyRate)}</span></label>`).join("")}
     </div></div>` : ""}
+    </section>
+    <section class="cf-sec"><h4><span class="cf-n">3</span> Período e valores</h4>
     <div class="field-row">
       <div class="field"><label>Data de início</label><input class="input" type="date" id="f-start" value="${pre?.startDate||todayISO()}"></div>
       <div class="field"><label>Devolução prevista</label><input class="input" type="date" id="f-end" value="${pre?.endDate||isoAddDays(todayISO(),3)}">
@@ -1978,21 +2003,25 @@ function contractFormModal(id, presetStatus, cloneFrom){
     </div>
     <div class="contract-summary" id="contract-summary"></div>
     <div class="field-row">
-      <div class="field"><label>Valor total (R$)</label><input class="input" type="number" min="0" step="0.01" id="f-value" value="${pre?.value??""}" placeholder="Calculado automaticamente"></div>
-      <div class="field"><label>Local de entrega</label>
-        <select class="select" id="f-loc-picker" style="margin-bottom:6px"><option value="">Endereço personalizado…</option></select>
-        <input class="input" id="f-loc" value="${escapeHtml(pre?.location||"")}" placeholder="Endereço da obra ou evento">
+      <div class="field"><label>Valor total (R$)</label><input class="input" type="number" min="0" step="0.01" id="f-value" value="${pre?.value??""}" placeholder="Calculado automaticamente">
+        <p class="hint" style="margin-top:4px">Calculado pelos itens e pelos dias. Você pode ajustar à mão.</p></div>
+      <div class="field">
+        <label style="display:flex;align-items:center;gap:7px;font-weight:500"><input type="checkbox" id="f-freight-on" ${pre?.freight?"checked":""}> Cobrar frete</label>
+        <input class="input" type="number" min="0" step="0.01" id="f-freight" value="${pre?.freight??""}" placeholder="Valor do frete (R$)" style="display:${pre?.freight?"block":"none"};margin-top:6px">
+        <p class="hint" style="margin-top:4px">Linha separada na fatura inicial, fora do valor dos equipamentos.</p>
       </div>
     </div>
-    <div class="field">
-      <label style="display:flex;align-items:center;gap:7px;font-weight:500"><input type="checkbox" id="f-freight-on" ${pre?.freight?"checked":""}> Cobrar frete</label>
-      <p class="hint" style="margin:2px 0 6px">Linha separada na fatura inicial — não é incorporado ao valor dos equipamentos.</p>
-      <input class="input" type="number" min="0" step="0.01" id="f-freight" value="${pre?.freight??""}" placeholder="Valor do frete (R$)" style="display:${pre?.freight?"block":"none"};max-width:220px">
+    </section>
+    <section class="cf-sec"><h4><span class="cf-n">4</span> Entrega e observações</h4>
+    <div class="field"><label>Local de entrega</label>
+        <select class="select" id="f-loc-picker" style="margin-bottom:6px"><option value="">Endereço personalizado…</option></select>
+        <input class="input" id="f-loc" value="${escapeHtml(pre?.location||"")}" placeholder="Endereço da obra ou evento">
     </div>
     <div class="field"><label>Observações</label><textarea class="textarea" id="f-notes">${escapeHtml(pre?.notes||"")}</textarea></div>
     <div class="field"><label style="display:flex;align-items:center;gap:7px;font-weight:500"><input type="checkbox" id="f-signed" ${c?.signed?"checked":""}> Contrato assinado</label></div>
+    </section>
   `, `${c?`<button class="btn btn-secondary" id="duplicate-contract" style="margin-right:auto">Duplicar</button>`:""}<button class="btn btn-secondary" data-action="close-modal">Cancelar</button><button class="btn btn-primary" id="save-contract">${c?"Salvar":"Criar contrato"}</button>`,
-  { large:true, onMount(){
+  { large:true, xl:true, onMount(){
       $("#f-freight-on").addEventListener("change", ()=>{ $("#f-freight").style.display = $("#f-freight-on").checked ? "block" : "none"; });
 
       /* --- cliente: busca por nome, CPF/CNPJ ou telefone, com setas e Enter --- */
