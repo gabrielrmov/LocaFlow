@@ -171,6 +171,34 @@ button{font-family:inherit}
 .cf-n{display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:var(--accent); color:#fff; font-size:12px; font-weight:700}
 .cf-sec .field{margin:0}
 .cf-sec .field+.field,.cf-sec .field-row+.field,.cf-sec .field+.field-row,.cf-sec .field-row+.contract-summary{margin-top:14px}
+.cf-row1>.field,.cf-dates>.field,.cf-money>.field,.cf-sec .field-row>.field{margin-top:0!important}
+.cf-row1 .input,.cf-row1 .select{height:42px}
+.cf-dates{display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); gap:10px; align-items:end}
+.cf-span{display:flex; align-items:center; justify-content:center; height:40px}
+.cf-span span{display:inline-block; padding:5px 12px; border-radius:99px; background:var(--accent-soft,var(--surface)); color:var(--accent-soft-ink,inherit); font-size:12.5px; font-weight:700; white-space:nowrap}
+@media (max-width:560px){.cf-dates{grid-template-columns:1fr}.cf-span{height:auto}}
+.cf-sec .chips{margin-top:10px}
+.cf-money{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; margin-top:18px; padding-top:16px; border-top:1px solid var(--border); align-items:start}
+@media (max-width:560px){.cf-money{grid-template-columns:1fr}}
+.money{position:relative}
+.money>span{position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--ink-muted); font-size:13px; font-weight:600; pointer-events:none}
+.money .input{padding-left:38px; font-weight:600}
+.switch-row{display:flex; align-items:center; gap:10px; font-weight:600; cursor:pointer; min-height:40px}
+.switch-row input{position:absolute; opacity:0; width:1px; height:1px}
+.switch{width:38px; height:22px; border-radius:99px; background:var(--border-strong,var(--border)); position:relative; transition:background .15s; flex:0 0 auto}
+.switch::after{content:""; position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:#fff; transition:transform .15s; box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.switch-row input:checked + .switch{background:var(--accent)}
+.switch-row input:checked + .switch::after{transform:translateX(16px)}
+.switch-row input:focus-visible + .switch{outline:2px solid var(--accent); outline-offset:2px}
+.sum-grid{display:grid; grid-template-columns:auto auto minmax(0,1fr); gap:6px 28px; align-items:end}
+.sum-grid .sum-total{text-align:right; align-items:flex-end}
+.sum-grid small{white-space:nowrap}
+.sum-grid div{display:flex; flex-direction:column; gap:2px}
+.sum-grid small{font-size:11.5px; color:var(--ink-muted); text-transform:uppercase; letter-spacing:.05em; font-weight:700}
+.sum-grid b{font-size:15px}
+.sum-grid .sum-total b{font-size:21px}
+.sum-line{margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); font-size:12.5px; color:var(--ink-2)}
+.link-btn{border:0; background:none; padding:0; color:var(--accent); font:inherit; font-size:12.5px; font-weight:600; cursor:pointer; text-decoration:underline}
 .cf-sec .field-row{align-items:start}
 .cf-sec .field{display:flex; flex-direction:column; justify-content:flex-start; align-self:start}
 .cf-sec .contract-summary+.field-row{margin-top:16px}
@@ -195,7 +223,7 @@ button{font-family:inherit}
 .cf-sec .checklist label{padding:9px 10px}
 .cf-sec .checklist [data-eq-row]{border-radius:8px}
 .cf-sec .checklist [data-eq-row]:hover{background:var(--surface-2)}
-.cf-sec .contract-summary{margin:14px 0 0; background:var(--surface)}
+.cf-sec .contract-summary{margin:18px 0 0; background:var(--surface); border:1px solid var(--border); padding:14px 16px}
 /* contrato: lista de equipamentos em linhas compactas */
 #f-equip{gap:0; padding:0 8px 8px; position:relative}
 .eq-group{position:sticky; top:0; z-index:2; background:var(--surface); padding:10px 4px 5px; font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-muted); border-bottom:1px solid var(--border)}
@@ -2100,22 +2128,24 @@ function contractFormModal(id, presetStatus, cloneFrom){
     </section>
     </div><div class="cf-col">
     <section class="cf-sec"><h4><span class="cf-n">4</span> Período e valores</h4>
-    <div class="field-row">
-      <div class="field"><label>Data de início</label><input class="input" type="date" id="f-start" value="${pre?.startDate||todayISO()}"></div>
-      <div class="field"><label>Devolução prevista</label><input class="input" type="date" id="f-end" value="${pre?.endDate||isoAddDays(todayISO(),3)}">
-        <div class="chips" id="dur-chips"><span class="hint" style="align-self:center">Duração:</span>${[[1,"1 dia"],[3,"3 dias"],[7,"1 semana"],[15,"15 dias"],[30,"1 mês"]].map(([n,l])=>`<button type="button" class="chip-btn" data-days="${n}">${l}</button>`).join("")}</div>
+    <div class="cf-dates">
+      <div class="field"><label for="f-start">Início</label><input class="input" type="date" id="f-start" value="${pre?.startDate||todayISO()}"></div>
+      <div class="cf-span" aria-live="polite"><span id="dur-badge">3 dias</span></div>
+      <div class="field"><label for="f-end">Devolução prevista</label><input class="input" type="date" id="f-end" value="${pre?.endDate||isoAddDays(todayISO(),3)}"></div>
+    </div>
+    <div class="chips" id="dur-chips"><span class="hint" style="align-self:center">Duração rápida:</span>${[[1,"1 dia"],[3,"3 dias"],[7,"1 semana"],[15,"15 dias"],[30,"1 mês"]].map(([n,l])=>`<button type="button" class="chip-btn" data-days="${n}">${l}</button>`).join("")}</div>
+    <div class="cf-money">
+      <div class="field"><label for="f-value">Valor da locação</label>
+        <div class="money"><span>R$</span><input class="input" type="number" min="0" step="0.01" id="f-value" value="${pre?.value??""}" placeholder="0,00"></div>
+        <p class="hint" id="calc-note" style="margin-top:6px"></p>
+      </div>
+      <div class="field">
+        <label class="switch-row"><input type="checkbox" id="f-freight-on" ${pre?.freight?"checked":""}><span class="switch" aria-hidden="true"></span> Cobrar frete</label>
+        <div class="money" id="freight-box" style="margin-top:8px;display:${pre?.freight?"block":"none"}"><span>R$</span><input class="input" type="number" min="0" step="0.01" id="f-freight" value="${pre?.freight??""}" placeholder="Valor do frete"></div>
+        <p class="hint" style="margin-top:6px">Entra como linha separada na fatura inicial.</p>
       </div>
     </div>
     <div class="contract-summary" id="contract-summary"></div>
-    <div class="field-row">
-      <div class="field"><label>Valor total (R$)</label><input class="input" type="number" min="0" step="0.01" id="f-value" value="${pre?.value??""}" placeholder="Calculado automaticamente">
-        <p class="hint" style="margin-top:4px">Calculado pelos itens e pelos dias. Você pode ajustar à mão.</p></div>
-      <div class="field">
-        <label style="display:flex;align-items:center;gap:7px;font-weight:500"><input type="checkbox" id="f-freight-on" ${pre?.freight?"checked":""}> Cobrar frete</label>
-        <input class="input" type="number" min="0" step="0.01" id="f-freight" value="${pre?.freight??""}" placeholder="Valor do frete (R$)" style="display:${pre?.freight?"block":"none"};margin-top:6px">
-        <p class="hint" style="margin-top:4px">Linha separada na fatura inicial, fora do valor dos equipamentos.</p>
-      </div>
-    </div>
     </section>
     <section class="cf-sec"><h4><span class="cf-n">5</span> Entrega e observações</h4>
     <div class="field"><label>Local de entrega</label>
@@ -2128,7 +2158,8 @@ function contractFormModal(id, presetStatus, cloneFrom){
     </div></div></div>
   `, `${c?`<button class="btn btn-secondary" id="duplicate-contract" style="margin-right:auto">Duplicar</button>`:""}<button class="btn btn-secondary" data-action="close-modal">Cancelar</button><button class="btn btn-primary" id="save-contract">${c?"Salvar":"Criar contrato"}</button>`,
   { large:true, xl:true, onMount(){
-      $("#f-freight-on").addEventListener("change", ()=>{ $("#f-freight").style.display = $("#f-freight-on").checked ? "block" : "none"; });
+      $("#f-freight-on").addEventListener("change", ()=>{ $("#freight-box").style.display = $("#f-freight-on").checked ? "block" : "none"; updateSummary(); });
+      $("#f-freight").addEventListener("input", ()=> updateSummary());
 
       /* --- cliente: busca por nome, CPF/CNPJ ou telefone, com setas e Enter --- */
       const cSearch = $("#f-client-search"), cList = $("#client-list"), cHidden = $("#f-client");
@@ -2255,8 +2286,14 @@ function contractFormModal(id, presetStatus, cloneFrom){
         const st = $("#f-start").value, en = $("#f-end").value;
         const days = st && en ? Math.max(daysBetween(st,en),1) : 0;
         const items = $all("#f-equip input[type=checkbox]:checked").length + $all("#f-equip .qty-input").reduce((n,i)=>n+(Number(i.value)||0),0) + ($("#f-serv") ? $all("#f-serv input:checked").length : 0);
-        const v = Number($("#f-value").value)||0;
-        $("#contract-summary").innerHTML = `<span><b>${days}</b> ${days===1?"dia":"dias"}</span><span><b>${items}</b> ${items===1?"item":"itens"}</span><span>Valor <b>${fmtMoney(v)}</b>${days>0 && v>0 ? ` · ${fmtMoney(v/days)}/dia`:""}</span>`;
+        const v = Number($("#f-value").value)||0, calc = Number($("#f-value").dataset.calc)||0;
+        const fr = $("#f-freight-on").checked ? (Number($("#f-freight").value)||0) : 0;
+        $("#dur-badge").textContent = `${days} ${days===1?"dia":"dias"}`;
+        $("#contract-summary").innerHTML = `<div class="sum-grid"><div><small>Duração</small><b>${days} ${days===1?"dia":"dias"}</b></div><div><small>Itens</small><b>${items}</b></div><div class="sum-total"><small>Total do contrato</small><b>${fmtMoney(v+fr)}</b></div></div>
+          <div class="sum-line">Locação ${fmtMoney(v)}${fr?` + frete ${fmtMoney(fr)}`:""}${days>0 && v>0 ? ` · ${fmtMoney(v/days)} por dia`:""}</div>`;
+        const edited = $("#f-value").dataset.touched && Math.abs(v-calc)>0.009;
+        $("#calc-note").innerHTML = edited ? `Valor ajustado à mão. Calculado pelos itens: <b>${fmtMoney(calc)}</b> · <button type="button" class="link-btn" id="use-calc">usar o calculado</button>` : (items ? `Calculado pelos itens e pelos dias. Você pode ajustar.` : `Escolha os equipamentos para calcular o valor.`);
+        const uc = $("#use-calc"); if(uc) uc.onclick = ()=>{ delete $("#f-value").dataset.touched; recalc(); };
       }
       ["#f-start","#f-end","#f-value"].forEach(sel=> $(sel).addEventListener("input", updateSummary));
       $("#f-equip").addEventListener("change", updateSummary); $("#f-equip").addEventListener("input", updateSummary);
@@ -2276,6 +2313,7 @@ function contractFormModal(id, presetStatus, cloneFrom){
         $all("#f-equip input[type=checkbox]:checked").forEach(i=>{ const eq=byId(STATE.equipment,i.value); if(eq) total += bestRateForDays(eq,itemDays(i.value,days)).total; });
         $all("#f-equip .qty-input").forEach(i=>{ const qty=Number(i.value)||0; if(!qty) return; const eq=byId(STATE.equipment,i.dataset.eq); if(eq) total += bestRateForDays(eq,itemDays(i.dataset.eq,days)).total * qty; });
         if($("#f-serv")) $all("#f-serv input:checked").forEach(i=>{ const eq=byId(STATE.equipment,i.value); if(eq) total += Number(eq.dailyRate||0); });
+        $("#f-value").dataset.calc = total.toFixed(2);
         if(!$("#f-value").dataset.touched) $("#f-value").value = total.toFixed(2);
         if(typeof updateSummary==="function") updateSummary();
       }
