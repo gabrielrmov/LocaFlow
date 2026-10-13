@@ -2013,14 +2013,14 @@ function renderContractsTable(){
         <td><input type="checkbox" class="ct-row-check" data-id="${c.id}" ${f.selected.includes(c.id)?"checked":""}></td>
         <td class="cell-title tabular">${escapeHtml(c.code)}</td>
         <td>${escapeHtml(clientName(c.clientId))}</td>
-        <td class="cell-sub truncate-cell" title="${escapeHtml(equipmentNamesSummary(c.equipmentIds))}">${escapeHtml(equipmentNamesSummary(c.equipmentIds))}</td>
+        <td class="cell-sub truncate-cell" title="${escapeHtml(equipmentNamesSummary(contractIdsForList(c)))}">${escapeHtml(equipmentNamesSummary(contractIdsForList(c)))}${(()=>{ const r = contractReturnedList(c).reduce((n,x)=>n+(Number(x.qty)||1),0), rn = (c.events||[]).filter(e=>e.type==="renovacao").length; return (r||rn) && st!=="devolvido" ? `<div class="hint" style="margin-top:2px">${r?`${r} devolvido${r>1?"s":""}`:""}${r&&rn?" · ":""}${rn?`renovado ${rn}×`:""}</div>` : ""; })()}</td>
         <td class="tabular">${fmtDate(c.startDate)}</td>
         <td class="tabular">${fmtDate(c.endDate)}</td>
         <td><span class="badge ${meta.cls}"><span class="dot"></span>${meta.label}</span></td>
         <td class="num tabular">${fmtMoney(c.value)}</td>
         <td><div class="row-actions">
           ${(st!=="devolvido"&&st!=="cancelado"&&st!=="orcamento") ? `<button class="icon-btn" title="Enviar mensagem no WhatsApp" data-action="wa-contract" data-id="${c.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.7-5.5A8.4 8.4 0 1 1 21 11.5z"/></svg></button>` : ""}
-          ${(st==="ativo"||st==="vencendo_hoje"||st==="atrasado") ? `<button class="icon-btn" title="Registrar devolução" data-action="return-contract" data-id="${c.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></button>` : ""}
+          ${(st==="ativo"||st==="vencendo_hoje"||st==="atrasado") ? `<button class="icon-btn" title="Devolução / renovação" data-action="return-contract" data-id="${c.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></button>` : ""}
           <button class="icon-btn" title="Gerar contrato" data-action="gen-contract-doc" data-id="${c.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg></button>
           <button class="icon-btn" title="Ver / editar" data-action="edit-contract" data-id="${c.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
           <button class="icon-btn" title="Excluir" data-action="delete-contract" data-id="${c.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>
@@ -2157,7 +2157,7 @@ function contractFormModal(id, presetStatus, cloneFrom){
     <div class="field"><label style="display:flex;align-items:center;gap:7px;font-weight:500"><input type="checkbox" id="f-signed" ${c?.signed?"checked":""}> Contrato assinado</label></div>
     </section>
     </div></div></div>
-  `, `${c?`<button class="btn btn-secondary" id="duplicate-contract" style="margin-right:auto">Duplicar</button>`:""}<button class="btn btn-secondary" data-action="close-modal">Cancelar</button><button class="btn btn-primary" id="save-contract">${c?"Salvar":"Criar contrato"}</button>`,
+  `, `${c?`<button class="btn btn-secondary" id="duplicate-contract" style="margin-right:auto">Duplicar</button>${["ativo","vencendo_hoje","atrasado"].includes(contractComputedStatus(c))?`<button class="btn btn-secondary" id="open-return-renew">Devolução / renovação</button>`:""}`:""}<button class="btn btn-secondary" data-action="close-modal">Cancelar</button><button class="btn btn-primary" id="save-contract">${c?"Salvar":"Criar contrato"}</button>`,
   { large:true, xl:true, onMount(){
       $("#f-freight-on").addEventListener("change", ()=>{ $("#freight-box").style.display = $("#f-freight-on").checked ? "block" : "none"; updateSummary(); });
       $("#f-freight").addEventListener("input", ()=> updateSummary());
@@ -2368,6 +2368,7 @@ function contractFormModal(id, presetStatus, cloneFrom){
       refreshLocPicker();
       recalc();
       filterEquip(); updateSummary();
+      if($("#open-return-renew")) $("#open-return-renew").addEventListener("click", ()=>{ closeModal(); returnRenewModal(c.id); });
       if($("#duplicate-contract")) $("#duplicate-contract").addEventListener("click", ()=>{
         const duration = Math.max(daysBetween(c.startDate,c.endDate),1);
         const start = todayISO();
@@ -2415,18 +2416,154 @@ async function syncEquipmentStatusForContract(c){
     if(eq.status !== shouldBe) await saveDoc("equipment", eq.id, {status:shouldBe});
   }
 }
-function returnContract(id){
-  confirmDialog("Registrar a devolução deste contrato hoje? Os equipamentos voltarão a ficar disponíveis.", async ()=>{
-    const c = byId(STATE.contracts,id);
-    await saveDoc("contracts", id, { returnedDate: todayISO(), status:"devolvido" });
-    const seen = new Set();
-    for(const eqId of (c.equipmentIds||[])){
-      if(seen.has(eqId)) continue; seen.add(eqId);
-      const eq = byId(STATE.equipment,eqId);
-      if(eq && isEquipKind(eq) && !isStockMode(eq) && eq.status!=="manutencao") await saveDoc("equipment", eqId, {status:"disponivel"});
-    }
-    toast("Devolução registrada.","ok");
-  });
+/* ---------- Devolução parcial e renovação de contrato ----------
+   Cada item do contrato pode ser: devolvido, renovado (novo prazo) ou continuar como está.
+   Itens de estoque aceitam quantidades (ex.: devolver 2 e renovar 3 de 5).
+   O histórico fica em contract.events; o que foi devolvido sai de equipmentIds (assim o estoque
+   e a disponibilidade voltam na hora) e o contrato só vira "devolvido" quando nada mais está com o cliente. */
+function contractReturnedList(c){
+  return (c.events||[]).filter(e=>e.type==="devolucao").flatMap(e=>(e.items||[]).map(it=>({...it, date:e.date})));
+}
+function contractIdsForList(c){
+  if((c.equipmentIds||[]).length) return c.equipmentIds;
+  return contractReturnedList(c).flatMap(it=>Array(Number(it.qty)||1).fill(it.id));
+}
+function computeReturnRenew(c, getEq, dec, o){
+  const counts = {}; (c.equipmentIds||[]).forEach(id=>{ counts[id] = (counts[id]||0)+1; });
+  const retItems = [], renItems = [], freed = [];
+  const next = {...counts};
+  for(const id of Object.keys(counts)){
+    const d = dec[id] || {}, eq = getEq(id);
+    const ret = Math.min(Math.max(Number(d.ret)||0,0), counts[id]);
+    const ren = Math.min(Math.max(Number(d.ren)||0,0), counts[id]-ret);
+    if(ret){ next[id] -= ret; retItems.push({ id, name:eq?eq.name:"Item removido", qty:ret }); if(eq && !eq.stock) freed.push(id); }
+    if(ren) renItems.push({ id, name:eq?eq.name:"Item removido", qty:ren });
+  }
+  const equipmentIds = []; Object.keys(next).forEach(id=>{ for(let i=0;i<next[id];i++) equipmentIds.push(id); });
+  const itemDates = {...(c.itemDates||{})};
+  Object.keys(counts).forEach(id=>{ if(!next[id]) delete itemDates[id]; });
+  renItems.forEach(it=>{ itemDates[it.id] = { start:(c.itemDates && c.itemDates[it.id] && c.itemDates[it.id].start) || c.startDate, end:o.newEnd }; });
+  const events = [...(c.events||[])];
+  if(retItems.length) events.push({ type:"devolucao", date:o.date, items:retItems, ...(o.note?{note:o.note}:{}) });
+  if(renItems.length) events.push({ type:"renovacao", date:o.date, until:o.newEnd, items:renItems, amount:Number(o.amount)||0, ...(o.note?{note:o.note}:{}) });
+  const outstanding = Object.keys(next).filter(id=>next[id] && getEq(id) && getEq(id).equip);
+  const patch = { equipmentIds, itemDates, events };
+  if(!outstanding.length){ patch.returnedDate = o.date; patch.status = "devolvido"; }
+  else {
+    const ends = outstanding.map(id=>(itemDates[id] && itemDates[id].end) || c.endDate);
+    patch.endDate = ends.reduce((m,x)=>x<m?x:m, ends[0]);
+  }
+  if(renItems.length && Number(o.amount)>0) patch.value = Math.round(((Number(c.value)||0) + Number(o.amount))*100)/100;
+  return { patch, retItems, renItems, freed };
+}
+function returnContract(id){ returnRenewModal(id); }
+function returnRenewModal(id){
+  const c = byId(STATE.contracts,id); if(!c) return;
+  const counts = {}; (c.equipmentIds||[]).forEach(eid=>{ counts[eid] = (counts[eid]||0)+1; });
+  const rows = Object.keys(counts).map(eid=>({ id:eid, eq:byId(STATE.equipment,eid), n:counts[eid] })).filter(r=>r.eq && isEquipKind(r.eq));
+  const itemEnd = (eid)=> (c.itemDates&&c.itemDates[eid]&&c.itemDates[eid].end) || c.endDate;
+  const duration = Math.max(daysBetween(c.startDate,c.endDate),1);
+  const baseEnd = rows.length ? rows.map(r=>itemEnd(r.id)).reduce((m,x)=>x<m?x:m) : c.endDate;
+  const defNewEnd = isoAddDays((baseEnd > todayISO() ? baseEnd : todayISO()), Math.min(duration,30));
+  const hist = (c.events||[]).slice().reverse();
+  const nm = (it)=> `${escapeHtml(it.name)}${it.qty>1?` ×${it.qty}`:""}`;
+  const evLabel = (e)=> e.type==="devolucao" ? `Devolvido(s): ${(e.items||[]).map(nm).join(", ")}` : `Renovado(s) até ${fmtDate(e.until)}: ${(e.items||[]).map(nm).join(", ")}${e.amount?` · ${fmtMoney(e.amount)}`:""}`;
+  openModal(`Devolução e renovação · contrato ${c.code}`, `
+    <style>.rr-row{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:center; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:var(--surface)}
+    .rr-row+.rr-row{margin-top:8px}.rr-name{font-weight:600}.rr-sub{font-size:12px;color:var(--ink-muted)}
+    .rr-seg{display:inline-flex; border:1px solid var(--border); border-radius:9px; overflow:hidden}
+    .rr-seg label{padding:7px 12px; font-size:12.5px; font-weight:600; cursor:pointer; color:var(--ink-2); border-right:1px solid var(--border); position:relative}
+    .rr-seg label:last-child{border-right:0}.rr-seg input{position:absolute; opacity:0}
+    .rr-seg label:has(input:checked){background:var(--accent); color:var(--accent-ink,#fff)}
+    .rr-seg label:has(input:focus-visible){outline:2px solid var(--accent); outline-offset:-2px}
+    .rr-qty{display:flex; gap:14px; align-items:center; flex-wrap:wrap; font-size:12.5px}.rr-qty .stepper{width:112px}
+    .rr-box{border:1px solid var(--border); border-radius:10px; padding:14px; background:var(--surface-2); margin-top:14px}.rr-box[hidden]{display:none}
+    .rr-hist{font-size:12.5px; color:var(--ink-2); display:flex; flex-direction:column; gap:6px; margin-top:6px}
+    .rr-hist small{color:var(--ink-muted)}</style>
+    <p class="hint" style="margin-bottom:12px">${escapeHtml(clientName(c.clientId))} · ${fmtDate(c.startDate)} a ${fmtDate(c.endDate)}. Escolha o que aconteceu com cada item.</p>
+    <div class="field" style="max-width:240px;margin-bottom:12px"><label for="rr-date">Data do registro</label><input class="input" type="date" id="rr-date" max="${todayISO()}" value="${todayISO()}"></div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap"><button type="button" class="chip-btn" id="rr-all-ret">Marcar tudo como devolvido</button><button type="button" class="chip-btn" id="rr-all-ren">Renovar tudo</button><button type="button" class="chip-btn" id="rr-all-none">Limpar</button></div>
+    <div id="rr-items">${rows.length ? rows.map(r=>{
+      const sub = [r.eq.code?`[${escapeHtml(r.eq.code)}]`:"", `prazo ${fmtDate(itemEnd(r.id))}`, r.n>1?`${r.n} com o cliente`:""].filter(Boolean).join(" · ");
+      if(isStockMode(r.eq) && r.n>1){
+        return `<div class="rr-row" data-rr="${r.id}" data-n="${r.n}" data-stock="1"><div><div class="rr-name">${escapeHtml(r.eq.name)}</div><div class="rr-sub">${sub}</div></div>
+          <div class="rr-qty"><span>Devolver</span><div class="stepper"><button type="button" class="rr-step qty-btn" data-k="ret" data-d="-1">−</button><input class="input qty-input rr-ret" type="number" min="0" max="${r.n}" value="0"><button type="button" class="rr-step qty-btn" data-k="ret" data-d="1">+</button></div>
+          <span>Renovar</span><div class="stepper"><button type="button" class="rr-step qty-btn" data-k="ren" data-d="-1">−</button><input class="input qty-input rr-ren" type="number" min="0" max="${r.n}" value="0"><button type="button" class="rr-step qty-btn" data-k="ren" data-d="1">+</button></div>
+          <span class="rr-sub rr-left"></span></div></div>`;
+      }
+      return `<div class="rr-row" data-rr="${r.id}" data-n="${r.n}"><div><div class="rr-name">${escapeHtml(r.eq.name)}</div><div class="rr-sub">${sub}</div></div>
+        <div class="rr-seg" role="radiogroup" aria-label="${escapeHtml(r.eq.name)}"><label><input type="radio" name="rr-${r.id}" value="ret">Devolvido</label><label><input type="radio" name="rr-${r.id}" value="ren">Renovar</label><label><input type="radio" name="rr-${r.id}" value="none" checked>Continua</label></div></div>`;
+    }).join("") : `<p class="hint">Este contrato não tem equipamentos para devolver.</p>`}</div>
+    <div class="rr-box" id="rr-renew" hidden>
+      <div class="field-row"><div class="field"><label for="rr-end">Renovar até</label><input class="input" type="date" id="rr-end" value="${defNewEnd}">
+        <div class="chips">${[[7,"+1 semana"],[15,"+15 dias"],[30,"+1 mês"]].map(([n,l])=>`<button type="button" class="chip-btn" data-add="${n}">${l}</button>`).join("")}</div></div>
+      <div class="field"><label for="rr-amount">Valor da renovação (R$)</label><div class="money"><span>R$</span><input class="input" type="number" min="0" step="0.01" id="rr-amount" placeholder="0,00"></div><p class="hint" id="rr-calc" style="margin-top:6px"></p></div></div>
+      <label class="switch-row" style="margin-top:10px"><input type="checkbox" id="rr-invoice" checked><span class="switch" aria-hidden="true"></span> Gerar fatura da renovação</label>
+      <div class="field" id="rr-due-wrap" style="margin-top:8px;max-width:240px"><label for="rr-due">Vencimento da fatura</label><input class="input" type="date" id="rr-due" value="${todayISO()}"></div>
+    </div>
+    <div class="field" style="margin-top:14px"><label for="rr-note">Observação (opcional)</label><input class="input" id="rr-note" maxlength="200" placeholder="Ex.: devolveu com avaria, cliente pediu mais uma semana…"></div>
+    <div class="contract-summary" id="rr-summary" style="margin-top:14px"></div>
+    <p class="field-error" id="rr-err" hidden></p>
+    ${hist.length?`<div class="field" style="margin-top:14px"><label>Histórico deste contrato</label><div class="rr-hist">${hist.map(e=>`<div>${evLabel(e)}<br><small>${fmtDate(e.date)}${e.note?` · ${escapeHtml(e.note)}`:""}</small></div>`).join("")}</div></div>`:""}
+  `, `<button class="btn btn-secondary" data-action="close-modal">Cancelar</button><button class="btn btn-primary" id="rr-ok">Confirmar</button>`,
+  { large:true, onMount(){
+      const read = ()=>{ const dec = {}; $all("#rr-items .rr-row").forEach(r=>{
+        const id = r.dataset.rr, n = Number(r.dataset.n);
+        if(r.dataset.stock){ dec[id] = { ret:Number(r.querySelector(".rr-ret").value)||0, ren:Number(r.querySelector(".rr-ren").value)||0 }; }
+        else { const v = (r.querySelector("input[type=radio]:checked")||{}).value; dec[id] = { ret:v==="ret"?n:0, ren:v==="ren"?n:0 }; }
+      }); return dec; };
+      const getEq = (id)=>{ const e = byId(STATE.equipment,id); return e ? { name:e.name, stock:isStockMode(e), equip:isEquipKind(e) } : null; };
+      function refresh(){
+        const dec = read(); let ret = 0, ren = 0, left = 0;
+        $all("#rr-items .rr-row").forEach(r=>{
+          const id = r.dataset.rr, n = Number(r.dataset.n), d = dec[id];
+          if(r.dataset.stock){
+            const a = r.querySelector(".rr-ret"), b = r.querySelector(".rr-ren");
+            if(d.ret + d.ren > n){ if(document.activeElement===a || r.dataset.last==="ret") a.value = Math.max(n-d.ren,0); else b.value = Math.max(n-d.ret,0); d.ret = Number(a.value); d.ren = Number(b.value); }
+            r.querySelector(".rr-left").textContent = `continuam: ${n-d.ret-d.ren}`;
+          }
+          ret += d.ret; ren += d.ren; left += n - d.ret - d.ren;
+        });
+        $("#rr-renew").hidden = ren===0;
+        let calc = 0; const newEnd = $("#rr-end").value;
+        $all("#rr-items .rr-row").forEach(r=>{ const d = dec[r.dataset.rr]; if(!d.ren) return; const eq = byId(STATE.equipment,r.dataset.rr); const start = itemEnd(r.dataset.rr); const days = newEnd ? Math.max(daysBetween(start,newEnd),1) : 1; calc += bestRateForDays(eq,days).total * d.ren; });
+        $("#rr-calc").textContent = ren ? `Calculado pelas tarifas: ${fmtMoney(calc)}` : "";
+        $("#rr-amount").dataset.calc = calc.toFixed(2);
+        if(!$("#rr-amount").dataset.touched) $("#rr-amount").value = calc ? calc.toFixed(2) : "";
+        $("#rr-due-wrap").style.display = $("#rr-invoice").checked ? "" : "none";
+        $("#rr-summary").innerHTML = `<div class="sum-grid"><div><small>Devolvidos</small><b>${ret}</b></div><div><small>Renovados</small><b>${ren}</b></div><div><small>Continuam</small><b>${left}</b></div></div>${!left && !ren && ret ? `<div class="sum-line">Tudo foi devolvido: o contrato será marcado como <b>devolvido</b>.</div>` : ""}`;
+      }
+      $("#rr-items").addEventListener("change", refresh);
+      $("#rr-items").addEventListener("input", (e)=>{ const r = e.target.closest(".rr-row"); if(r && e.target.classList.contains("rr-ret")) r.dataset.last="ret"; if(r && e.target.classList.contains("rr-ren")) r.dataset.last="ren"; refresh(); });
+      $("#rr-items").addEventListener("click", (e)=>{ const b = e.target.closest(".rr-step"); if(!b) return; const row = b.closest(".rr-row"); row.dataset.last = b.dataset.k; const inp = row.querySelector(b.dataset.k==="ret"?".rr-ret":".rr-ren"); inp.value = Math.min(Math.max((Number(inp.value)||0)+Number(b.dataset.d),0), Number(row.dataset.n)); refresh(); });
+      const setAll = (mode)=>{ $all("#rr-items .rr-row").forEach(r=>{ const n = Number(r.dataset.n);
+        if(r.dataset.stock){ r.querySelector(".rr-ret").value = mode==="ret"?n:0; r.querySelector(".rr-ren").value = mode==="ren"?n:0; }
+        else { const v = r.querySelector(`input[value="${mode}"]`); if(v) v.checked = true; } }); refresh(); };
+      $("#rr-all-ret").addEventListener("click", ()=>setAll("ret")); $("#rr-all-ren").addEventListener("click", ()=>setAll("ren")); $("#rr-all-none").addEventListener("click", ()=>setAll("none"));
+      $all("[data-add]").forEach(b=> b.addEventListener("click", ()=>{ const cur = $("#rr-end").value; const base = cur && cur > todayISO() ? cur : (baseEnd > todayISO() ? baseEnd : todayISO()); $("#rr-end").value = isoAddDays(base, Number(b.dataset.add)); refresh(); }));
+      $("#rr-end").addEventListener("change", refresh); $("#rr-invoice").addEventListener("change", refresh);
+      $("#rr-amount").addEventListener("input", ()=>{ $("#rr-amount").dataset.touched = "1"; });
+      setAll("ret");
+      $("#rr-ok").addEventListener("click", async ()=>{
+        const err = (m)=>{ const e = $("#rr-err"); e.textContent = m; e.hidden = !m; };
+        const date = $("#rr-date").value; if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){ err("Informe a data do registro."); return; }
+        if(date > todayISO()){ err("A data do registro não pode ser no futuro."); return; }
+        const dec = read(); let ret = 0, ren = 0; Object.values(dec).forEach(d=>{ ret += d.ret; ren += d.ren; });
+        if(!ret && !ren){ err("Marque pelo menos um item como devolvido ou renovado."); return; }
+        const newEnd = $("#rr-end").value;
+        if(ren && (!/^\d{4}-\d{2}-\d{2}$/.test(newEnd) || newEnd <= date)){ err("A nova data de devolução precisa ser depois da data do registro."); return; }
+        const amount = ren ? (Number($("#rr-amount").value)||0) : 0;
+        const res = computeReturnRenew(c, getEq, dec, { date, newEnd, amount, note:$("#rr-note").value.trim() });
+        await saveDoc("contracts", id, res.patch);
+        for(const eid of res.freed){ const eq = byId(STATE.equipment,eid); if(eq && eq.status!=="manutencao") await saveDoc("equipment", eid, { status:"disponivel" }); }
+        if(res.renItems.length && amount>0 && $("#rr-invoice").checked){
+          await saveDoc("payments", null, { clientId:c.clientId, contractId:id, description:`Renovação do contrato ${c.code}: ${res.renItems.map(it=>it.name+(it.qty>1?` ×${it.qty}`:"")).join(", ")} até ${fmtDate(newEnd)}`.slice(0,300), amount, dueDate:$("#rr-due").value || todayISO(), issueDate:date, method:"", paidDate:null });
+        }
+        closeModal();
+        toast(res.renItems.length ? "Renovação registrada." : (res.patch.status==="devolvido" ? "Devolução registrada." : "Devolução parcial registrada."), "ok");
+      });
+      refresh();
+  }});
 }
 
 /* Preenche o modelo de contrato com os dados do cliente e do(s) equipamento(s) do contrato — o texto se adapta sozinho a cada locação. */
