@@ -199,6 +199,9 @@ button{font-family:inherit}
 .sum-grid .sum-total b{font-size:21px}
 .sum-line{margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); font-size:12.5px; color:var(--ink-2)}
 .link-btn{border:0; background:none; padding:0; color:var(--accent); font:inherit; font-size:12.5px; font-weight:600; cursor:pointer; text-decoration:underline}
+.alert-click{cursor:pointer; border-radius:8px; padding-left:6px!important; padding-right:6px!important; margin:0 -6px; transition:background .12s}
+.alert-click:hover{background:color-mix(in srgb, var(--critical-dot,#c0392b) 8%, transparent)}
+.alert-click:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 .cf-sec .field-row{align-items:start}
 .cf-sec .field{display:flex; flex-direction:column; justify-content:flex-start; align-self:start}
 .cf-sec .contract-summary+.field-row{margin-top:16px}
@@ -1383,17 +1386,17 @@ function computeAlerts(){
   });
   STATE.payments.forEach(p=>{
     if(paymentComputedStatus(p)==="atrasado"){
-      out.push({sev:"critical", text:`Pagamento atrasado — ${escapeHtml(clientName(p.clientId))}`, sub:`${fmtMoney(p.amount)} · venceu em ${fmtDate(p.dueDate)}`, open:()=>{ location.hash="#/financeiro"; }});
+      out.push({sev:"critical", text:`Pagamento atrasado — ${escapeHtml(clientName(p.clientId))}`, sub:`${fmtMoney(p.amount)} · venceu em ${fmtDate(p.dueDate)}`, open:()=>{ paymentFormModal(p.id); }});
     }
   });
   STATE.expenses.forEach(e=>{
     if(expenseComputedStatus(e)==="atrasado"){
-      out.push({sev:"critical", text:`Despesa atrasada — ${escapeHtml(e.description||"")}`, sub:`${fmtMoney(e.amount)}`, open:()=>{ location.hash="#/contaspr"; }});
+      out.push({sev:"critical", text:`Despesa atrasada — ${escapeHtml(e.description||"")}`, sub:`${fmtMoney(e.amount)}`, open:()=>{ expenseFormModal(e.id); }});
     }
   });
   STATE.maintenance.forEach(m=>{
     if(maintenanceComputedStatus(m)==="atrasada"){
-      out.push({sev:"warning", text:`Manutenção atrasada — ${escapeHtml(equipmentName(m.equipmentId))}`, sub:`prevista para ${fmtDate(m.scheduledDate)}`, open:()=>{ location.hash="#/manutencao"; }});
+      out.push({sev:"warning", text:`Manutenção atrasada — ${escapeHtml(equipmentName(m.equipmentId))}`, sub:`prevista para ${fmtDate(m.scheduledDate)}`, open:()=>{ maintenanceFormModal(m.id); }});
     }
   });
   out.sort((a,b)=> (a.sev==="critical"?0:1) - (b.sev==="critical"?0:1));
@@ -1697,7 +1700,7 @@ function renderDashboard(){
         <h3>Alertas <i>${dashAlerts.length}</i></h3>
         <button class="btn btn-ghost btn-sm" id="dash-see-alerts">Ver todos</button>
       </div>
-      ${dashAlerts.slice(0,3).map(a=>`<div class="alert-row">
+      ${dashAlerts.slice(0,3).map((a,i)=>`<div class="alert-row alert-click" role="button" tabindex="0" data-ai="${i}" title="Abrir">
         <span class="dot" style="background:var(--${a.sev==='critical'?'critical':'warning'}-dot)"></span>
         <div style="min-width:0"><div class="cell-title" style="font-size:13px">${a.text}</div><div class="cell-sub">${a.sub||""}</div></div>
       </div>`).join("")}
@@ -1755,6 +1758,11 @@ function renderDashboard(){
     </div>
   `;
   if($("#dash-see-alerts")) $("#dash-see-alerts").addEventListener("click", alertsModal);
+  $all(".alert-click").forEach(el=>{
+    const go = ()=>{ const a = dashAlerts[Number(el.dataset.ai)]; if(a) a.open(); };
+    el.addEventListener("click", go);
+    el.addEventListener("keydown", (e)=>{ if(e.key==="Enter" || e.key===" "){ e.preventDefault(); go(); } });
+  });
 }
 function renderClientsOpenInvoicesTable(){
   const byClient = {};
