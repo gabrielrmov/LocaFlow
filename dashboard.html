@@ -3774,8 +3774,8 @@ function renderConfigImportBody(){
   let plan = null, sheets = null;
   const out = $("#lg-out");
   const run = ()=>{
-    const overwrite = $("#lg-over") ? $("#lg-over").checked : false;
-    const res = window.LocaGestorImport.analyze(sheets, { clients:STATE.clients, equipment:STATE.equipment, contracts:STATE.contracts, today:todayISO() }, { overwrite });
+    const mirror = $("#lg-over") ? $("#lg-over").checked : true;
+    const res = window.LocaGestorImport.analyze(sheets, { clients:STATE.clients, equipment:STATE.equipment, contracts:STATE.contracts, today:todayISO() }, { mirror });
     if(res.error){ out.innerHTML = `<p class="field-error">${escapeHtml(res.error)}</p>`; return; }
     plan = res;
     const k = (title, d, extra)=>`<div class="kpi"><div class="kpi-top"><span class="kpi-label">${title}</span></div><div class="kpi-value tabular" style="font-size:22px">${d.total}</div><div class="kpi-sub">${extra}</div></div>`;
@@ -3785,14 +3785,16 @@ function renderConfigImportBody(){
       <div class="kpi-grid" style="margin:14px 0">
         ${k("Clientes na planilha", c, `${c.create.length} novos · ${c.update.length} a completar · ${c.same} já completos`)}
         ${k("Equipamentos", e, `${e.create.length} novos · ${e.update.length} a completar · ${e.same} já completos`)}
-        ${k("Contratos", ct, `${ct.create.length} novos · ${ct.update.length} a completar · ${ct.same} já completos`)}
+        ${k("Contratos", ct, `${ct.create.length} novos · ${ct.update.length} a atualizar · ${ct.same} iguais`)}
       </div>
       ${row("lg-do-c","Importar clientes", c.create.length + c.update.length, `${c.create.length} novos, ${c.update.length} com dados a completar (telefone, endereço, bairro, cidade, e-mail…)`)}
       ${row("lg-do-e","Importar equipamentos", e.create.length + e.update.length, `${e.create.length} novos, ${e.update.length} a completar (indenização, tarifas, códigos de patrimônio…)`)}
-      ${row("lg-do-t","Importar contratos", ct.create.length + ct.update.length, `${ct.create.length} novos (inclui os encerrados, como histórico) e ${ct.update.length} com a indenização por item a completar`)}
-      <label style="display:flex;align-items:center;gap:8px;margin:10px 0 4px;font-size:13px"><input type="checkbox" id="lg-over" ${overwrite?"checked":""}> Atualizar também <b>indenização e tarifas diferentes</b> das que já estão cadastradas</label>
+      ${row("lg-do-t","Importar contratos", ct.create.length + ct.update.length, `${ct.create.length} novos (inclui os encerrados, como histórico) e ${ct.update.length} existentes a atualizar (situação, datas, indenização por item)`)}
+      <div class="rr-box" style="margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px"><label style="display:flex;align-items:flex-start;gap:8px;font-size:13.5px"><input type="checkbox" id="lg-over" ${mirror?"checked":""} style="margin-top:3px"> <span><b>Deixar igual ao LocaGestor</b>: também atualiza o que já existe (situação e datas dos contratos, devoluções, telefones e endereços dos clientes, indenização e tarifas dos equipamentos).<br><span class="hint">Use na migração. Depois que você começar a devolver e renovar pelo Locarion, <b>não importe de novo com esta opção ligada</b>: ela voltaria os contratos ao estado do LocaGestor. Contratos que já têm devolução ou renovação feita no Locarion são mantidos.</span></span></label></div>
       ${c.create.length || e.create.length ? `<details style="margin-top:10px"><summary class="hint" style="cursor:pointer">Ver quem será criado como novo (confira se não é alguém que já está cadastrado com outro nome)</summary>
         <div class="hint" style="margin:8px 0 0;max-height:220px;overflow:auto"><b>Clientes novos (${c.create.length}):</b> ${c.create.slice(0,150).map(x=>escapeHtml(x.data.name)).join(" · ") || "—"}<br><br><b>Equipamentos novos (${e.create.length}):</b> ${e.create.slice(0,100).map(x=>escapeHtml(x.data.name)).join(" · ") || "—"}</div></details>` : ""}
+      ${ct.update.length ? `<details style="margin-top:10px"><summary class="hint" style="cursor:pointer">Ver os ${ct.update.length} contratos existentes que serão atualizados</summary>
+        <ul class="hint" style="margin:8px 0 0 18px;max-height:220px;overflow:auto">${ct.update.slice(0,200).map(x=>`<li>Contrato ${escapeHtml(x.code)}: ${escapeHtml(x.change||"")}</li>`).join("")}</ul></details>` : ""}
       ${ct.skipped.length || plan.warnings.length ? `<details style="margin-top:10px"><summary class="hint" style="cursor:pointer">${ct.skipped.length} contrato(s) não importado(s) · ${plan.warnings.length} aviso(s)</summary>
         <ul class="hint" style="margin:8px 0 0 18px;max-height:200px;overflow:auto">${ct.skipped.map(x=>`<li>Contrato ${escapeHtml(x.code)}: ${escapeHtml(x.why)}</li>`).join("")}${plan.warnings.slice(0,60).map(w=>`<li>${escapeHtml(w)}</li>`).join("")}</ul></details>` : ""}
       <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn btn-primary" id="lg-go">Importar agora</button><span class="hint" id="lg-status"></span></div>`;
@@ -3842,7 +3844,8 @@ async function commitLocaGestor(plan, sel, progress){
       if(d.itemDates) d.itemDates = remap(d.itemDates); if(d.indemnity) d.indemnity = remap(d.indemnity);
       ops.push({ ref:col("contracts").doc(), t:"set", d });
     });
-    plan.contracts.update.forEach(x=>{ const patch = { ...x.patch }; if(patch.indemnity) patch.indemnity = remap(patch.indemnity); addUpdate("contracts", x.id, patch); });
+    plan.contracts.update.forEach(x=>{ const patch = { ...x.patch }; if(patch.indemnity) patch.indemnity = remap(patch.indemnity); if(patch.itemDates) patch.itemDates = remap(patch.itemDates); if(patch.equipmentIds) patch.equipmentIds = patch.equipmentIds.map(real).filter(Boolean); addUpdate("contracts", x.id, patch); });
+    (plan.release||[]).forEach(id=>{ if(!String(id).startsWith("new-")) addUpdate("equipment", id, { status:"disponivel" }); });
     (plan.activate||[]).forEach(id=>{ if(String(id).startsWith("new-")){ const o = creates.get(id); if(o) o.d.status = "alugado"; } else if(sel.equipment || STATE.equipment.some(e=>e.id===id)) addUpdate("equipment", id, { status:"alugado" }); });
   }
   const total = ops.length;

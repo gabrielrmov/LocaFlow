@@ -77,7 +77,9 @@ function analyze(sheets, ctx, opts){
         const patch = {};
         for(const k of Object.keys(data)){
           if(k === "name" || k === "type" || k === "status" || k === "billingSameAsMain") continue;
-          if(!empty(data[k]) && empty(ex[k])) patch[k] = data[k];
+          if(k === "deliveryLocations"){ if(!empty(data[k]) && empty(ex[k])) patch[k] = data[k]; continue; }
+          if(empty(data[k])) continue;
+          if(empty(ex[k]) || (opts.mirror && ex[k] !== data[k])) patch[k] = data[k];
         }
         if(Object.keys(patch).length) plan.clients.update.push({ id:ex.id, name:ex.name, patch }); else plan.clients.same++;
         clientRef.set(doc || norm(name), ex.id); clientRef.set("n:" + norm(name), ex.id);
@@ -121,7 +123,7 @@ function analyze(sheets, ctx, opts){
       if(ex){
         usedEq.add(ex.id);
         const patch = {};
-        const fill = (k, v) => { if(v == null || v === "" || v === 0) return; if(empty(ex[k])) patch[k] = v; else if(opts.overwrite && ex[k] !== v && ["indemnityValue", "dailyRate", "weeklyRate", "biweeklyRate", "monthlyRate"].includes(k)) patch[k] = v; };
+        const fill = (k, v) => { if(v == null || v === "" || v === 0) return; if(empty(ex[k])) patch[k] = v; else if((opts.overwrite || opts.mirror) && ex[k] !== v && ["indemnityValue", "dailyRate", "weeklyRate", "biweeklyRate", "monthlyRate"].includes(k)) patch[k] = v; };
         ["indemnityValue", "dailyRate", "weeklyRate", "biweeklyRate", "monthlyRate", "category", "code", "maintenanceIntervalMonths"].forEach(k => fill(k, data[k]));
         if(Object.keys(patch).length) plan.equipment.update.push({ id:ex.id, name:ex.name, patch }); else plan.equipment.same++;
         eqKey.set(key, ex.id); eqRates.set(ex.id, { ...ex, ...patch });
@@ -155,6 +157,9 @@ function analyze(sheets, ctx, opts){
   }
   const ctByCode = new Map(); const codeKey = (c) => { const s = String(c).trim().toUpperCase(); return /^\d+$/.test(s) ? "#" + s.replace(/^0+/, "") : s; };
   ctx.contracts.forEach(c => ctByCode.set(codeKey(c.code), c));
+  const inUse = new Set(), closing = new Map(); /* equipamentos (unidade) em uso depois da importação / contratos que passam a devolvidos */
+  const isActive = (c) => !c.returnedDate && c.status !== "cancelado" && c.status !== "orcamento" && c.status !== "devolvido";
+  const seenCodes = new Set();
   if(sContracts){
     const t = table(sContracts);
     for(const r of t.rows){
@@ -162,41 +167,67 @@ function analyze(sheets, ctx, opts){
       if(!code || !clientName) continue; /* linha de observação no fim */
       plan.contracts.total++;
       if(/^N\/?A$/i.test(code)){ plan.contracts.skipped.push({ code, why:"número N/A (sem número de contrato)" }); continue; }
+      seenCodes.add(codeKey(code));
       const lines = itemsBy.get(code) || [];
       const ex = ctByCode.get(codeKey(code));
       const indemnity = {}; lines.forEach(l => { if(l.id && l.ind != null && indemnity[l.id] == null) indemnity[l.id] = l.ind; });
       const unmatched = lines.filter(l => !l.id).map(l => l.name);
       if(unmatched.length) warnings.push(`Contrato ${code}: item sem equipamento cadastrado (${[...new Set(unmatched)].join(", ")}).`);
+      const start = F().toISO(cell(t, r, "data inicio")), end0 = F().toISO(cell(t, r, "data encerramento", "prev. fim"));
+      const end = start && end0 && end0 >= start ? end0 : start;
+      const situ = norm(cell(t, r, "=situacao"));
+      const closed = /ENCERR/.test(situ);
+      const used = lines.filter(l => l.id);
+      const open = closed ? used : (used.filter(l => /USO/.test(l.status)).length ? used.filter(l => /USO/.test(l.status)) : used);
+      const equipmentIds = []; open.forEach(l => { for(let i = 0; i < l.qty; i++) equipmentIds.push(l.id); });
+      const itemDates = {}; open.forEach(l => { if(start && l.start && l.end && (l.start !== start || l.end !== end) && !itemDates[l.id]) itemDates[l.id] = { start:l.start, end:l.end }; });
+      const sheetValue = num(cell(t, r, "valor total faturado")) || 0;
+      const place = str(cell(t, r, "local de entrega"));
+      const returnedOn = end && end <= ctx.today ? end : ctx.today;
       if(ex){
         const patch = {};
-        if(Object.keys(indemnity).length && (!ex.indemnity || !Object.keys(ex.indemnity).length)) patch.indemnity = indemnity;
-        if(empty(ex.location) && str(cell(t, r, "local de entrega"))) patch.location = str(cell(t, r, "local de entrega"));
-        const sv = num(cell(t, r, "valor total faturado")); if(empty(ex.value) && sv) patch.value = sv;
-        if(Object.keys(patch).length) plan.contracts.update.push({ id:ex.id, code, patch }); else plan.contracts.same++;
+        const hasEvents = (ex.events || []).length > 0;
+        if(Object.keys(indemnity).length && (opts.mirror || !ex.indemnity || !Object.keys(ex.indemnity).length)) patch.indemnity = indemnity;
+        if(place && (empty(ex.location) || (opts.mirror && ex.location !== place))) patch.location = place;
+        if(sheetValue && (empty(ex.value) || (opts.mirror && closed && Number(ex.value) !== sheetValue))) patch.value = sheetValue;
+        const change = [];
+        if(opts.mirror && !hasEvents && start && ex.status !== "cancelado" && ex.status !== "orcamento"){
+          if(start !== ex.startDate){ patch.startDate = start; }
+          if(closed){
+            if(!(ex.returnedDate || ex.status === "devolvido")){ patch.status = "devolvido"; patch.returnedDate = returnedOn; change.push("encerrado"); if(equipmentIds.length) patch.equipmentIds = equipmentIds; closing.set(ex.id, (ex.equipmentIds || []).concat(equipmentIds)); }
+            if(end !== ex.endDate) patch.endDate = end;
+          }else{
+            if(ex.returnedDate || ex.status === "devolvido"){ patch.status = "ativo"; patch.returnedDate = null; change.push("reaberto"); }
+            if(end !== ex.endDate){ patch.endDate = end; change.push(`prazo ${ex.endDate} → ${end}`); }
+            if(equipmentIds.length){ patch.equipmentIds = equipmentIds; patch.itemDates = itemDates; }
+            (equipmentIds.length ? equipmentIds : ex.equipmentIds || []).forEach(id => inUse.add(id));
+            open.forEach(l => { if(eqIsUnit.get(l.id) && eqStatus.get(l.id) !== "alugado" && !plan.activate.includes(l.id)) plan.activate.push(l.id); });
+          }
+        }else if(isActive(ex)){ (ex.equipmentIds || []).forEach(id => inUse.add(id)); }
+        if(Object.keys(patch).length) plan.contracts.update.push({ id:ex.id, code, patch, change:change.join(", ") || (patch.indemnity ? "indenização" : "complemento") });
+        else plan.contracts.same++;
+        if(opts.mirror && hasEvents) warnings.push(`Contrato ${code}: já tem devolução/renovação registrada no Locarion, então a situação e as datas foram mantidas.`);
         continue;
       }
       const doc = digits(cell(t, r, "cpf / cnpj", "cpf"));
       const clientId = (doc && clientRef.get(doc)) || clientRef.get("n:" + norm(clientName)) || (byName.get(norm(clientName)) || {}).id;
       if(!clientId){ plan.contracts.skipped.push({ code, why:`cliente não encontrado (${clientName})` }); continue; }
-      const start = F().toISO(cell(t, r, "data inicio")), end0 = F().toISO(cell(t, r, "data encerramento", "prev. fim"));
       if(!start){ plan.contracts.skipped.push({ code, why:"sem data de início" }); continue; }
-      const end = end0 && end0 >= start ? end0 : start;
-      const situ = norm(cell(t, r, "=situacao"));
-      const closed = /ENCERR/.test(situ);
-      const used = lines.filter(l => l.id && (closed || /USO/.test(l.status) || true));
-      const open = closed ? used : (used.filter(l => /USO/.test(l.status)).length ? used.filter(l => /USO/.test(l.status)) : used);
-      const equipmentIds = []; open.forEach(l => { for(let i = 0; i < l.qty; i++) equipmentIds.push(l.id); });
-      const itemDates = {}; open.forEach(l => { if(l.start && l.end && (l.start !== start || l.end !== end) && !itemDates[l.id]) itemDates[l.id] = { start:l.start, end:l.end }; });
-      let value = num(cell(t, r, "valor total faturado")) || 0, estimated = false;
+      let value = sheetValue, estimated = false;
       if(!value && open.length){ value = open.reduce((s, l) => { const eq = eqRates.get(l.id); return s + (eq ? bestRate(eq, daysBetween(l.start || start, l.end || end)) * l.qty : 0); }, 0); estimated = value > 0; }
-      const data = { code, clientId, equipmentIds, startDate:start, endDate:end, value:Math.round(value * 100) / 100, location:str(cell(t, r, "local de entrega")), notes:`Importado do LocaGestor${estimated ? " (valor estimado pelas tarifas)" : ""}.`, signed:false, imported:true, source:"locagestor" };
+      const data = { code, clientId, equipmentIds, startDate:start, endDate:end, value:Math.round(value * 100) / 100, location:place, notes:`Importado do LocaGestor${estimated ? " (valor estimado pelas tarifas)" : ""}.`, signed:false, imported:true, source:"locagestor" };
       if(Object.keys(itemDates).length) data.itemDates = itemDates;
       if(Object.keys(indemnity).length) data.indemnity = indemnity;
-      if(closed){ data.status = "devolvido"; data.returnedDate = end <= ctx.today ? end : ctx.today; }
-      else{ data.status = "ativo"; open.forEach(l => { if(eqIsUnit.get(l.id) && eqStatus.get(l.id) !== "alugado" && !plan.activate.includes(l.id)) plan.activate.push(l.id); }); }
+      if(closed){ data.status = "devolvido"; data.returnedDate = returnedOn; }
+      else{ data.status = "ativo"; open.forEach(l => { inUse.add(l.id); if(eqIsUnit.get(l.id) && eqStatus.get(l.id) !== "alugado" && !plan.activate.includes(l.id)) plan.activate.push(l.id); }); }
       plan.contracts.create.push({ data, label:`${code} · ${clientName}`, estimated });
     }
   }
+  /* contratos do Locarion que NÃO estão na planilha continuam como estão (e seguem ocupando seus equipamentos) */
+  ctx.contracts.forEach(c => { if(!seenCodes.has(codeKey(c.code)) && isActive(c)) (c.equipmentIds || []).forEach(id => inUse.add(id)); });
+  /* equipamentos de contratos que passaram a devolvidos e não estão mais em nenhum contrato aberto voltam a ficar disponíveis */
+  plan.release = [];
+  closing.forEach(ids => ids.forEach(id => { if(eqIsUnit.get(id) && eqStatus.get(id) === "alugado" && !inUse.has(id) && !plan.release.includes(id)) plan.release.push(id); }));
   plan.counts = { clients:plan.clients.total, equipment:plan.equipment.total, contracts:plan.contracts.total };
   return plan;
 }
