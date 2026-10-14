@@ -1961,6 +1961,7 @@ function adjustEquipmentModal(id){
   if(stock){
     const inUse = equipStockInUse(eq);
     openModal(`Ajustar estoque — ${eq.name}`, `
+      <div class="field"><label>Adicionar mais unidades (+)</label><input class="input" id="adj-add" type="number" min="0" step="1" value="0" placeholder="Ex: 10"><div class="hint">Soma ao total atual (${eq.stockQty||0}), sem cadastrar de novo.</div></div>
       <div class="grid-2">
         <div class="field"><label>Quantidade total</label><input class="input" id="adj-total" type="number" min="0" step="1" value="${eq.stockQty||0}"></div>
         <div class="field"><label>Em manutenção / reparo</label><input class="input" id="adj-maint" type="number" min="0" step="1" value="${equipStockMaint(eq)}"></div>
@@ -1971,6 +1972,7 @@ function adjustEquipmentModal(id){
       `<button class="btn" data-action="close-modal">Cancelar</button><button class="btn btn-primary" id="adj-save">Salvar</button>`,
       { onMount(){
         const calc=()=>{ const t=Math.max(parseInt($("#adj-total").value,10)||0,0), m=Math.min(Math.max(parseInt($("#adj-maint").value,10)||0,0),t); $("#adj-avail").textContent=Math.max(t-m-inUse,0); };
+        $("#adj-add").addEventListener("input",()=>{ $("#adj-total").value=(eq.stockQty||0)+Math.max(parseInt($("#adj-add").value,10)||0,0); calc(); });
         $("#adj-total").addEventListener("input",calc); $("#adj-maint").addEventListener("input",calc);
         $("#adj-save").addEventListener("click", async ()=>{
           const t=Math.max(parseInt($("#adj-total").value,10)||0,0);
@@ -1993,12 +1995,15 @@ function adjustEquipmentModal(id){
         <option value="manutencao" ${eq.status==="manutencao"?"selected":""}>Em manutenção</option>
         ${eq.status==="alugado"?`<option value="alugado" selected>Alugado (definido pelos contratos)</option>`:""}
       </select></div>
+      <div class="field"><label>Adicionar mais unidades iguais a esta</label><input class="input" id="adj-copies" type="number" min="0" max="50" step="1" value="0"><div class="hint">Cria cópias disponíveis com os mesmos dados e tarifas (o código fica em branco para você preencher).</div></div>
       ${ac?`<div class="hint">Está no contrato ${escapeHtml(ac.code||"")}. Para liberar, registre a devolução no contrato.</div>`:""}
       <div class="field"><label>Motivo (opcional)</label><input class="input" id="adj-note" maxlength="120"></div>
       ${logHtml}`,
       `<button class="btn" data-action="close-modal">Cancelar</button><button class="btn btn-primary" id="adj-save">Salvar</button>`,
       { onMount(){ $("#adj-save").addEventListener("click", async ()=>{
-        const st=$("#adj-status").value; if(st===eq.status){ closeModal(); return; }
+        const n=Math.min(Math.max(parseInt($("#adj-copies").value,10)||0,0),50);
+        for(let i=0;i<n;i++){ const c={}; ["name","kind","trackMode","category","notes","dailyRate","weeklyRate","biweeklyRate","monthlyRate","indemnityValue","maintenanceIntervalMonths"].forEach(k=>{ if(eq[k]!==undefined) c[k]=eq[k]; }); c.status="disponivel"; c.code=""; await saveDoc("equipment", null, c); }
+        const st=$("#adj-status").value; if(st===eq.status){ closeModal(); if(n) toast(`${n} unidade(s) adicionada(s).`,"ok"); return; }
         const note=$("#adj-note").value.trim();
         const stockLog=(eq.stockLog||[]).concat([{date:todayISO(), text:`situação ${equipmentStatusMeta(eq.status).label} → ${equipmentStatusMeta(st).label}`, note}]).slice(-50);
         await saveDoc("equipment", eq.id, { status:st, stockLog });
