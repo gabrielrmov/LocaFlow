@@ -267,7 +267,12 @@ button{font-family:inherit}
 .cart-item .stepper{width:92px}.cart-item .stepper .qty-btn{width:28px; height:28px}.cart-item .stepper .qty-input{width:36px; height:28px}
 .cart-x{border:0; background:transparent; color:var(--ink-muted); cursor:pointer; font-size:18px; width:28px; height:28px; border-radius:50%}
 .cart-x:hover{background:var(--surface-2); color:var(--ink)}
-.cart-total{display:flex; justify-content:space-between; align-items:baseline; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); font-size:13px; color:var(--ink-2)}
+.ci-ind{display:flex; align-items:center; gap:8px; margin-top:6px; font-size:12px; color:var(--ink-muted)}
+.ci-ind .money{width:150px}.ci-ind .money .input{height:30px; padding-left:34px; font-size:12.5px}
+.cart-total .cart-ind-total{margin-top:6px; font-size:12.5px}
+.cart-total .cart-ind-total b{font-size:14px}
+.cart-line{display:flex; justify-content:space-between; align-items:baseline; gap:10px}
+.cart-total{display:block; justify-content:space-between; align-items:baseline; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); font-size:13px; color:var(--ink-2)}
 .cart-total b{font-size:17px; color:var(--ink)}
 @media (max-width:640px){.eq-main{grid-template-columns:100px minmax(0,1fr) auto; row-gap:4px}.eq-add,.stepper{width:100px}.eq-price{grid-column:2/3; text-align:left}.eq-main .item-date-toggle{grid-row:1; grid-column:3}}
 /* contrato: busca de cliente e de equipamentos */
@@ -1235,6 +1240,11 @@ function waContractMessage(c, cl){
   return head+`Confirmando a retirada de ${eq} (contrato ${c.code}) em ${fmtDate(c.startDate)}. Qualquer dúvida, é só responder esta mensagem.`;
 }
 
+/* indenização de um item: o valor definido no contrato vale mais que o do cadastro do equipamento */
+function indemnityFor(c, e){
+  const ov = c && c.indemnity ? c.indemnity[e.id] : undefined;
+  return Number(ov != null ? ov : e.indemnityValue) || 0;
+}
 function fold(s){ return String(s==null?"":s).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase(); }
 function clientName(id){ return byId(STATE.clients,id)?.name || "Cliente removido"; }
 function equipmentName(id){ return byId(STATE.equipment,id)?.name || "Equipamento removido"; }
@@ -2071,6 +2081,7 @@ function contractFormModal(id, presetStatus, cloneFrom){
   const selectedQty = {};
   (pre?.equipmentIds||[]).forEach(eid=>{ selectedQty[eid] = (selectedQty[eid]||0)+1; });
   const itemDates = pre?.itemDates || {};
+  const indemOv = { ...(pre?.indemnity || {}) }; /* indenização definida neste contrato, por equipamento */
   const dateToggleBtn = (eqId)=> `<button type="button" class="icon-btn item-date-toggle${itemDates[eqId]?" active":""}" data-eq="${eqId}" title="Usar datas diferentes para este item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></button>`;
   const dateFieldsRow = (eqId)=>{ const ov=itemDates[eqId]; return `<div class="field-row item-date-fields" data-eq-dates="${eqId}" style="display:${ov?"flex":"none"};padding:2px 6px 8px 6px;gap:6px;align-items:center">
     <span class="hint">Datas deste item:</span>
@@ -2237,17 +2248,26 @@ function contractFormModal(id, presetStatus, cloneFrom){
           const n = cb ? (cb.checked?1:0) : (Number(qty && qty.value)||0); if(!n) return;
           const d = itemDays(id, days), r = bestRateForDays(eq, d), total = r.total * n;
           sub += total;
-          lines.push({ id, name:eq.name, n, stock:!cb, max:qty?Number(qty.max)||0:1, total, note:`${d} ${d===1?"dia":"dias"} · ${r.label}${n>1?` · ${fmtMoney(r.total)} cada`:""}` });
+          lines.push({ id, name:eq.name, n, stock:!cb, max:qty?Number(qty.max)||0:1, total, ind:(indemOv[id] != null ? indemOv[id] : (eq.indemnityValue != null ? eq.indemnityValue : "")), note:`${d} ${d===1?"dia":"dias"} · ${r.label}${n>1?` · ${fmtMoney(r.total)} cada`:""}` });
         });
         if($("#f-serv")) $all("#f-serv input:checked").forEach(i=>{ const eq=byId(STATE.equipment,i.value); if(!eq) return; const v=Number(eq.dailyRate||0); sub += v; lines.push({ id:eq.id, name:eq.name, n:1, svc:true, total:v, note:"serviço" }); });
         $("#cart-count").textContent = lines.length;
-        $("#cart-list").innerHTML = lines.length ? lines.map(l=>`<div class="cart-item"><div><div class="ci-name">${escapeHtml(l.name)}</div><small>${escapeHtml(l.note)}</small></div>
+        $("#cart-list").innerHTML = lines.length ? lines.map(l=>`<div class="cart-item"><div><div class="ci-name">${escapeHtml(l.name)}</div><small>${escapeHtml(l.note)}</small>${l.svc?"":`<label class="ci-ind"><span>Indenização${l.n>1?" (cada)":""}</span><span class="money"><span>R$</span><input type="number" min="0" step="0.01" class="input" data-ind="${l.id}" value="${l.ind}" placeholder="não informada"></span></label>`}</div>
           ${l.stock?`<div class="stepper"><button type="button" class="cart-qty" data-eq="${l.id}" data-d="-1" aria-label="Diminuir">−</button><span class="qty-input" style="display:inline-block;text-align:center;line-height:28px">${l.n}</span><button type="button" class="cart-qty" data-eq="${l.id}" data-d="1" aria-label="Aumentar">+</button></div>`:`<span class="hint">${l.n}×</span>`}
           <div class="ci-total">${fmtMoney(l.total)}</div>
           <button type="button" class="cart-x" data-unpick="${l.id}" ${l.svc?'data-svc="1"':""} aria-label="Remover">×</button></div>`).join("")
           : `<div class="cart-empty">Nenhum item ainda.<br>Escolha os equipamentos na lista ao lado.</div>`;
-        $("#cart-total").innerHTML = `<span>Subtotal dos itens · ${days} ${days===1?"dia":"dias"}</span><b>${fmtMoney(sub)}</b>`;
+        const indTotal = lines.reduce((a,l)=> a + (l.svc ? 0 : (Number(l.ind)||0) * l.n), 0);
+        $("#cart-total").innerHTML = `<div class="cart-line"><span>Subtotal dos itens · ${days} ${days===1?"dia":"dias"}</span><b>${fmtMoney(sub)}</b></div>`
+          + `<div class="cart-line cart-ind-total"><span>Indenização total (perda ou dano)</span><b id="cart-ind-val">${fmtMoney(indTotal)}</b></div>`;
       }
+      $("#cart-list").addEventListener("input", (e)=>{
+        const inp = e.target.closest("[data-ind]"); if(!inp) return;
+        const v = inp.value === "" ? null : Number(inp.value);
+        if(v == null) delete indemOv[inp.dataset.ind]; else indemOv[inp.dataset.ind] = v;
+        let t = 0; $all("#cart-list [data-ind]").forEach(i=>{ const row = $(`#f-equip [data-eq-row="${i.dataset.ind}"]`); const cb = row && row.querySelector("input[type=checkbox]"), q = row && row.querySelector(".qty-input"); const n = cb ? (cb.checked?1:0) : (Number(q&&q.value)||0); t += (Number(i.value)||0)*n; });
+        $("#cart-ind-val").textContent = fmtMoney(t);
+      });
       $("#cart-list").addEventListener("click", (e)=>{
         const x = e.target.closest("[data-unpick]");
         if(x){
@@ -2404,7 +2424,8 @@ function contractFormModal(id, presetStatus, cloneFrom){
         });
         const status = $("#f-status").value;
         const freight = $("#f-freight-on").checked ? (Number($("#f-freight").value)||0) : null;
-        const data = { code, clientId, equipmentIds, itemDates:newItemDates, startDate:start, endDate:end, value:Number($("#f-value").value)||0, freight, location:$("#f-loc").value.trim(), notes:$("#f-notes").value.trim(), status, signed:$("#f-signed").checked };
+        const indemnity = {}; equipmentIds.forEach(id=>{ if(indemOv[id] != null && Number(indemOv[id]) >= 0) indemnity[id] = Number(indemOv[id]); });
+        const data = { code, clientId, equipmentIds, itemDates:newItemDates, indemnity, startDate:start, endDate:end, value:Number($("#f-value").value)||0, freight, location:$("#f-loc").value.trim(), notes:$("#f-notes").value.trim(), status, signed:$("#f-signed").checked };
         if(status!=="cancelado" && c?.returnedDate) data.returnedDate = c.returnedDate;
         await saveDoc("contracts", c?.id, data);
         await syncEquipmentStatusForContract({...(c||{}), ...data, id:c?.id});
@@ -2585,7 +2606,7 @@ function fillContractTemplate(template, c){
     ? eqs.map(e=>{
         const ov = itemDatesMap[e.id];
         const ovNote = ov ? ` — período: ${fmtDate(ov.start)} a ${fmtDate(ov.end)}` : "";
-        return `- ${e.name}${qtyById[e.id]>1?` ×${qtyById[e.id]}`:""}${e.category?` (${e.category})`:""}${e.code?` — código ${e.code}`:""} — ${isEquipKind(e)?equipmentRateSummary(e):fmtMoney(e.dailyRate)}${ovNote}`;
+        return `- ${e.name}${qtyById[e.id]>1?` ×${qtyById[e.id]}`:""}${e.category?` (${e.category})`:""}${e.code?` — código ${e.code}`:""} — ${isEquipKind(e)?equipmentRateSummary(e):fmtMoney(e.dailyRate)}${indemnityFor(c,e)?` — indenização ${fmtMoney(indemnityFor(c,e))}${qtyById[e.id]>1?" cada":""}`:""}${ovNote}`;
       }).join("\n")
     : "- [equipamento(s) do contrato]";
   const days = c && c.startDate && c.endDate ? Math.max(daysBetween(c.startDate,c.endDate),1) : null;
@@ -2685,7 +2706,7 @@ function contractDocHtml(c){
   const itemDates = c?.itemDates || {};
   const baseDays = c?.startDate && c?.endDate ? Math.max(daysBetween(c.startDate,c.endDate),1) : 1;
   const lines = Object.keys(qty).map(id=>byId(STATE.equipment,id)).filter(Boolean).map(e=>{
-    const ov = itemDates[e.id], n = qty[e.id], ind = Number(e.indemnityValue)||0;
+    const ov = itemDates[e.id], n = qty[e.id], ind = indemnityFor(c, e);
     const start = ov?.start||c.startDate, end = ov?.end||c.endDate;
     const days = start && end ? Math.max(daysBetween(start,end),1) : baseDays;
     let tipo="DIÁRIA", per=days, unit=Number(e.dailyRate)||0;
