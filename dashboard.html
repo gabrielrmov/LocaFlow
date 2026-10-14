@@ -1848,9 +1848,10 @@ function renderEquipTable(){
         <td><div class="cell-title">${escapeHtml(e.name)}</div><div class="cell-sub">${escapeHtml(e.code||"")}</div></td>
         <td><span class="tag">${escapeHtml(e.category)}</span></td>
         <td class="num tabular">${equipmentRateSummary(e)}</td>
-        ${f.kind==='equipamento' ? `<td>${stock ? `<span class="badge st-accent"><span class="dot"></span>${equipStockAvailable(e)}/${e.stockQty||0} em estoque</span>` : `<span class="badge ${meta.cls}"><span class="dot"></span>${meta.label}</span>`}</td><td class="cell-sub">${loc}</td>` : ""}
+        ${f.kind==='equipamento' ? `<td>${stock ? `<span class="badge st-accent"><span class="dot"></span>${equipStockLabel(e)}</span>` : `<span class="badge ${meta.cls}"><span class="dot"></span>${meta.label}</span>`}</td><td class="cell-sub">${loc}</td>` : ""}
         <td><div class="row-actions">
           <button class="icon-btn" title="Histórico" data-action="history-equipment" data-id="${e.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg></button>
+          ${f.kind==='equipamento'?`<button class="icon-btn" title="${stock?'Ajustar estoque':'Alterar situação'}" data-action="adjust-equipment" data-id="${e.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></button>`:""}
           <button class="icon-btn" title="Editar" data-action="edit-equipment" data-id="${e.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
           <button class="icon-btn" title="Excluir" data-action="delete-equipment" data-id="${e.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>
         </div></td>
@@ -1948,7 +1949,63 @@ function equipStockInUse(eq){
   return STATE.contracts.filter(c=> ["ativo","vencendo_hoje","atrasado"].includes(contractComputedStatus(c)))
     .reduce((sum,c)=> sum + (c.equipmentIds||[]).filter(x=>x===eq.id).length, 0);
 }
-function equipStockAvailable(eq){ return Math.max((eq.stockQty||0) - equipStockInUse(eq), 0); }
+function equipStockMaint(eq){ return Math.min(Math.max(Number(eq.stockMaint)||0,0), eq.stockQty||0); }
+function equipStockAvailable(eq){ return Math.max((eq.stockQty||0) - equipStockMaint(eq) - equipStockInUse(eq), 0); }
+function equipStockLabel(eq){ const m=equipStockMaint(eq); return `${equipStockAvailable(eq)}/${eq.stockQty||0} em estoque${m?` · ${m} em manutenção`:""}`; }
+/* Ajuste manual: estoque (total, em manutenção, baixa/entrada) ou situação de unidade única. Guarda histórico em stockLog. */
+function adjustEquipmentModal(id){
+  const eq = byId(STATE.equipment,id); if(!eq) return;
+  const stock = isStockMode(eq);
+  const log = (eq.stockLog||[]).slice().reverse().slice(0,8);
+  const logHtml = log.length ? `<div class="hint" style="margin-top:14px;font-weight:600">Últimos ajustes</div><div style="display:flex;flex-direction:column;gap:2px;margin-top:4px">${log.map(l=>`<div class="hint">${fmtDate(l.date)} · ${escapeHtml(l.text||"")}${l.note?` — ${escapeHtml(l.note)}`:""}</div>`).join("")}</div>` : "";
+  if(stock){
+    const inUse = equipStockInUse(eq);
+    openModal(`Ajustar estoque — ${eq.name}`, `
+      <div class="grid-2">
+        <div class="field"><label>Quantidade total</label><input class="input" id="adj-total" type="number" min="0" step="1" value="${eq.stockQty||0}"></div>
+        <div class="field"><label>Em manutenção / reparo</label><input class="input" id="adj-maint" type="number" min="0" step="1" value="${equipStockMaint(eq)}"></div>
+      </div>
+      <div class="field"><label>Motivo (opcional)</label><input class="input" id="adj-note" maxlength="120" placeholder="Ex: compra de 5 unidades, 2 perdidas na obra"></div>
+      <div class="hint" style="margin-top:6px">Em uso nos contratos: <b>${inUse}</b> (automático) · Disponível agora: <b id="adj-avail">${equipStockAvailable(eq)}</b></div>
+      ${logHtml}`,
+      `<button class="btn" data-action="close-modal">Cancelar</button><button class="btn btn-primary" id="adj-save">Salvar</button>`,
+      { onMount(){
+        const calc=()=>{ const t=Math.max(parseInt($("#adj-total").value,10)||0,0), m=Math.min(Math.max(parseInt($("#adj-maint").value,10)||0,0),t); $("#adj-avail").textContent=Math.max(t-m-inUse,0); };
+        $("#adj-total").addEventListener("input",calc); $("#adj-maint").addEventListener("input",calc);
+        $("#adj-save").addEventListener("click", async ()=>{
+          const t=Math.max(parseInt($("#adj-total").value,10)||0,0);
+          const m=Math.max(parseInt($("#adj-maint").value,10)||0,0);
+          if(m>t){ toast("Em manutenção não pode ser maior que o total.","err"); return; }
+          if(t<inUse){ toast(`O total não pode ser menor que o que está em contratos (${inUse}).`,"err"); return; }
+          const parts=[]; if(t!==(eq.stockQty||0)) parts.push(`total ${eq.stockQty||0} → ${t}`); if(m!==equipStockMaint(eq)) parts.push(`manutenção ${equipStockMaint(eq)} → ${m}`);
+          if(!parts.length){ closeModal(); return; }
+          const note=$("#adj-note").value.trim();
+          const stockLog=(eq.stockLog||[]).concat([{date:todayISO(), text:parts.join(", "), note}]).slice(-50);
+          await saveDoc("equipment", eq.id, { stockQty:t, stockMaint:m, stockLog });
+          closeModal(); toast("Estoque atualizado.","ok");
+        });
+      }});
+  } else {
+    const ac = eq.status==="alugado" ? activeContractForEquipment(eq.id) : null;
+    openModal(`Situação — ${eq.name}`, `
+      <div class="field"><label>Situação</label><select class="input" id="adj-status">
+        <option value="disponivel" ${eq.status==="disponivel"?"selected":""}>Disponível</option>
+        <option value="manutencao" ${eq.status==="manutencao"?"selected":""}>Em manutenção</option>
+        ${eq.status==="alugado"?`<option value="alugado" selected>Alugado (definido pelos contratos)</option>`:""}
+      </select></div>
+      ${ac?`<div class="hint">Está no contrato ${escapeHtml(ac.code||"")}. Para liberar, registre a devolução no contrato.</div>`:""}
+      <div class="field"><label>Motivo (opcional)</label><input class="input" id="adj-note" maxlength="120"></div>
+      ${logHtml}`,
+      `<button class="btn" data-action="close-modal">Cancelar</button><button class="btn btn-primary" id="adj-save">Salvar</button>`,
+      { onMount(){ $("#adj-save").addEventListener("click", async ()=>{
+        const st=$("#adj-status").value; if(st===eq.status){ closeModal(); return; }
+        const note=$("#adj-note").value.trim();
+        const stockLog=(eq.stockLog||[]).concat([{date:todayISO(), text:`situação ${equipmentStatusMeta(eq.status).label} → ${equipmentStatusMeta(st).label}`, note}]).slice(-50);
+        await saveDoc("equipment", eq.id, { status:st, stockLog });
+        closeModal(); toast("Situação atualizada.","ok");
+      }); }});
+  }
+}
 /* Escolhe a melhor tarifa cadastrada para o número de dias locados (mensal > quinzenal > semanal > diária). */
 function bestRateForDays(eq, days){
   if(days>=28 && eq.monthlyRate) return { total: eq.monthlyRate * Math.ceil(days/30), label:"mensal" };
@@ -2123,7 +2180,7 @@ function contractFormModal(id, presetStatus, cloneFrom){
       ${availEquip.length? [...availEquip].sort((x,y)=> (x.category||"Sem categoria").localeCompare(y.category||"Sem categoria") || x.name.localeCompare(y.name)).map((e,i,arr)=>{
         const cat = e.category||"Sem categoria";
         const head = (i===0 || (arr[i-1].category||"Sem categoria")!==cat) ? `<div class="eq-group" data-group="${escapeHtml(cat)}">${escapeHtml(cat)}</div>` : "";
-        const sub = [e.code?`[${escapeHtml(e.code)}]`:"", isStockMode(e)?`${equipStockAvailable(e)}/${e.stockQty||0} em estoque`:"", e.weeklyRate?`sem ${fmtMoney(e.weeklyRate)}`:"", e.monthlyRate?`mês ${fmtMoney(e.monthlyRate)}`:""].filter(Boolean).join(" · ");
+        const sub = [e.code?`[${escapeHtml(e.code)}]`:"", isStockMode(e)?equipStockLabel(e):"", e.weeklyRate?`sem ${fmtMoney(e.weeklyRate)}`:"", e.monthlyRate?`mês ${fmtMoney(e.monthlyRate)}`:""].filter(Boolean).join(" · ");
         const info = `<div class="eq-info"><span class="eq-name">${escapeHtml(e.name)}</span>${sub?`<small>${sub}</small>`:""}</div>`;
         const price = `<div class="eq-price"><b>${fmtMoney(e.dailyRate)}</b><small>/dia</small></div>`;
         const attrs = `data-eq-row="${e.id}" data-q="${escapeHtml(fold(e.name+" "+(e.code||"")+" "+(e.category||"")))}" data-cat="${escapeHtml(e.category||"")}" data-name="${escapeHtml(e.name)}"`;
@@ -4624,6 +4681,7 @@ function handleAction(action, id){
     case "close-modal": closeModal(); break;
     case "new-equipment": equipmentFormModal(); break;
     case "edit-equipment": equipmentFormModal(id); break;
+    case "adjust-equipment": adjustEquipmentModal(id); break;
     case "delete-equipment": confirmDialog("Excluir este equipamento? Essa ação não pode ser desfeita.", ()=>deleteDoc("equipment",id).then(()=>toast("Equipamento excluído.","ok"))); break;
     case "history-equipment": equipmentHistoryModal(id); break;
     case "new-contract": contractFormModal(); break;
