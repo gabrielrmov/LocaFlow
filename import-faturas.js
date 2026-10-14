@@ -33,6 +33,47 @@ async function unzip(buf){
 function xmlDoc(s){ return new DOMParser().parseFromString(s, "application/xml"); }
 function colIndex(ref){ let n = 0; for(const ch of ref.replace(/[0-9]/g, "")) n = n * 26 + ch.charCodeAt(0) - 64; return n - 1; }
 
+/* Lê TODAS as abas: devolve { "Nome da aba": [linhas] } (usado pela importação do LocaGestor). */
+async function parseXlsxSheets(buf){
+  const files = await unzip(buf);
+  if(!files["xl/workbook.xml"]) throw new Error("Arquivo XLSX inválido.");
+  const wb = xmlDoc(files["xl/workbook.xml"]);
+  const rels = {};
+  if(files["xl/_rels/workbook.xml.rels"]){
+    for(const r of xmlDoc(files["xl/_rels/workbook.xml.rels"]).getElementsByTagName("Relationship")) rels[r.getAttribute("Id")] = r.getAttribute("Target");
+  }
+  const shared = [];
+  if(files["xl/sharedStrings.xml"]){
+    for(const si of xmlDoc(files["xl/sharedStrings.xml"]).getElementsByTagName("si")) shared.push([...si.getElementsByTagName("t")].map(t => t.textContent).join(""));
+  }
+  const out = {};
+  for(const sh of wb.getElementsByTagName("sheet")){
+    const rid = sh.getAttribute("r:id") || sh.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id");
+    const target = rels[rid]; if(!target) continue;
+    const path = target.startsWith("/") ? target.slice(1) : "xl/" + target;
+    if(!files[path]) continue;
+    const rows = [];
+    for(const row of xmlDoc(files[path]).getElementsByTagName("row")){
+      const line = [];
+      for(const c of row.getElementsByTagName("c")){
+        const t = c.getAttribute("t"), v = c.getElementsByTagName("v")[0];
+        let val = null;
+        if(t === "inlineStr") val = [...c.getElementsByTagName("t")].map(x => x.textContent).join("");
+        else if(v){
+          if(t === "s") val = shared[Number(v.textContent)] ?? "";
+          else if(t === "str" || t === "e") val = v.textContent;
+          else if(t === "b") val = v.textContent === "1";
+          else val = Number(v.textContent);
+        }
+        line[colIndex(c.getAttribute("r") || "A1")] = val;
+      }
+      rows.push(Array.from(line, x => x === undefined ? null : x));
+    }
+    out[sh.getAttribute("name")] = rows;
+  }
+  return out;
+}
+
 async function parseXlsx(buf){
   const files = await unzip(buf);
   if(!files["xl/workbook.xml"]) throw new Error("Arquivo XLSX inválido.");
@@ -248,5 +289,5 @@ function analyze(rows, ctx){
   return { rows:out, total:out.length, ok:count("ok"), duplicada:count("duplicada"), ignorada:count("ignorada"), erro:count("erro") };
 }
 
-window.FaturasImport = { parseXlsx, parseCsv, readFile, analyze, norm, toISO, toMoney, mapMethod };
+window.FaturasImport = { parseXlsx, parseXlsxSheets, parseCsv, readFile, analyze, norm, toISO, toMoney, mapMethod };
 })();

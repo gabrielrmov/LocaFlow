@@ -2737,7 +2737,7 @@ function contractDocHtml(c){
       <div class="ct-sep"></div>
       ${r3(["Locatário:",cl?.name],["Nome Fantasia:",cl?.tradeName],["E-mail:",cl?.email])}
       ${r3(["Endereço:",la.street],["Bairro:",la.bairro],["CEP:",cl?.cep])}
-      ${r3(["Cidade:",la.cidade],["Estado:",la.uf],["RG/IE:",cl?.ie])}
+      ${r3(["Cidade:",la.cidade],["Estado:",la.uf],["RG/IE:",cl?.ie||cl?.rg])}
       ${r3(["Telefone:",cl?.phone],["CPF/CNPJ:",cl?.document],null)}
       <div class="ct-sep"></div>
       ${r1("Responsável Legal ou Corresponsável:",cl?.legalContact)}
@@ -3741,13 +3741,118 @@ function renderConfig(){
       <button data-tab="geral" class="${f.tab==='geral'?'active':''}">Geral</button>
       <button data-tab="plano" class="${f.tab==='plano'?'active':''}">Plano</button>
       <button data-tab="contrato" class="${f.tab==='contrato'?'active':''}">Contrato</button>
+      <button data-tab="importar" class="${f.tab==='importar'?'active':''}">Importar dados</button>
     </div>
     <div id="cfg-body"></div>
   `;
   $all("#cfg-tabs button").forEach(b=> b.addEventListener("click", ()=>{ f.tab=b.dataset.tab; renderConfig(); }));
   if(f.tab==="geral") renderConfigGeralBody();
   else if(f.tab==="plano") renderConfigPlanoBody();
+  else if(f.tab==="importar") renderConfigImportBody();
   else renderConfigContratoBody();
+}
+/* ---------- Importar do LocaGestor (clientes, equipamentos e contratos) ----------
+   Lê a planilha exportada, mostra o que vai acontecer e só grava depois do clique em Importar.
+   Nunca apaga; por padrão só preenche o que está vazio. Pode rodar de novo sem duplicar. */
+function loadScriptOnce(src, test){
+  if(test()) return Promise.resolve();
+  return new Promise((ok, fail)=>{ const el = document.createElement("script"); el.src = src; el.onload = ok; el.onerror = ()=>fail(new Error("load")); document.head.appendChild(el); });
+}
+async function loadLocaGestorImporter(){
+  await loadScriptOnce("import-faturas.js?v=20261014", ()=>!!window.FaturasImport && !!window.FaturasImport.parseXlsxSheets);
+  await loadScriptOnce("import-locagestor.js?v=20261014", ()=>!!window.LocaGestorImport);
+}
+function renderConfigImportBody(){
+  const wrap = $("#cfg-body");
+  wrap.innerHTML = `
+    <div class="card card-pad" style="max-width:900px">
+      <h3 class="section-title" style="margin-bottom:4px">Importar do LocaGestor</h3>
+      <p class="hint" style="margin-bottom:12px">Envie a planilha exportada do LocaGestor (.xlsx, com as abas Clientes, Equipamentos, Contratos e Itens_Contratos). Antes de gravar, o Locarion mostra o que vai ser criado e o que vai ser completado. <b>Nada é apagado</b>, e o que você já cadastrou não é sobrescrito: só campos vazios são preenchidos (como o valor de indenização). Pode importar de novo sem duplicar.</p>
+      <div class="field"><input class="input" type="file" id="lg-file" accept=".xlsx"></div>
+      <div id="lg-out"></div>
+    </div>`;
+  let plan = null, sheets = null;
+  const out = $("#lg-out");
+  const run = ()=>{
+    const overwrite = $("#lg-over") ? $("#lg-over").checked : false;
+    const res = window.LocaGestorImport.analyze(sheets, { clients:STATE.clients, equipment:STATE.equipment, contracts:STATE.contracts, today:todayISO() }, { overwrite });
+    if(res.error){ out.innerHTML = `<p class="field-error">${escapeHtml(res.error)}</p>`; return; }
+    plan = res;
+    const k = (title, d, extra)=>`<div class="kpi"><div class="kpi-top"><span class="kpi-label">${title}</span></div><div class="kpi-value tabular" style="font-size:22px">${d.total}</div><div class="kpi-sub">${extra}</div></div>`;
+    const c = plan.clients, e = plan.equipment, ct = plan.contracts;
+    const row = (id, label, n, hint)=>`<label style="display:flex;align-items:center;gap:8px;margin:6px 0;font-size:13.5px"><input type="checkbox" id="${id}" ${n?"checked":""} ${n?"":"disabled"}> ${label} <span class="hint">· ${hint}</span></label>`;
+    out.innerHTML = `
+      <div class="kpi-grid" style="margin:14px 0">
+        ${k("Clientes na planilha", c, `${c.create.length} novos · ${c.update.length} a completar · ${c.same} já completos`)}
+        ${k("Equipamentos", e, `${e.create.length} novos · ${e.update.length} a completar · ${e.same} já completos`)}
+        ${k("Contratos", ct, `${ct.create.length} novos · ${ct.update.length} a completar · ${ct.same} já completos`)}
+      </div>
+      ${row("lg-do-c","Importar clientes", c.create.length + c.update.length, `${c.create.length} novos, ${c.update.length} com dados a completar (telefone, endereço, bairro, cidade, e-mail…)`)}
+      ${row("lg-do-e","Importar equipamentos", e.create.length + e.update.length, `${e.create.length} novos, ${e.update.length} a completar (indenização, tarifas, códigos de patrimônio…)`)}
+      ${row("lg-do-t","Importar contratos", ct.create.length + ct.update.length, `${ct.create.length} novos (inclui os encerrados, como histórico) e ${ct.update.length} com a indenização por item a completar`)}
+      <label style="display:flex;align-items:center;gap:8px;margin:10px 0 4px;font-size:13px"><input type="checkbox" id="lg-over" ${overwrite?"checked":""}> Atualizar também <b>indenização e tarifas diferentes</b> das que já estão cadastradas</label>
+      ${c.create.length || e.create.length ? `<details style="margin-top:10px"><summary class="hint" style="cursor:pointer">Ver quem será criado como novo (confira se não é alguém que já está cadastrado com outro nome)</summary>
+        <div class="hint" style="margin:8px 0 0;max-height:220px;overflow:auto"><b>Clientes novos (${c.create.length}):</b> ${c.create.slice(0,150).map(x=>escapeHtml(x.data.name)).join(" · ") || "—"}<br><br><b>Equipamentos novos (${e.create.length}):</b> ${e.create.slice(0,100).map(x=>escapeHtml(x.data.name)).join(" · ") || "—"}</div></details>` : ""}
+      ${ct.skipped.length || plan.warnings.length ? `<details style="margin-top:10px"><summary class="hint" style="cursor:pointer">${ct.skipped.length} contrato(s) não importado(s) · ${plan.warnings.length} aviso(s)</summary>
+        <ul class="hint" style="margin:8px 0 0 18px;max-height:200px;overflow:auto">${ct.skipped.map(x=>`<li>Contrato ${escapeHtml(x.code)}: ${escapeHtml(x.why)}</li>`).join("")}${plan.warnings.slice(0,60).map(w=>`<li>${escapeHtml(w)}</li>`).join("")}</ul></details>` : ""}
+      <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn btn-primary" id="lg-go">Importar agora</button><span class="hint" id="lg-status"></span></div>`;
+    $("#lg-over").addEventListener("change", run);
+    $("#lg-go").addEventListener("click", async ()=>{
+      const sel = { clients:$("#lg-do-c").checked, equipment:$("#lg-do-e").checked, contracts:$("#lg-do-t").checked };
+      if(!sel.clients && !sel.equipment && !sel.contracts){ toast("Marque pelo menos uma opção.","err"); return; }
+      const btn = $("#lg-go"); btn.disabled = true;
+      try{
+        const n = await commitLocaGestor(plan, sel, (m)=>{ $("#lg-status").textContent = m; });
+        $("#lg-status").textContent = ""; toast(`Importação concluída: ${n} registros gravados.`,"ok");
+        out.innerHTML = `<div class="kpi" style="margin-top:14px"><div class="kpi-label">Importação concluída</div><div class="kpi-sub">${n} registros gravados. Você pode conferir em Clientes, Equipamentos e Contratos. Se importar o mesmo arquivo de novo, nada é duplicado.</div></div>`;
+      }catch(err){ btn.disabled = false; $("#lg-status").textContent = "Não foi possível gravar tudo. Confira o que entrou e tente de novo (o que já entrou não é duplicado)."; }
+    });
+  };
+  $("#lg-file").addEventListener("change", async (e)=>{
+    const file = e.target.files[0]; plan = null; if(!file) return;
+    out.innerHTML = '<p class="hint" style="margin-top:12px">Lendo a planilha…</p>';
+    try{
+      if(file.size > 20*1024*1024) throw new Error("big");
+      await loadLocaGestorImporter();
+      sheets = await window.LocaGestorImport.readSheets(file);
+      run();
+    }catch(err){ out.innerHTML = `<p class="field-error">${err && err.message==="big" ? "Arquivo grande demais (máximo 20 MB)." : escapeHtml((err && err.message) || "Não consegui ler esse arquivo. Use o .xlsx exportado do LocaGestor.")}</p>`; }
+  });
+}
+async function commitLocaGestor(plan, sel, progress){
+  if(!companyRef) throw new Error("sem conexão");
+  const col = (n)=> companyRef.collection(n);
+  const ids = {}, ops = [], updates = new Map();
+  const addUpdate = (collection, id, patch)=>{ const key = collection + "/" + id; const cur = updates.get(key); if(cur) Object.assign(cur.d, patch); else { const o = { ref:col(collection).doc(id), t:"update", d:{...patch} }; updates.set(key, o); ops.push(o); } };
+  const creates = new Map();
+  if(sel.clients){
+    plan.clients.create.forEach(x=>{ const ref = col("clients").doc(); ids[x.tmp] = ref.id; ops.push({ ref, t:"set", d:x.data }); });
+    plan.clients.update.forEach(x=> addUpdate("clients", x.id, x.patch));
+  }
+  if(sel.equipment){
+    plan.equipment.create.forEach(x=>{ const ref = col("equipment").doc(); ids[x.tmp] = ref.id; const o = { ref, t:"set", d:{...x.data} }; creates.set(x.tmp, o); ops.push(o); });
+    plan.equipment.update.forEach(x=> addUpdate("equipment", x.id, x.patch));
+  }
+  const real = (id)=> ids[id] || (String(id).startsWith("new-") ? null : id);
+  if(sel.contracts){
+    const remap = (map)=>{ const o = {}; Object.keys(map||{}).forEach(k=>{ const r = real(k); if(r) o[r] = map[k]; }); return o; };
+    plan.contracts.create.forEach(x=>{
+      const d = { ...x.data }; const clientId = real(d.clientId); if(!clientId) return;
+      d.clientId = clientId; d.equipmentIds = (d.equipmentIds||[]).map(real).filter(Boolean);
+      if(d.itemDates) d.itemDates = remap(d.itemDates); if(d.indemnity) d.indemnity = remap(d.indemnity);
+      ops.push({ ref:col("contracts").doc(), t:"set", d });
+    });
+    plan.contracts.update.forEach(x=>{ const patch = { ...x.patch }; if(patch.indemnity) patch.indemnity = remap(patch.indemnity); addUpdate("contracts", x.id, patch); });
+    (plan.activate||[]).forEach(id=>{ if(String(id).startsWith("new-")){ const o = creates.get(id); if(o) o.d.status = "alugado"; } else if(sel.equipment || STATE.equipment.some(e=>e.id===id)) addUpdate("equipment", id, { status:"alugado" }); });
+  }
+  const total = ops.length;
+  for(let i = 0; i < ops.length; i += 400){
+    progress(`Gravando ${Math.min(i+400,total)} de ${total}…`);
+    const batch = companyRef.firestore.batch();
+    ops.slice(i, i+400).forEach(o=>{ if(o.t === "set") batch.set(o.ref, o.d); else batch.update(o.ref, o.d); });
+    await batch.commit();
+  }
+  return total;
 }
 function genSupportCode(){
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
