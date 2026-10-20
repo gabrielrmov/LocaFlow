@@ -316,6 +316,13 @@ button{font-family:inherit}
 .stack{display:flex; flex-direction:column; gap:16px}
 
 /* ---------- quick actions & onboarding ---------- */
+.search-pill{display:inline-flex; align-items:center; gap:8px; height:34px; padding:0 10px; margin-left:auto; min-width:260px; border:1px solid var(--border-strong); border-radius:99px; background:var(--surface); color:var(--ink-3,var(--ink-2)); font:inherit; font-size:13px; cursor:pointer}
+.search-pill:hover{border-color:var(--accent); color:var(--ink)}
+.search-pill .sp-text{flex:1; text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.search-pill kbd{font:inherit; font-size:11px; padding:1px 6px; border:1px solid var(--border-strong); border-radius:5px; color:var(--ink-2)}
+@media (max-width:760px){ .search-pill{min-width:0; width:34px; padding:0; justify-content:center; margin-left:auto} .search-pill .sp-text,.search-pill kbd{display:none} }
+.row-act{white-space:nowrap}
+.gs-item.sel{background:var(--surface-2)}
 .kpi-click,.row-click{cursor:pointer}
 .kpi-click:hover{background:var(--surface-hover); box-shadow:0 0 0 1px var(--border-strong) inset}
 .kpi-click:focus-visible,.row-click:focus-visible{outline:2px solid var(--accent); outline-offset:-2px}
@@ -1049,7 +1056,7 @@ body:has(.modal-backdrop){overflow:hidden}
     <header class="topbar">
       <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menu"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
       <h1 id="page-title">Dashboard</h1>
-      <button class="icon-btn" id="global-search-btn" title="Buscar em tudo (Ctrl+K)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></button>
+      <button class="search-pill" id="global-search-btn" title="Buscar em tudo ( / ou Ctrl+K )"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span class="sp-text">Buscar cliente, contrato, equipamento…</span><kbd>/</kbd></button>
       <button class="icon-btn" id="alerts-btn" title="Alertas"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="alert-badge" id="alerts-badge" style="display:none">0</span></button>
       <div class="topbar-actions" id="topbar-actions"></div>
     </header>
@@ -1342,38 +1349,55 @@ function confirmDialog(msg, onYes){
 function globalSearchModal(){
   if(!allLoaded()) return;
   openModal("Buscar", `
-    <input class="input" id="gs-input" placeholder="Buscar clientes, equipamentos ou contratos…" autocomplete="off">
+    <input class="input" id="gs-input" placeholder="Cliente, contrato, equipamento ou fatura…  (↑ ↓ e Enter)" autocomplete="off">
     <div id="gs-results" style="margin-top:10px;max-height:60vh;overflow:auto"></div>
   `, `<button class="btn btn-secondary" data-action="close-modal">Fechar</button>`,
   { large:true, onMount(){
       const input = $("#gs-input");
-      const itemStyle = "display:block;padding:8px 8px;border-radius:8px;cursor:pointer";
+      const itemStyle = "display:flex;align-items:center;gap:10px;padding:8px 8px;border-radius:8px;cursor:pointer";
       const sectionLabel = (t)=>`<div class="hint" style="font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin:10px 2px 4px">${t}</div>`;
+      const act = (action,id,label)=>`<button class="btn btn-secondary btn-sm gs-act" data-gs-action="${action}" data-id="${id}">${label}</button>`;
+      let sel = -1;
+      const items = ()=>$all("#gs-results .gs-item");
+      function select(i){ const l=items(); if(!l.length) return; sel=(i+l.length)%l.length; l.forEach((el,k)=>el.classList.toggle("sel",k===sel)); l[sel].scrollIntoView({block:"nearest"}); }
+      const norm = (t)=>String(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
       function renderResults(){
-        const q = input.value.trim().toLowerCase();
-        const results = $("#gs-results");
-        if(!q){ results.innerHTML = `<p class="hint" style="padding:8px 2px">Digite para buscar em clientes, equipamentos e contratos.</p>`; return; }
-        const clients = STATE.clients.filter(c=> (c.name+" "+(c.document||"")+" "+(c.phone||"")).toLowerCase().includes(q)).slice(0,6);
-        const equip = STATE.equipment.filter(e=> (e.name+" "+(e.code||"")+" "+(e.category||"")).toLowerCase().includes(q)).slice(0,6);
-        const contracts = STATE.contracts.filter(c=> ((c.code||"")+" "+clientName(c.clientId)).toLowerCase().includes(q)).slice(0,6);
-        if(!clients.length && !equip.length && !contracts.length){ results.innerHTML = emptyState("Nada encontrado","Tente buscar por outro termo."); return; }
+        const q = norm(input.value.trim());
+        const results = $("#gs-results"); sel=-1;
+        if(!q){ results.innerHTML = `<p class="hint" style="padding:8px 2px">Digite para buscar. Use ↑ ↓ e Enter para abrir, ou os botões para devolver e receber direto daqui.</p>`; return; }
+        const clients = STATE.clients.filter(c=> norm(c.name+" "+(c.tradeName||"")+" "+(c.document||"")+" "+(c.phone||"")).includes(q)).slice(0,6);
+        const equip = STATE.equipment.filter(e=> norm(e.name+" "+(e.code||"")+" "+(e.category||"")).includes(q)).slice(0,6);
+        const contracts = STATE.contracts.filter(c=> norm((c.code||"")+" "+clientName(c.clientId)+" "+(c.location||"")+" "+equipmentNamesSummary(c.equipmentIds)).includes(q)).slice(0,6);
+        const pays = STATE.payments.filter(p=> paymentComputedStatus(p)!=="pago" && norm(clientName(p.clientId)+" "+(p.description||"")+" "+(p.number||"")).includes(q)).sort((x,y)=>String(x.dueDate).localeCompare(String(y.dueDate))).slice(0,5);
+        if(!clients.length && !equip.length && !contracts.length && !pays.length){ results.innerHTML = emptyState("Nada encontrado","Tente buscar por outro termo."); return; }
         results.innerHTML = `
-          ${clients.length? sectionLabel("Clientes") + clients.map(c=>`<div class="gs-item" data-open="client" data-id="${c.id}" style="${itemStyle};display:flex;align-items:center;gap:10px"><div class="avatar">${initials(c.name)}</div><div style="min-width:0"><div class="cell-title" style="font-size:13px">${escapeHtml(c.name)}</div><div class="cell-sub">${escapeHtml(c.document||c.phone||"")}</div></div></div>`).join("") : ""}
-          ${equip.length? sectionLabel("Equipamentos") + equip.map(e=>`<div class="gs-item" data-open="equip" data-id="${e.id}" style="${itemStyle}"><div class="cell-title" style="font-size:13px">${escapeHtml(e.name)}</div><div class="cell-sub">${escapeHtml(e.category||"")}${e.code?" · "+escapeHtml(e.code):""}</div></div>`).join("") : ""}
-          ${contracts.length? sectionLabel("Contratos") + contracts.map(c=>`<div class="gs-item" data-open="contract" data-id="${c.id}" style="${itemStyle}"><div class="cell-title" style="font-size:13px">${escapeHtml(c.code||"")} · ${escapeHtml(clientName(c.clientId))}</div><div class="cell-sub">${fmtDate(c.startDate)} – ${fmtDate(c.endDate)}</div></div>`).join("") : ""}
+          ${contracts.length? sectionLabel("Contratos") + contracts.map(c=>{ const st=contractComputedStatus(c), open=["ativo","vencendo_hoje","atrasado"].includes(st), meta=contractStatusMeta(st);
+            return `<div class="gs-item" data-open="contract" data-id="${c.id}" style="${itemStyle}"><div style="flex:1;min-width:0"><div class="cell-title" style="font-size:13px">${escapeHtml(c.code||"")} · ${escapeHtml(clientName(c.clientId))}</div><div class="cell-sub">${escapeHtml(equipmentNamesSummary(c.equipmentIds))}</div></div><span class="badge ${meta.cls}"><span class="dot"></span>${meta.label}</span>${open?act("return-contract",c.id,"Devolver"):""}</div>`; }).join("") : ""}
+          ${pays.length? sectionLabel("Faturas em aberto") + pays.map(p=>`<div class="gs-item" data-open="payment" data-id="${p.id}" style="${itemStyle}"><div style="flex:1;min-width:0"><div class="cell-title" style="font-size:13px">${escapeHtml(clientName(p.clientId))} · ${fmtMoney(p.amount)}</div><div class="cell-sub">vence ${fmtDate(p.dueDate)} · ${escapeHtml((p.description||"").slice(0,70))}</div></div>${act("pay-payment",p.id,"Receber")}</div>`).join("") : ""}
+          ${clients.length? sectionLabel("Clientes") + clients.map(c=>`<div class="gs-item" data-open="client" data-id="${c.id}" style="${itemStyle}"><div class="avatar">${initials(c.name)}</div><div style="flex:1;min-width:0"><div class="cell-title" style="font-size:13px">${escapeHtml(c.name)}</div><div class="cell-sub">${escapeHtml(c.phone||c.document||"")}</div></div></div>`).join("") : ""}
+          ${equip.length? sectionLabel("Equipamentos") + equip.map(e=>`<div class="gs-item" data-open="equip" data-id="${e.id}" style="${itemStyle}"><div style="flex:1;min-width:0"><div class="cell-title" style="font-size:13px">${escapeHtml(e.name)}</div><div class="cell-sub">${escapeHtml(e.code||"")} ${isStockMode(e)?equipStockLabel(e):(isEquipKind(e)?equipmentStatusMeta(e.status).label:"Serviço")}</div></div>${isEquipKind(e)?act("adjust-equipment",e.id,isStockMode(e)?"Ajustar":"Situação"):""}</div>`).join("") : ""}
         `;
-        $all(".gs-item").forEach(el=>{
-          el.addEventListener("mouseenter", ()=> el.style.background="var(--surface-2)");
-          el.addEventListener("mouseleave", ()=> el.style.background="");
-          el.addEventListener("click", ()=>{
-            const kind = el.dataset.open, id = el.dataset.id;
-            closeModal();
-            if(kind==="client") clientDetailModal(id);
-            else if(kind==="equip") equipmentFormModal(id);
-            else if(kind==="contract") contractFormModal(id);
-          });
-        });
+        select(0);
+        $all("#gs-results .gs-item").forEach(el=> el.addEventListener("mouseenter", ()=>{ sel=items().indexOf(el); items().forEach(x=>x.classList.toggle("sel",x===el)); }));
       }
+      function run(el){
+        const kind = el.dataset.open, id = el.dataset.id;
+        closeModal();
+        if(kind==="client") clientDetailModal(id);
+        else if(kind==="equip") equipmentFormModal(id);
+        else if(kind==="contract") contractFormModal(id);
+        else if(kind==="payment") payPayment(id);
+      }
+      $("#gs-results").addEventListener("click", (e)=>{
+        const b = e.target.closest("[data-gs-action]");
+        if(b){ e.stopPropagation(); closeModal(); handleAction(b.dataset.gsAction, b.dataset.id); return; }
+        const it = e.target.closest(".gs-item"); if(it) run(it);
+      });
+      input.addEventListener("keydown", (e)=>{
+        if(e.key==="ArrowDown"){ e.preventDefault(); select(sel+1); }
+        else if(e.key==="ArrowUp"){ e.preventDefault(); select(sel-1); }
+        else if(e.key==="Enter"){ const l=items(); if(l[sel]){ e.preventDefault(); run(l[sel]); } }
+      });
       input.addEventListener("input", debounce(renderResults, 100));
       renderResults();
       setTimeout(()=>input.focus(), 30);
@@ -1691,6 +1715,7 @@ function renderDashboard(){
         <div class="avatar">${initials(clientName(c.clientId))}</div>
         <div class="g"><div class="cell-title" style="font-size:13.5px">${escapeHtml(clientName(c.clientId))}</div><div class="cell-sub">${escapeHtml(equipmentNamesSummary(c.equipmentIds))}</div></div>
         <span class="dev-when ${w.k}">${w.t}</span>
+        <button class="btn btn-secondary btn-sm row-act" data-action="return-contract" data-id="${c.id}" title="Registrar devolução">Devolver</button>
       </div>`; }).join("")}</div>` : `<div class="empty" style="padding:30px 10px"><div class="hint">Nenhuma devolução prevista para os próximos dias.</div></div>`;
 
   const months = []; { const n = new Date(); for(let i=5;i>=0;i--){ const d = new Date(n.getFullYear(), n.getMonth()-i, 1); months.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")); } }
@@ -1790,15 +1815,16 @@ function renderDashboard(){
 function renderClientsOpenInvoicesTable(){
   const byClient = {};
   STATE.payments.filter(p=>paymentComputedStatus(p)!=="pago").forEach(p=>{
-    byClient[p.clientId] = byClient[p.clientId] || {sum:0,count:0,overdue:false};
+    byClient[p.clientId] = byClient[p.clientId] || {sum:0,count:0,overdue:false,first:null};
+    if(!byClient[p.clientId].first || String(p.dueDate||"")<String(byClient[p.clientId].first.dueDate||"")) byClient[p.clientId].first = p;
     byClient[p.clientId].sum += Number(p.amount||0);
     byClient[p.clientId].count += 1;
     if(paymentComputedStatus(p)==="atrasado") byClient[p.clientId].overdue = true;
   });
   const rows = Object.entries(byClient).sort((a,b)=>b[1].sum-a[1].sum);
   if(!rows.length) return `<div class="empty"><div class="empty-title">Nenhuma fatura em aberto</div><div class="hint">Todos os clientes estão em dia.</div></div>`;
-  return `<div class="table-wrap" style="border:none;border-radius:0"><table><thead><tr><th>Cliente</th><th>Faturas</th><th class="num">Valor em aberto</th><th>Situação</th></tr></thead><tbody>
-    ${rows.map(([cid,v])=>`<tr class="row-click" data-action="view-client" data-id="${cid}" title="Ver cliente"><td><div class="name-cell"><div class="avatar">${initials(clientName(cid))}</div>${escapeHtml(clientName(cid))}</div></td><td>${v.count}</td><td class="num tabular">${fmtMoney(v.sum)}</td><td>${v.overdue?'<span class="badge st-critical"><span class="dot"></span>Atrasado</span>':'<span class="badge st-warning"><span class="dot"></span>Pendente</span>'}</td></tr>`).join("")}
+  return `<div class="table-wrap" style="border:none;border-radius:0"><table><thead><tr><th>Cliente</th><th>Faturas</th><th class="num">Valor em aberto</th><th>Situação</th><th></th></tr></thead><tbody>
+    ${rows.map(([cid,v])=>`<tr class="row-click" data-action="view-client" data-id="${cid}" title="Ver cliente"><td><div class="name-cell"><div class="avatar">${initials(clientName(cid))}</div>${escapeHtml(clientName(cid))}</div></td><td>${v.count}</td><td class="num tabular">${fmtMoney(v.sum)}</td><td>${v.overdue?'<span class="badge st-critical"><span class="dot"></span>Atrasado</span>':'<span class="badge st-warning"><span class="dot"></span>Pendente</span>'}</td><td class="num"><button class="btn btn-secondary btn-sm row-act" data-action="pay-payment" data-id="${v.first?v.first.id:""}" title="Receber a fatura mais antiga (${v.first?fmtMoney(v.first.amount):""})">Receber</button></td></tr>`).join("")}
   </tbody></table></div>`;
 }
 
@@ -4780,6 +4806,7 @@ async function boot(user){
   $("#alerts-btn").addEventListener("click", alertsModal);
   document.addEventListener("keydown", (e)=>{
     if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==="k"){ e.preventDefault(); globalSearchModal(); }
+    else if(e.key==="/" && !e.ctrlKey && !e.metaKey && !e.altKey && !/^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName||"")) && !e.target.isContentEditable && !$("#modal-backdrop")){ e.preventDefault(); globalSearchModal(); }
   });
 
   document.addEventListener("click", (e)=>{
