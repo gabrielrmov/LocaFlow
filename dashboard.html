@@ -316,6 +316,10 @@ button{font-family:inherit}
 .stack{display:flex; flex-direction:column; gap:16px}
 
 /* ---------- quick actions & onboarding ---------- */
+.kpi-click,.row-click{cursor:pointer}
+.kpi-click:hover{background:var(--surface-hover); box-shadow:0 0 0 1px var(--border-strong) inset}
+.kpi-click:focus-visible,.row-click:focus-visible{outline:2px solid var(--accent); outline-offset:-2px}
+tr.row-click:hover td,.dev-row.row-click:hover{background:var(--surface-hover)}
 .quick-actions{display:grid; grid-template-columns:1fr; gap:8px}
 .quick-action{display:flex; align-items:center; gap:10px; padding:12px; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--surface); cursor:pointer; text-align:left; font-family:inherit; transition:background .12s ease, border-color .12s ease, transform .12s ease}
 .quick-action:hover{background:var(--surface-hover); border-color:var(--border-strong); transform:translateY(-1px)}
@@ -1683,7 +1687,7 @@ function renderDashboard(){
 
   const when = c => { const d = daysBetween(today, c.endDate); return d<0 ? {t:`${-d} ${-d===1?"dia":"dias"} de atraso`, k:"critical"} : d===0 ? {t:"Hoje", k:"warning"} : d===1 ? {t:"Amanhã", k:"ok"} : {t:`Em ${d} dias`, k:"ok"}; };
   const devRows = [...overdue, ...dueToday, ...upcoming];
-  const devList = devRows.length ? `<div class="dev-list">${devRows.slice(0,6).map(c=>{ const w=when(c); return `<div class="dev-row">
+  const devList = devRows.length ? `<div class="dev-list">${devRows.slice(0,6).map(c=>{ const w=when(c); return `<div class="dev-row row-click" role="button" tabindex="0" data-action="edit-contract" data-id="${c.id}" title="Abrir contrato">
         <div class="avatar">${initials(clientName(c.clientId))}</div>
         <div class="g"><div class="cell-title" style="font-size:13.5px">${escapeHtml(clientName(c.clientId))}</div><div class="cell-sub">${escapeHtml(equipmentNamesSummary(c.equipmentIds))}</div></div>
         <span class="dev-when ${w.k}">${w.t}</span>
@@ -1716,12 +1720,12 @@ function renderDashboard(){
       </div>`).join("")}
     </div>` : ""}
     <div class="kpi-grid">
-      <div class="kpi"><div class="kpi-top"><span class="kpi-label">Contratos ativos</span><span class="kpi-icon accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/></svg></span></div><div class="kpi-value tabular">${inProgress.length}</div><div class="kpi-sub">${scheduled.length} agendados</div></div>
-      <div class="kpi"><div class="kpi-top"><span class="kpi-label">Vencendo hoje</span><span class="kpi-icon ${dueToday.length?'warning':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg></span></div><div class="kpi-value tabular" style="color:${dueToday.length?'var(--warning)':'var(--ink)'}">${dueToday.length}</div><div class="kpi-sub">devoluções previstas</div></div>
-      <div class="kpi"><div class="kpi-top"><span class="kpi-label">Contratos atrasados</span><span class="kpi-icon ${overdue.length?'critical':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></span></div><div class="kpi-value tabular" style="color:${overdue.length?'var(--critical)':'var(--ink)'}">${overdue.length}</div><div class="kpi-sub">sem devolução</div></div>
-      <div class="kpi"><div class="kpi-top"><span class="kpi-label">Manutenções pendentes</span><span class="kpi-icon ${pendingMaint.length?'warning':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4a4 4 0 0 0-4.9 3.9c0 .5.1 1 .3 1.4L3 12.7V16h3.3l3.4-3.4c.4.2.9.3 1.4.3A4 4 0 0 0 15 8.9L11 4Z"/><circle cx="17.5" cy="17.5" r="3.5"/></svg></span></div><div class="kpi-value tabular">${pendingMaint.length}</div><div class="kpi-sub">${STATE.maintenance.filter(m=>maintenanceComputedStatus(m)==="atrasada").length} atrasadas</div></div>
-      <div class="kpi"><div class="kpi-top"><span class="kpi-label">A vencer</span><span class="kpi-icon ${openInvoicesSum?'warning':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2.5" y="6" width="19" height="13" rx="2"/><path d="M2.5 10h19"/></svg></span></div><div class="kpi-value tabular" style="color:${openInvoicesSum?'var(--warning)':'var(--ink)'}">${fmtMoney(openInvoicesSum)}</div><div class="kpi-sub">${openInvoices.length===0?"nenhuma fatura a vencer":`${openInvoices.length} ${openInvoices.length===1?"fatura":"faturas"} a vencer`}</div></div>
-      <div class="kpi"><div class="kpi-top"><span class="kpi-label">Inadimplência</span><span class="kpi-icon ${inadimplencia>0?'critical':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></span></div><div class="kpi-value tabular" style="color:${inadimplencia>0?'var(--critical)':'var(--ink)'}">${inadimplencia.toFixed(1)}%</div><div class="kpi-sub">do faturado total</div></div>
+      <div class="kpi kpi-click" role="button" tabindex="0" data-go="contratos:ativo" title="Ver detalhes"><div class="kpi-top"><span class="kpi-label">Contratos ativos</span><span class="kpi-icon accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/></svg></span></div><div class="kpi-value tabular">${inProgress.length}</div><div class="kpi-sub">${scheduled.length} agendados</div></div>
+      <div class="kpi kpi-click" role="button" tabindex="0" data-go="contratos:vencendo_hoje" title="Ver detalhes"><div class="kpi-top"><span class="kpi-label">Vencendo hoje</span><span class="kpi-icon ${dueToday.length?'warning':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg></span></div><div class="kpi-value tabular" style="color:${dueToday.length?'var(--warning)':'var(--ink)'}">${dueToday.length}</div><div class="kpi-sub">devoluções previstas</div></div>
+      <div class="kpi kpi-click" role="button" tabindex="0" data-go="contratos:atrasado" title="Ver detalhes"><div class="kpi-top"><span class="kpi-label">Contratos atrasados</span><span class="kpi-icon ${overdue.length?'critical':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></span></div><div class="kpi-value tabular" style="color:${overdue.length?'var(--critical)':'var(--ink)'}">${overdue.length}</div><div class="kpi-sub">sem devolução</div></div>
+      <div class="kpi kpi-click" role="button" tabindex="0" data-go="manutencao:todos" title="Ver detalhes"><div class="kpi-top"><span class="kpi-label">Manutenções pendentes</span><span class="kpi-icon ${pendingMaint.length?'warning':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4a4 4 0 0 0-4.9 3.9c0 .5.1 1 .3 1.4L3 12.7V16h3.3l3.4-3.4c.4.2.9.3 1.4.3A4 4 0 0 0 15 8.9L11 4Z"/><circle cx="17.5" cy="17.5" r="3.5"/></svg></span></div><div class="kpi-value tabular">${pendingMaint.length}</div><div class="kpi-sub">${STATE.maintenance.filter(m=>maintenanceComputedStatus(m)==="atrasada").length} atrasadas</div></div>
+      <div class="kpi kpi-click" role="button" tabindex="0" data-go="financeiro:pendente" title="Ver detalhes"><div class="kpi-top"><span class="kpi-label">A vencer</span><span class="kpi-icon ${openInvoicesSum?'warning':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2.5" y="6" width="19" height="13" rx="2"/><path d="M2.5 10h19"/></svg></span></div><div class="kpi-value tabular" style="color:${openInvoicesSum?'var(--warning)':'var(--ink)'}">${fmtMoney(openInvoicesSum)}</div><div class="kpi-sub">${openInvoices.length===0?"nenhuma fatura a vencer":`${openInvoices.length} ${openInvoices.length===1?"fatura":"faturas"} a vencer`}</div></div>
+      <div class="kpi kpi-click" role="button" tabindex="0" data-go="financeiro:atrasado" title="Ver detalhes"><div class="kpi-top"><span class="kpi-label">Inadimplência</span><span class="kpi-icon ${inadimplencia>0?'critical':'neutral'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></span></div><div class="kpi-value tabular" style="color:${inadimplencia>0?'var(--critical)':'var(--ink)'}">${inadimplencia.toFixed(1)}%</div><div class="kpi-sub">do faturado total</div></div>
     </div>
 
     <div class="dash-grid">
@@ -1754,7 +1758,7 @@ function renderDashboard(){
           <p class="hint" style="margin-top:2px">recebido em ${new Date().toLocaleDateString("pt-BR",{month:"long",year:"numeric"})}</p>
           ${bars}
         </div>
-        <div class="chart-card">
+        <div class="chart-card kpi-click" role="button" tabindex="0" data-go="disponiveis" title="Ver equipamentos disponíveis">
           <div class="chart-card-head"><h3 class="section-title" style="font-size:14px">Disponibilidade de equipamentos</h3></div>
           <div style="display:flex;align-items:center;gap:16px">
             ${utilizationRing(utilPct,92)}
@@ -1768,6 +1772,15 @@ function renderDashboard(){
     </div>
   `;
   if($("#dash-see-alerts")) $("#dash-see-alerts").addEventListener("click", alertsModal);
+  $all("#view [data-go]").forEach(el=>{
+    const go = ()=>{ const [r,st] = el.dataset.go.split(":");
+      if(r==="contratos"){ FILTERS.contratos.status = st; FILTERS.contratos.q=""; }
+      else if(r==="manutencao"){ FILTERS.manutencao.status = st; }
+      else if(r==="financeiro"){ FILTERS.financeiro.tab="faturas"; FILTERS.financeiro.payStatus = st; }
+      navigate(r); };
+    el.addEventListener("click", go);
+    el.addEventListener("keydown", (e)=>{ if(e.key==="Enter" || e.key===" "){ e.preventDefault(); go(); } });
+  });
   $all(".alert-click").forEach(el=>{
     const go = ()=>{ const a = dashAlerts[Number(el.dataset.ai)]; if(a) a.open(); };
     el.addEventListener("click", go);
@@ -1785,7 +1798,7 @@ function renderClientsOpenInvoicesTable(){
   const rows = Object.entries(byClient).sort((a,b)=>b[1].sum-a[1].sum);
   if(!rows.length) return `<div class="empty"><div class="empty-title">Nenhuma fatura em aberto</div><div class="hint">Todos os clientes estão em dia.</div></div>`;
   return `<div class="table-wrap" style="border:none;border-radius:0"><table><thead><tr><th>Cliente</th><th>Faturas</th><th class="num">Valor em aberto</th><th>Situação</th></tr></thead><tbody>
-    ${rows.map(([cid,v])=>`<tr><td><div class="name-cell"><div class="avatar">${initials(clientName(cid))}</div>${escapeHtml(clientName(cid))}</div></td><td>${v.count}</td><td class="num tabular">${fmtMoney(v.sum)}</td><td>${v.overdue?'<span class="badge st-critical"><span class="dot"></span>Atrasado</span>':'<span class="badge st-warning"><span class="dot"></span>Pendente</span>'}</td></tr>`).join("")}
+    ${rows.map(([cid,v])=>`<tr class="row-click" data-action="view-client" data-id="${cid}" title="Ver cliente"><td><div class="name-cell"><div class="avatar">${initials(clientName(cid))}</div>${escapeHtml(clientName(cid))}</div></td><td>${v.count}</td><td class="num tabular">${fmtMoney(v.sum)}</td><td>${v.overdue?'<span class="badge st-critical"><span class="dot"></span>Atrasado</span>':'<span class="badge st-warning"><span class="dot"></span>Pendente</span>'}</td></tr>`).join("")}
   </tbody></table></div>`;
 }
 
