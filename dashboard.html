@@ -1012,7 +1012,6 @@ body:has(.modal-backdrop){overflow:hidden}
         <button class="nav-item" data-nav="contratos"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/><path d="M9 13h6M9 17h6M9 9h1"/></svg>Contratos<span class="count" id="nav-count-contratos">0</span></button>
         <button class="nav-item" data-nav="orcamentos"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Orçamentos<span class="count" id="nav-count-orcamentos">0</span></button>
         <button class="nav-item" data-nav="agenda"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg>Agenda</button>
-        <button class="nav-item" data-nav="reajuste"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Reajuste</button>
         <button class="nav-item" data-nav="avisos"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>Avisos<span class="count" id="avisos-badge" hidden></span></button>
         <button class="nav-item" data-nav="manutencao"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4a4 4 0 0 0-4.9 3.9c0 .5.1 1 .3 1.4L3 12.7V16h3.3l3.4-3.4c.4.2.9.3 1.4.3A4 4 0 0 0 15 8.9L11 4Z"/><circle cx="17.5" cy="17.5" r="3.5"/></svg>Manutenção<span class="count" id="nav-count-manutencao">0</span></button>
       </div>
@@ -1560,7 +1559,7 @@ function chartLegend(items){
 }
 
 /* ---------------- router ---------------- */
-const NAV_TITLES = { dashboard:"Dashboard", reajuste:"Reajuste de contratos PJ", historico:"Histórico", equipamentos:"Equipamentos", disponiveis:"Disponíveis", localizar:"Localizar equipamentos", contratos:"Contratos", orcamentos:"Orçamentos", agenda:"Agenda", avisos:"Avisos de hoje", manutencao:"Manutenção", financeiro:"Financeiro", receitas:"Receitas", contaspr:"Contas a pagar e receber", clientes:"Clientes", relatorios:"Relatórios", integracoes:"Integrações", juridico:"Jurídico", config:"Configurações", admin:"Clientes Locarion" };
+const NAV_TITLES = { dashboard:"Dashboard", historico:"Histórico", equipamentos:"Equipamentos", disponiveis:"Disponíveis", localizar:"Localizar equipamentos", contratos:"Contratos", orcamentos:"Orçamentos", agenda:"Agenda", avisos:"Avisos de hoje", manutencao:"Manutenção", financeiro:"Financeiro", receitas:"Receitas", contaspr:"Contas a pagar e receber", clientes:"Clientes", relatorios:"Relatórios", integracoes:"Integrações", juridico:"Jurídico", config:"Configurações", admin:"Clientes Locarion" };
 let IS_ADMIN = false;
 let ADMIN_USERS = [];
 let ADMIN_LOADED = false;
@@ -1578,7 +1577,7 @@ function renderRoute(){
   $("#tab-more").classList.toggle("active", !tabRoutes.includes(route));
   $("#page-title").textContent = NAV_TITLES[route];
   closeSidebarMobile();
-  const renderers = { dashboard:renderDashboard, reajuste:renderReajuste, historico:renderHistorico, equipamentos:renderEquipamentos, disponiveis:renderDisponiveis, localizar:renderLocalizar, contratos:renderContratos, orcamentos:renderOrcamentos, agenda:renderAgenda, avisos:renderAvisos, manutencao:renderManutencao, financeiro:renderFinanceiro, receitas:renderReceitas, contaspr:renderContasPR, clientes:renderClientes, relatorios:renderRelatorios, integracoes:renderIntegracoes, juridico:renderJuridico, config:renderConfig, admin:renderAdmin };
+  const renderers = { dashboard:renderDashboard, historico:renderHistorico, equipamentos:renderEquipamentos, disponiveis:renderDisponiveis, localizar:renderLocalizar, contratos:renderContratos, orcamentos:renderOrcamentos, agenda:renderAgenda, avisos:renderAvisos, manutencao:renderManutencao, financeiro:renderFinanceiro, receitas:renderReceitas, contaspr:renderContasPR, clientes:renderClientes, relatorios:renderRelatorios, integracoes:renderIntegracoes, juridico:renderJuridico, config:renderConfig, admin:renderAdmin };
   (renderers[route]||renderDashboard)();
   updateNavCounts();
 }
@@ -3507,111 +3506,6 @@ function exportFinanceCSV(){
   }catch(err){
     toast("Não foi possível exportar agora.","err");
   }
-}
-
-/* ======================= REAJUSTE (contratos PJ) ======================= */
-const REAJ = { idx:"ipca", pct:"", pf:false, q:"", sel:null, rates:{} };
-const REAJ_SERIES = { ipca:{ label:"IPCA", code:433 }, igpm:{ label:"IGP-M", code:189 } };
-/* Acumulado dos últimos 12 meses (composto) pelo Banco Central (SGS). Se falhar, o % continua editável. */
-async function fetchAccumulated12(code){
-  const r = await fetch(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.${code}/dados/ultimos/12?formato=json`);
-  if(!r.ok) throw new Error("HTTP "+r.status);
-  const arr = await r.json();
-  if(!Array.isArray(arr) || arr.length<12) throw new Error("série incompleta");
-  const acc = arr.reduce((a,m)=> a*(1+Number(String(m.valor).replace(",","."))/100), 1);
-  return { pct: Math.round((acc-1)*10000)/100, until: arr[arr.length-1].data };
-}
-function reajusteBase(){
-  const open = ["ativo","vencendo_hoje","atrasado","agendado"];
-  return STATE.contracts.filter(c=> open.includes(contractComputedStatus(c)) && Number(c.value)>0).filter(c=>{
-    const cl = byId(STATE.clients, c.clientId);
-    return REAJ.pf || cl?.type==="PJ";
-  });
-}
-function reajNewValue(v, pct){ return Math.round(Number(v)*(1+pct/100)*100)/100; }
-function renderReajuste(){
-  setTopbarActions("");
-  const view = $("#view");
-  if(!allLoaded()){ view.innerHTML = loadingView(); return; }
-  view.innerHTML = `
-    <div class="card card-pad" style="margin-bottom:14px">
-      <h3 class="section-title" style="margin-bottom:10px">Calculadora de reajuste</h3>
-      <div class="field-row" style="align-items:flex-end;gap:12px;flex-wrap:wrap">
-        <div class="field" style="flex:0 0 auto"><label>Índice</label>
-          <div class="pill-tabs" id="rj-idx" style="margin:0">
-            <button data-idx="ipca" class="${REAJ.idx==='ipca'?'active':''}">IPCA 12m</button>
-            <button data-idx="igpm" class="${REAJ.idx==='igpm'?'active':''}">IGP-M 12m</button>
-            <button data-idx="manual" class="${REAJ.idx==='manual'?'active':''}">Manual</button>
-          </div></div>
-        <div class="field" style="flex:0 0 140px"><label>Reajuste (%)</label><input class="input" id="rj-pct" type="number" step="0.01" value="${escapeHtml(String(REAJ.pct))}" placeholder="Ex: 4.5"></div>
-        <div class="field" style="flex:1 1 200px"><label>Buscar contrato/cliente</label><input class="input" id="rj-q" value="${escapeHtml(REAJ.q)}" placeholder="Nome ou nº do contrato"></div>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;padding-bottom:10px"><input type="checkbox" id="rj-pf" ${REAJ.pf?"checked":""}> Incluir clientes PF</label>
-      </div>
-      <p class="hint" id="rj-status" style="margin-top:4px"></p>
-    </div>
-    <div id="rj-table"></div>`;
-  $all("#rj-idx button").forEach(b=> b.addEventListener("click", ()=>{
-    REAJ.idx = b.dataset.idx; $all("#rj-idx button").forEach(x=>x.classList.toggle("active",x===b)); loadIndex();
-  }));
-  $("#rj-pct").addEventListener("input", e=>{ REAJ.pct = e.target.value; if(REAJ.idx!=="manual"){ REAJ.idx="manual"; $all("#rj-idx button").forEach(x=>x.classList.toggle("active",x.dataset.idx==="manual")); $("#rj-status").textContent=""; } renderReajusteTable(); });
-  $("#rj-q").addEventListener("input", debounce(e=>{ REAJ.q = e.target.value; renderReajusteTable(); },150));
-  $("#rj-pf").addEventListener("change", e=>{ REAJ.pf = e.target.checked; REAJ.sel = null; renderReajusteTable(); });
-  renderReajusteTable();
-  if(REAJ.idx!=="manual" && REAJ.pct==="") loadIndex();
-}
-async function loadIndex(){
-  const st = $("#rj-status"); if(!st || REAJ.idx==="manual"){ if(st) st.textContent=""; return; }
-  const ser = REAJ_SERIES[REAJ.idx]; st.textContent = `Buscando ${ser.label} acumulado 12 meses no Banco Central…`;
-  try{
-    if(!REAJ.rates[REAJ.idx]) REAJ.rates[REAJ.idx] = await fetchAccumulated12(ser.code);
-    const r = REAJ.rates[REAJ.idx];
-    if(!$("#rj-pct") || REAJ.idx==="manual") return;
-    REAJ.pct = r.pct; $("#rj-pct").value = r.pct;
-    st.textContent = `${ser.label} acumulado em 12 meses até ${r.until}: ${String(r.pct).replace(".",",")}% (fonte: Banco Central). Você pode editar o percentual.`;
-    renderReajusteTable();
-  }catch(e){
-    st.textContent = `Não consegui buscar o ${ser.label} agora. Digite o percentual manualmente.`;
-    REAJ.idx = "manual"; $all("#rj-idx button").forEach(x=>x.classList.toggle("active",x.dataset.idx==="manual"));
-  }
-}
-function renderReajusteTable(){
-  const wrap = $("#rj-table"); if(!wrap) return;
-  const pct = Number(String(REAJ.pct).replace(",","."));
-  const q = REAJ.q.trim().toLowerCase();
-  const base = reajusteBase();
-  const list = base.filter(c=> !q || ((c.code||"")+" "+clientName(c.clientId)).toLowerCase().includes(q)).sort((a,b)=>clientName(a.clientId).localeCompare(clientName(b.clientId)));
-  if(!REAJ.sel) REAJ.sel = new Set(base.map(c=>c.id));
-  if(!list.length){ wrap.innerHTML = emptyState("Nenhum contrato encontrado", REAJ.pf?"Não há contratos em andamento com valor.":"Não há contratos em andamento de clientes PJ. Marque \"Incluir clientes PF\" para ver todos."); return; }
-  const valid = isFinite(pct) && String(REAJ.pct)!=="";
-  const chosen = list.filter(c=>REAJ.sel.has(c.id));
-  const sumOld = chosen.reduce((s,c)=>s+Number(c.value),0), sumNew = chosen.reduce((s,c)=>s+(valid?reajNewValue(c.value,pct):Number(c.value)),0);
-  wrap.innerHTML = `<div class="table-wrap"><table><thead><tr><th style="width:34px"><input type="checkbox" id="rj-all" ${chosen.length===list.length?"checked":""}></th><th>Contrato</th><th>Cliente</th><th>Último reajuste</th><th class="num">Valor atual</th><th class="num">Novo valor</th><th class="num">Diferença</th></tr></thead><tbody>
-    ${list.map(c=>{ const nv = valid?reajNewValue(c.value,pct):null; const last=(c.readjustLog||[]).slice(-1)[0];
-      return `<tr><td><input type="checkbox" class="rj-chk" data-id="${c.id}" ${REAJ.sel.has(c.id)?"checked":""}></td><td><div class="cell-title">${escapeHtml(c.code||"")}</div><div class="cell-sub">até ${fmtDate(c.endDate)}</div></td><td>${escapeHtml(clientName(c.clientId))}</td><td class="cell-sub">${last?`${fmtDate(last.date)} (${String(last.pct).replace(".",",")}%)`:"—"}</td><td class="num tabular">${fmtMoney(c.value)}</td><td class="num tabular"><b>${nv===null?"—":fmtMoney(nv)}</b></td><td class="num tabular" style="color:var(--good)">${nv===null?"—":"+ "+fmtMoney(nv-Number(c.value))}</td></tr>`; }).join("")}
-    <tr style="font-weight:700"><td></td><td colspan="3">Total (${chosen.length} selecionados)</td><td class="num tabular">${fmtMoney(sumOld)}</td><td class="num tabular">${fmtMoney(sumNew)}</td><td class="num tabular" style="color:var(--good)">+ ${fmtMoney(sumNew-sumOld)}</td></tr>
-  </tbody></table></div>
-  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap">
-    <button class="btn btn-secondary" id="rj-copy" ${valid&&chosen.length?"":"disabled"}>Copiar resumo</button>
-    <button class="btn btn-primary" id="rj-apply" ${valid&&chosen.length&&pct!==0?"":"disabled"}>Aplicar reajuste aos selecionados</button>
-  </div>
-  <p class="hint" style="margin-top:8px">Aplicar altera o valor do contrato e guarda o reajuste no histórico dele. Faturas já emitidas não mudam.</p>`;
-  $("#rj-all").addEventListener("change", e=>{ list.forEach(c=> e.target.checked ? REAJ.sel.add(c.id) : REAJ.sel.delete(c.id)); renderReajusteTable(); });
-  $all(".rj-chk").forEach(i=> i.addEventListener("change", ()=>{ i.checked ? REAJ.sel.add(i.dataset.id) : REAJ.sel.delete(i.dataset.id); renderReajusteTable(); }));
-  $("#rj-copy").addEventListener("click", async ()=>{
-    const txt = `Reajuste de ${String(pct).replace(".",",")}%\n` + chosen.map(c=>`${c.code} · ${clientName(c.clientId)}: ${fmtMoney(c.value)} → ${fmtMoney(reajNewValue(c.value,pct))}`).join("\n");
-    try{ await navigator.clipboard.writeText(txt); toast("Resumo copiado.","ok"); }catch(e){ toast("Não foi possível copiar.","err"); }
-  });
-  $("#rj-apply").addEventListener("click", ()=>{
-    confirmDialog(`Aplicar ${String(pct).replace(".",",")}% em ${chosen.length} contrato(s)? O valor de cada contrato será alterado.`, async ()=>{
-      const date = todayISO(); let n = 0;
-      for(const c of chosen){
-        const to = reajNewValue(c.value,pct);
-        await saveDoc("contracts", c.id, { value:to, readjustLog:(c.readjustLog||[]).concat([{ date, pct, index:REAJ.idx, from:Number(c.value), to }]).slice(-20) });
-        n++;
-      }
-      toast(`${n} contrato(s) reajustado(s).`,"ok");
-    });
-  });
 }
 
 /* ======================= CLIENTES ======================= */
