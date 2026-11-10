@@ -3782,9 +3782,18 @@ const ADMIN_STATUS_META = {
   canceled:{label:"Cancelada",cls:"st-critical"},
 };
 async function fetchAdminUsers(){
-  const fn = firebase.app().functions("southamerica-east1").httpsCallable("adminListUsers");
-  const { data } = await fn();
-  ADMIN_USERS = data.users || [];
+  try{
+    const fn = firebase.app().functions("southamerica-east1").httpsCallable("adminListUsers");
+    const { data } = await fn();
+    ADMIN_USERS = data.users || [];
+  }catch(err){
+    /* Reserva: com as Functions fora do ar, a conta admin lê a lista direto do Firestore (regras permitem só admin). */
+    console.warn("adminListUsers indisponível, lendo do Firestore", err);
+    const snap = await firebase.firestore().collection("users").get();
+    ADMIN_USERS = snap.docs.map(doc=>{ const d = doc.data();
+      return { id:doc.id, email:d.email||null, name:d.name||null, plan:d.plan||null, subscriptionStatus:d.subscriptionStatus||null,
+        trialEndsAt: d.trialEndsAt && d.trialEndsAt.toMillis ? d.trialEndsAt.toMillis() : null, isAdmin:d.isAdmin===true }; });
+  }
   ADMIN_LOADED = true;
 }
 function renderAdmin(){
@@ -3825,8 +3834,14 @@ async function adminSaveUser(targetUid, btn){
   const subscriptionStatus = tr.querySelector(".admin-status-select").value;
   btn.disabled = true; const original = btn.textContent; btn.textContent = "Salvando...";
   try{
-    const fn = firebase.app().functions("southamerica-east1").httpsCallable("adminSetUserAccess");
-    await fn({ targetUid, plan, subscriptionStatus });
+    try{
+      const fn = firebase.app().functions("southamerica-east1").httpsCallable("adminSetUserAccess");
+      await fn({ targetUid, plan, subscriptionStatus });
+    }catch(fnErr){
+      if(subscriptionStatus==="trialing") throw fnErr; /* teste precisa da data de fim, só as Functions gravam */
+      console.warn("adminSetUserAccess indisponível, gravando no Firestore", fnErr);
+      await firebase.firestore().collection("users").doc(targetUid).update({ plan, subscriptionStatus, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    }
     toast("Cliente atualizado.","ok");
     ADMIN_LOADED = false;
     renderAdmin();

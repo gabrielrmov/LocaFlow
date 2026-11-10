@@ -28,13 +28,25 @@ service cloud.firestore {
 
     // O usuário lê o próprio perfil e só edita os campos de identificação.
     // Sem listagem, sem exclusão.
+    // Conta admin (campo isAdmin, que só as Functions/console gravam). Pode listar os
+    // usuários e mudar apenas plano e status de assinatura: serve de reserva para o
+    // painel "Clientes Locarion" quando as Cloud Functions estão fora do ar.
+    function isAdminUser() {
+      return request.auth != null
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isAdmin', false) == true;
+    }
+
     match /users/{uid} {
-      allow get: if isOwner(uid);
-      allow list: if false;
+      allow get: if isOwner(uid) || isAdminUser();
+      allow list: if isAdminUser();
       allow create: if isOwner(uid)
         && request.resource.data.keys().hasOnly(profileKeys());
-      allow update: if isOwner(uid)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(profileKeys());
+      allow update: if (isOwner(uid)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(profileKeys()))
+        || (isAdminUser()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['plan', 'subscriptionStatus', 'updatedAt'])
+          && request.resource.data.get('subscriptionStatus', '') in ['active', 'inactive', 'canceled']
+          && request.resource.data.get('plan', 'locarion') in ['locarion', 'profissional', 'enterprise']);
       allow delete: if false;
     }
 
