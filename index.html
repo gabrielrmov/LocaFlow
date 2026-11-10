@@ -1410,6 +1410,10 @@ document.getElementById("year").textContent = new Date().getFullYear();
 const functionsRegion = firebase.app().functions("southamerica-east1");
 let selectedPlan = null;
 let selectedCycle = "monthly";
+/* Link de pagamento fixo do Asaas por ciclo (Asaas > Cobranças > Link de pagamento).
+   Enquanto estiver preenchido, o botão leva direto ao link, sem passar pelas Cloud Functions;
+   a liberação do acesso é feita pelo painel de admin. Deixe "" para voltar ao checkout automático. */
+const PAYMENT_LINKS = { monthly: "", yearly: "" };
 const CYCLES = {
   monthly:{num:"R$ 127", per:"/mês", eq:"Sem fidelidade: cancele quando quiser.", label:"R$ 127/mês"},
   yearly:{num:"R$ 1.397", per:"/ano", eq:"Equivale a R$ 116,42 por mês. Você economiza R$ 127: é um mês grátis.", label:"R$ 1.397/ano"},
@@ -1442,6 +1446,8 @@ document.getElementById("checkout-confirm").addEventListener("click", async () =
   const btn = document.getElementById("checkout-confirm");
   btn.disabled = true;
   btn.textContent = "Gerando pagamento...";
+  const fixedLink = PAYMENT_LINKS[selectedCycle];
+  if(fixedLink && /^https:\/\//.test(fixedLink)){ window.location.href = fixedLink; return; }
   try{
     const createAsaasCheckout = functionsRegion.httpsCallable("createAsaasCheckout");
     const { data } = await createAsaasCheckout({ plan: selectedPlan, cycle: selectedCycle });
