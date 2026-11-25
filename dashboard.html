@@ -1700,8 +1700,6 @@ function renderDashboard(){
   const dashAlerts = computeAlerts();
   const hr = new Date().getHours();
   const hello = hr<12 ? "Bom dia" : hr<18 ? "Boa tarde" : "Boa noite";
-  const first = ($("#user-name").textContent||"").trim().split(/\s+/)[0];
-  const firstName = first && first!=="—" && !first.includes("@") ? first : "";
   const todayLong = new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});
   const bits = [];
   if(overdue.length) bits.push(`<b>${overdue.length}</b> ${overdue.length===1?"contrato atrasado":"contratos atrasados"}`);
@@ -1730,7 +1728,7 @@ function renderDashboard(){
     <div class="dash-hello">
       <div>
         <div class="eyebrow">${todayLong}</div>
-        <h2>${hello}${firstName?", "+escapeHtml(firstName):""}</h2>
+        <h2>${hello}, Locadora</h2>
         <p>${summary}</p>
       </div>
     </div>
