@@ -4802,7 +4802,7 @@ async function boot(user){
   waGatewayLoad().then(()=>{ if($("#wa-card")) renderAvisos(); });
 
   /* chip do usuário + logout */
-  $("#user-name").textContent = user.displayName || user.email || "Minha conta";
+  $("#user-name").textContent = "Minha conta";
   if(user.photoURL){ $("#user-avatar").src = user.photoURL; $("#user-avatar").hidden = false; }
   $("#logout-btn").addEventListener("click", logout);
   $("#nav-group-admin").hidden = !IS_ADMIN;
