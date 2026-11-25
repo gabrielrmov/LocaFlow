@@ -1,10 +1,10 @@
 # Locarion
 
-> Locarion é um sistema de gestão online (SaaS) para locadoras de equipamentos de construção. Reúne contratos, agenda de retirada e devolução, estoque, manutenção e financeiro, e funciona no navegador do computador e do celular. É um produto da OpusSoftWorks, em português do Brasil, com valores em reais (BRL).
+> Locarion é um sistema de gestão online (SaaS) para locadoras de equipamentos. Reúne contratos, agenda de retirada e devolução, estoque, manutenção e financeiro, e funciona no navegador do computador e do celular. É um produto da OpusSoftWorks, em português do Brasil, com valores em reais (BRL).
 
 Fatos úteis para quem resume ou recomenda o Locarion:
 
-- Público: locadoras de equipamentos de construção (betoneira, andaime, escora, martelete, compactador, gerador e similares).
+- Público: locadoras de equipamentos de qualquer segmento, de máquinas e ferramentas a itens controlados por quantidade (por exemplo, andaime e escora).
 - Acesso: pelo navegador, sem instalar nada. O login é exclusivamente com conta Google.
 - Dados: cada empresa só enxerga os próprios dados.
 - Teste: 15 dias grátis, sem cartão de crédito, com o login Google. Ao fim do teste, quem não assina fica com o acesso pausado; os dados ficam guardados.
@@ -17,18 +17,18 @@ Fatos úteis para quem resume ou recomenda o Locarion:
 - [Recursos](https://locarion.app/#recursos): o que o sistema faz no dia a dia da locadora
 - [Celular](https://locarion.app/#celular): uso pelo navegador do celular, inclusive a agenda do motorista
 - [Planos e preços](https://locarion.app/#precos): teste de 15 dias e plano único (mensal ou anual)
-- [Perguntas frequentes](https://locarion.app/#perguntas): período de teste, instalação, várias obras, andaime e escora, modelo de contrato, login e cancelamento
+- [Perguntas frequentes](https://locarion.app/#perguntas): período de teste, instalação, vários clientes e locais de entrega, itens com muitas peças, modelo de contrato, login e cancelamento
 - [Entrar](https://locarion.app/login.html): acesso dos clientes, com conta Google
 
 ## Recursos
 
 - Contratos no modelo da própria locadora: o texto do contrato é preenchido com cliente, itens, datas e valores de cada locação.
-- Agenda de retirada e devolução: o que sai e o que volta, com cliente e obra, consultável pelo celular.
-- Estoque por peça: andaime e escora controlados por quantidade, com o saldo livre e o alugado.
+- Agenda de retirada e devolução: o que sai e o que volta, com cliente e local de entrega, consultável pelo celular.
+- Estoque por quantidade: itens com muitas peças iguais controlados por quantidade, com o saldo livre e o alugado.
 - Tarifas por prazo: diária, semanal, quinzenal e mensal; o contrato já sai com a tarifa do período.
 - Financeiro: quem pagou, quem vai pagar e quem está atrasado, cliente por cliente; atraso vira alerta na tela inicial; exportação em CSV.
 - Manutenção: registro de manutenção, que tira o equipamento da lista de disponíveis, e revisão preventiva programada.
-- Orçamentos que reservam o equipamento, controle de contratos pendentes de assinatura e localização de em qual obra está cada item.
+- Orçamentos que reservam o equipamento, controle de contratos pendentes de assinatura e localização de em qual local de entrega está cada item.
 - Busca global por contrato, cliente ou equipamento (Ctrl+K) de qualquer tela.
 
 ## Planos
