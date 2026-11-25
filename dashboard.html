@@ -1626,15 +1626,13 @@ function renderDashboard(){
       </div>`;
     const hr0 = new Date().getHours();
     const hello0 = hr0<12 ? "Bom dia" : hr0<18 ? "Boa tarde" : "Boa noite";
-    const first0 = ($("#user-name").textContent||"").trim().split(/\s+/)[0];
-    const name0 = first0 && first0!=="—" && !first0.includes("@") ? first0 : "";
     const todayLong0 = new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});
     const kp = (label, val, sub, cls, ico) => `<div class="kpi kpi-ghost"><div class="kpi-top"><span class="kpi-label">${label}</span><span class="kpi-icon ${cls}">${ico}</span></div><div class="kpi-value tabular">${val}</div><div class="kpi-sub">${sub}</div></div>`;
     view.innerHTML = `
       <div class="dash-hello">
         <div>
           <div class="eyebrow">${todayLong0}</div>
-          <h2>${hello0}${name0?", "+escapeHtml(name0):""}</h2>
+          <h2>${hello0}, Locadora</h2>
           <p>Vamos colocar a sua locadora no sistema. ${nDone===0?"São só <b>3 passos</b>.":`Faltam <b>${3-nDone}</b> de 3 passos.`}</p>
         </div>
         <div class="setup-prog"><span><b>${nDone}</b> de 3 etapas</span><div class="setup-bar"><i style="--p:${Math.round(nDone/3*100)}%"></i></div></div>
